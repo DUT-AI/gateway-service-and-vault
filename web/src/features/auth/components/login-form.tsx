@@ -4,16 +4,22 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useLoginMutation } from "../hooks/use-auth-queries";
+import { Sparkles } from "lucide-react";
+import {
+  useLoginMutation,
+  useLoginSsoMutation,
+} from "../hooks/use-auth-queries";
 import { loginSchema, type LoginInput } from "../types";
 
 export function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loginMutation = useLoginMutation();
+  const loginSsoMutation = useLoginSsoMutation();
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -32,6 +38,24 @@ export function LoginForm() {
       setErrorMessage(
         e.response?.data?.detail ??
           "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
+      );
+    }
+  };
+
+  const handleSsoSubmit = async () => {
+    setErrorMessage(null);
+    const data = getValues();
+    if (!data.email || !data.password) {
+      setErrorMessage("Vui lòng nhập Email và Mật khẩu để đăng nhập SSO.");
+      return;
+    }
+    try {
+      await loginSsoMutation.mutateAsync(data);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } };
+      setErrorMessage(
+        e.response?.data?.detail ??
+          "Đăng nhập SSO thất bại. Vui lòng kiểm tra lại tài khoản."
       );
     }
   };
@@ -75,15 +99,37 @@ export function LoginForm() {
         )}
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting || loginMutation.isPending}
-        className="flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-      >
-        {isSubmitting || loginMutation.isPending
-          ? "Đang đăng nhập..."
-          : "Đăng nhập"}
-      </button>
+      <div className="space-y-2.5 pt-1">
+        <button
+          type="submit"
+          disabled={
+            isSubmitting ||
+            loginMutation.isPending ||
+            loginSsoMutation.isPending
+          }
+          className="flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        >
+          {isSubmitting || loginMutation.isPending
+            ? "Đang đăng nhập..."
+            : "Đăng nhập"}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSsoSubmit}
+          disabled={
+            isSubmitting ||
+            loginMutation.isPending ||
+            loginSsoMutation.isPending
+          }
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-blue-600 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        >
+          <Sparkles className="h-4 w-4 text-blue-600" />
+          {loginSsoMutation.isPending
+            ? "Đang xác thực SSO..."
+            : "Đăng nhập bằng DUT-AI Workspace (SSO)"}
+        </button>
+      </div>
 
       <p className="text-center text-sm text-gray-600">
         Chưa có tài khoản?{" "}

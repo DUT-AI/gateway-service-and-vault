@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const SSO_LOGIN_URL =
-  process.env.NEXT_PUBLIC_SSO_LOGIN_URL ||
-  "https://workspace.dutai.io.vn/login";
-
 /**
  * Fast Edge token expiration check.
  */
@@ -48,9 +44,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Nếu chưa đăng nhập hoặc token đã hết hạn, chuyển hướng sang Workspace Login
+  // Nếu chưa đăng nhập hoặc token đã hết hạn, chuyển hướng về trang login nội bộ của hệ thống
   if (!token || isTokenExpired(token)) {
-    const loginUrl = new URL(SSO_LOGIN_URL);
+    const loginUrl = new URL("/login", request.nextUrl.origin);
     loginUrl.searchParams.set("redirect", href);
     return NextResponse.redirect(loginUrl);
   }

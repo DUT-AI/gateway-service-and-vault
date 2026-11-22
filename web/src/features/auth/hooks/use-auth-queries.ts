@@ -14,6 +14,11 @@ export function useUserQuery() {
     queryFn: () => authService.getMe(),
     retry: false,
     staleTime: 5 * 60 * 1000,
+    // Chỉ kích hoạt query khi không ở các trang public auth để tránh 401 loop
+    enabled:
+      typeof window === "undefined" ||
+      (window.location.pathname !== "/login" &&
+        window.location.pathname !== "/register"),
   });
 }
 
@@ -23,6 +28,20 @@ export function useLoginMutation() {
 
   return useMutation({
     mutationFn: (data: LoginInput) => authService.login(data),
+    onSuccess: async () => {
+      const user = await authService.getMe();
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
+      router.push("/dashboard");
+    },
+  });
+}
+
+export function useLoginSsoMutation() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (data: LoginInput) => authService.loginSso(data),
     onSuccess: async () => {
       const user = await authService.getMe();
       queryClient.setQueryData(AUTH_QUERY_KEY, user);

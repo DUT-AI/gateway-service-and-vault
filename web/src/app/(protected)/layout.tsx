@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { AppShell } from "@/components/layout/app-shell";
-import { redirectToSsoLogin } from "@/lib/auth-urls";
+import { redirectToInternalLogin } from "@/lib/auth-urls";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function ProtectedLayout({
@@ -16,7 +16,7 @@ export default function ProtectedLayout({
   useEffect(() => {
     // Chỉ redirect sang login khi không có lỗi server bận và không có user
     if (!isLoading && !error && !user) {
-      redirectToSsoLogin();
+      redirectToInternalLogin();
     }
   }, [user, isLoading, error]);
 
@@ -59,7 +59,7 @@ export default function ProtectedLayout({
               Thử lại
             </button>
             <button
-              onClick={() => redirectToSsoLogin()}
+              onClick={() => redirectToInternalLogin()}
               className="cursor-pointer rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
               Về trang đăng nhập

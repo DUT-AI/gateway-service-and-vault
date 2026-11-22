@@ -10,7 +10,7 @@ import {
   useRegisterMutation,
   useUserQuery,
 } from "@/features/auth";
-import { redirectToSsoLogin } from "@/lib/auth-urls";
+import { redirectToInternalLogin } from "@/lib/auth-urls";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (role: string): boolean => {
       if (!user?.role_names) return false;
       return user.role_names.some(
-        (r) => r.toLowerCase() === role.toLowerCase()
+        (r: string) => r.toLowerCase() === role.toLowerCase()
       );
     },
     [user]
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logoutMutation.mutate();
       },
       redirectToLogin: () => {
-        redirectToSsoLogin();
+        redirectToInternalLogin();
       },
       refetchUser: () => {
         refetch();

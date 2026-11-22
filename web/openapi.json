@@ -132,12 +132,99 @@
         }
       }
     },
+    "/api/v1/auth/sso-login": {
+      "post": {
+        "tags": ["Identity"],
+        "summary": "Sso Login",
+        "description": "Authenticate against DUT-AI Manage SSO Server using email and password.",
+        "operationId": "sso_login_api_v1_auth_sso_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Identity"],
+        "summary": "Logout",
+        "description": "Clear SSO authentication cookies on both .dutai.io.vn and local domain.",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Logout Api V1 Auth Logout Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/me": {
       "get": {
         "tags": ["Identity"],
         "summary": "Get Me",
         "description": "Retrieve profile of currently authenticated user.",
         "operationId": "get_me_api_v1_auth_me_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -148,13 +235,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/auth/users": {
@@ -367,7 +459,8 @@
           },
           "role": {
             "type": "string",
-            "title": "Role"
+            "title": "Role",
+            "default": "member"
           },
           "avatar_url": {
             "anyOf": [
@@ -382,16 +475,38 @@
           },
           "status": {
             "type": "string",
-            "title": "Status"
+            "title": "Status",
+            "default": "ACTIVE"
+          },
+          "role_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Role Names"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Permissions"
           },
           "created_at": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Created At"
           }
         },
         "type": "object",
-        "required": ["id", "email", "role", "status", "created_at"],
+        "required": ["id", "email"],
         "title": "UserResponse",
         "description": "Schema for user profile responses."
       },

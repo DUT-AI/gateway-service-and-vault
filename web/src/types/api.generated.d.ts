@@ -84,6 +84,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/auth/sso-login": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Sso Login
+     * @description Authenticate against DUT-AI Manage SSO Server using email and password.
+     */
+    post: operations["sso_login_api_v1_auth_sso_login_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/logout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Logout
+     * @description Clear SSO authentication cookies on both .dutai.io.vn and local domain.
+     */
+    post: operations["logout_api_v1_auth_logout_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/auth/me": {
     parameters: {
       query?: never;
@@ -200,17 +240,24 @@ export interface components {
       email: string;
       /** Name */
       name?: string | null;
-      /** Role */
-      role: string;
+      /**
+       * Role
+       * @default member
+       */
+      role?: string;
       /** Avatar Url */
       avatar_url?: string | null;
-      /** Status */
-      status: string;
       /**
-       * Created At
-       * Format: date-time
+       * Status
+       * @default ACTIVE
        */
-      created_at: string;
+      status?: string;
+      /** Role Names */
+      role_names?: string[];
+      /** Permissions */
+      permissions?: string[];
+      /** Created At */
+      created_at?: string | null;
     };
     /** ValidationError */
     ValidationError: {
@@ -344,7 +391,40 @@ export interface operations {
       };
     };
   };
-  get_me_api_v1_auth_me_get: {
+  sso_login_api_v1_auth_sso_login_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UserLoginRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TokenResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  logout_api_v1_auth_logout_post: {
     parameters: {
       query?: never;
       header?: never;
@@ -359,7 +439,40 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          "application/json": {
+            [key: string]: string;
+          };
+        };
+      };
+    };
+  };
+  get_me_api_v1_auth_me_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: {
+        access_token?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
           "application/json": components["schemas"]["UserResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };

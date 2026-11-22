@@ -1,4 +1,3 @@
-FRONTEND_DIR=web
 .PHONY: help dev-api dev-web dev-worker docker-up docker-down migrate create-migration test install-hooks lint ruff check api-types
 
 help:
@@ -21,7 +20,7 @@ dev-api:
 	uv run uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
 
 dev-web:
-	cd ./$(FRONTEND_DIR) && pnpm dev
+	cd ./web && pnpm dev
 
 dev-worker:
 	uv run python -m apps.worker.main
@@ -50,7 +49,7 @@ check:
 	uv run mypy core modules apps
 
 api-types:
-	cd ./$(FRONTEND_DIR) && npm run sync:api
+	cd ./web && pnpm run sync:api
 
 install-hooks:
 	mkdir -p .git/hooks

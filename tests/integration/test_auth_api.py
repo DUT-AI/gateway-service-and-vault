@@ -46,5 +46,6 @@ async def test_auth_full_journey(client: AsyncClient):
     assert me_data["name"] == "E2E User"
 
     # 5. Access /me without token should return 401
+    client.cookies.clear()
     unauth_res = await client.get("/api/v1/auth/me")
     assert unauth_res.status_code == 401

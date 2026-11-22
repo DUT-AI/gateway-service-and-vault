@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { Schema } from "@/types/api";
-import type { DutAiUserProfile } from "@/lib/auth-sso";
 
 export const loginSchema = z.object({
   email: z
@@ -21,7 +20,7 @@ export const registerSchema = z.object({
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
-export type User = DutAiUserProfile;
+export type User = Schema<"UserResponse">;
 export type LoginPayload = Schema<"UserLoginRequest">;
 export type RegisterPayload = Schema<"UserRegisterRequest">;
 export type TokenResponse = Schema<"TokenResponse">;

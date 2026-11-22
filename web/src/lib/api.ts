@@ -1,6 +1,6 @@
 import axios from "axios";
 import { clearAuthToken, getAuthToken } from "./auth-token";
-import { redirectToSsoLogin } from "./auth-urls";
+import { redirectToInternalLogin } from "./auth-urls";
 
 export const api = axios.create({
   baseURL:
@@ -24,9 +24,18 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const isLoginRequest = error.config?.url?.includes("/auth/login");
-      if (!isLoginRequest && typeof window !== "undefined") {
+      const isAlreadyOnAuthPage =
+        typeof window !== "undefined" &&
+        (window.location.pathname === "/login" ||
+          window.location.pathname === "/register");
+
+      if (
+        !isLoginRequest &&
+        !isAlreadyOnAuthPage &&
+        typeof window !== "undefined"
+      ) {
         clearAuthToken();
-        redirectToSsoLogin();
+        redirectToInternalLogin();
       }
     }
     return Promise.reject(error);
