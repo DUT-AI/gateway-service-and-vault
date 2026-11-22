@@ -5,6 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  FolderKanban,
+  KeyRound,
+  Server,
   LogOut,
   Menu,
   ShieldCheck,
@@ -14,11 +17,38 @@ import {
 import { useAuth } from "@/contexts/auth-context";
 import { DutaiWaffle } from "@/components/common/DutaiWaffle";
 
-const NAV_ITEMS = [
+interface NavItemConfig {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  match: (pathname: string) => boolean;
+}
+
+const NAV_ITEMS: NavItemConfig[] = [
   {
     href: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
+    match: (pathname: string) => pathname === "/dashboard",
+  },
+  {
+    href: "/projects",
+    label: "Dự án",
+    icon: FolderKanban,
+    match: (pathname: string) =>
+      pathname === "/projects" || pathname.startsWith("/projects/"),
+  },
+  {
+    href: "/clients",
+    label: "Thiết bị & Client",
+    icon: KeyRound,
+    match: (pathname: string) => pathname.startsWith("/clients"),
+  },
+  {
+    href: "/services",
+    label: "Dịch vụ hệ thống",
+    icon: Server,
+    match: (pathname: string) => pathname.startsWith("/services"),
   },
 ];
 
@@ -26,6 +56,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const getPageHeaderTitle = () => {
+    if (pathname === "/dashboard") return "Dashboard";
+    if (pathname.startsWith("/projects")) return "Dự án & Không gian làm việc";
+    if (pathname.startsWith("/clients")) return "Thiết bị & Client";
+    if (pathname.startsWith("/services")) return "Dịch vụ hệ thống";
+    return "Không gian làm việc";
+  };
 
   const sidebarContent = (
     <>
@@ -37,7 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="block truncate text-sm font-bold text-slate-900">
             DUT AI Platform
           </span>
-          <p className="text-[11px] text-slate-500">Modular Boilerplate</p>
+          <p className="text-[11px] text-slate-500">Gateway & Vault</p>
         </div>
         <button
           type="button"
@@ -57,7 +95,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           Không gian làm việc
         </p>
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = item.match(pathname);
           const Icon = item.icon;
           return (
             <Link
@@ -85,15 +123,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="border-t border-slate-200 p-3">
         <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white p-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
-            {(user?.name || user?.email || "U")[0].toUpperCase()}
-          </div>
+          {user?.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt={user.name || user.email}
+              className="h-8 w-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+              {(user?.name || user?.email || "U")[0].toUpperCase()}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-semibold text-slate-900">
               {user?.name || user?.email || "Người dùng"}
             </p>
             <p className="truncate text-[10px] uppercase text-slate-500">
-              {user?.role || "Member"}
+              {user?.role || "Thành viên"}
             </p>
           </div>
           <button
@@ -145,7 +191,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Menu className="h-5 w-5" />
             </button>
             <span className="text-sm font-semibold text-slate-800">
-              {pathname === "/dashboard" ? "Dashboard" : "Không gian làm việc"}
+              {getPageHeaderTitle()}
             </span>
           </div>
 
@@ -155,7 +201,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Đã xác thực DUT
             </span>
 
-            {/* DUT-AI Ecosystem Waffle Launcher (Google-style App Launcher) */}
+            {/* DUT-AI Ecosystem Waffle Launcher */}
             <div className="flex items-center border-l border-slate-200 pl-3">
               <DutaiWaffle current="data" />
             </div>
