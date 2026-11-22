@@ -60,3 +60,45 @@ class VerifyBindingRequest(BaseModel):
 class VerifyBindingResponse(BaseModel):
     valid: bool
     message: str
+
+
+class ClientSummaryResponse(BaseModel):
+    id: str
+    name: str
+    client_type: str
+    owner_id: str
+    cert_fingerprint: str
+    cert_serial: str
+    expires_at: datetime
+    is_revoked: bool
+    created_at: datetime
+
+
+class VirtualKeySummaryResponse(BaseModel):
+    id: str
+    client_id: str
+    project_id: str
+    key_prefix: str
+    status: str
+    created_at: datetime
+    revoked_at: datetime | None = None
+
+
+class UpstreamServiceCreateRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    slug: str = Field(..., min_length=2, max_length=100)
+    base_url: str = Field(..., min_length=5, max_length=255)
+    auth_type: str = Field(default="BEARER_TOKEN")
+    credential: str = Field(..., min_length=1)
+    timeout_seconds: int = Field(default=30, ge=1, le=120)
+
+
+class UpstreamServiceResponse(BaseModel):
+    id: str
+    name: str
+    slug: str
+    base_url: str
+    auth_type: str
+    timeout_seconds: int
+    is_active: bool
+    created_at: datetime

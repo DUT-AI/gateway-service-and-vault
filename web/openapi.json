@@ -8,7 +8,9 @@
   "paths": {
     "/health": {
       "get": {
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "summary": "Health Check",
         "description": "Basic liveness probe endpoint.",
         "operationId": "health_check_health_get",
@@ -32,7 +34,9 @@
     },
     "/ready": {
       "get": {
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "summary": "Readiness Check",
         "description": "Readiness probe checking live status of backing services.",
         "operationId": "readiness_check_ready_get",
@@ -52,90 +56,12 @@
         }
       }
     },
-    "/api/v1/auth/register": {
-      "post": {
-        "tags": ["Identity"],
-        "summary": "Register",
-        "description": "Register a new user account.",
-        "operationId": "register_api_v1_auth_register_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserRegisterRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/auth/login": {
-      "post": {
-        "tags": ["Identity"],
-        "summary": "Login",
-        "description": "Authenticate with email and password and receive a JWT token.",
-        "operationId": "login_api_v1_auth_login_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserLoginRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokenResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/auth/sso-login": {
       "post": {
-        "tags": ["Identity"],
-        "summary": "Sso Login",
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Authenticate against central DUT-AI SSO IdP",
         "description": "Authenticate against DUT-AI Manage SSO Server using email and password.",
         "operationId": "sso_login_api_v1_auth_sso_login_post",
         "requestBody": {
@@ -174,8 +100,10 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "tags": ["Identity"],
-        "summary": "Logout",
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Clear SSO authentication session",
         "description": "Clear SSO authentication cookies on both .dutai.io.vn and local domain.",
         "operationId": "logout_api_v1_auth_logout_post",
         "responses": {
@@ -198,9 +126,11 @@
     },
     "/api/v1/auth/me": {
       "get": {
-        "tags": ["Identity"],
-        "summary": "Get Me",
-        "description": "Retrieve profile of currently authenticated user.",
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Get profile of authenticated SSO user",
+        "description": "Retrieve profile of currently authenticated user directly from SSO token.",
         "operationId": "get_me_api_v1_auth_me_get",
         "security": [
           {
@@ -251,8 +181,10 @@
     },
     "/api/v1/auth/users": {
       "get": {
-        "tags": ["Identity"],
-        "summary": "List Users",
+        "tags": [
+          "Identity"
+        ],
+        "summary": "Retrieve paginated list of users",
         "description": "Retrieve paginated list of registered users.",
         "operationId": "list_users_api_v1_auth_users_get",
         "parameters": [
@@ -320,10 +252,1254 @@
           }
         }
       }
+    },
+    "/api/v1/users/options": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get all available users for selection options",
+        "description": "Retrieve list of all active organization users from central directory.",
+        "operationId": "get_user_options_api_v1_users_options_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserOptionResponse"
+                  },
+                  "title": "Response Get User Options Api V1 Users Options Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get detailed user profile by integer ID",
+        "description": "Retrieve detailed user profile for given integer ID from central directory.",
+        "operationId": "get_user_by_id_api_v1_users__id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Strict user integer identifier",
+              "title": "Id"
+            },
+            "description": "Strict user integer identifier"
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/projects": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "List all registered projects",
+        "description": "Retrieve all business projects.",
+        "operationId": "list_projects_api_v1_gateway_projects_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Projects Api V1 Gateway Projects Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Create a new business project",
+        "description": "Create a new business project.",
+        "operationId": "create_project_api_v1_gateway_projects_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Get single project by ID",
+        "description": "Retrieve single project by ID.",
+        "operationId": "get_project_api_v1_gateway_projects__project_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/clients": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "List all registered client identities",
+        "description": "Retrieve all registered device and machine client identities.",
+        "operationId": "list_clients_api_v1_gateway_clients_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClientSummaryResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Clients Api V1 Gateway Clients Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Register a client and issue mTLS certificate",
+        "description": "Issue a private mTLS client certificate and register the client identity.",
+        "operationId": "register_client_api_v1_gateway_clients_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterClientRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterClientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/projects/{project_id}/keys": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "List virtual keys for a project",
+        "description": "Retrieve all virtual access keys bound to a project.",
+        "operationId": "list_virtual_keys_api_v1_gateway_projects__project_id__keys_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VirtualKeySummaryResponse"
+                  },
+                  "title": "Response List Virtual Keys Api V1 Gateway Projects  Project Id  Keys Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/keys": {
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Generate a Virtual Access Key bound to a client and project",
+        "description": "Generate a Virtual Access Key bound to a registered client and project.",
+        "operationId": "generate_virtual_key_api_v1_gateway_keys_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateVirtualKeyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateVirtualKeyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/keys/{key_id}/revoke": {
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Revoke a virtual access key",
+        "description": "Revoke a compromised or obsolete virtual access key.",
+        "operationId": "revoke_virtual_key_api_v1_gateway_keys__key_id__revoke_post",
+        "parameters": [
+          {
+            "name": "key_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Key Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Revoke Virtual Key Api V1 Gateway Keys  Key Id  Revoke Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/verify-binding": {
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Verify identity binding between virtual key and certificate",
+        "description": "Verify identity binding between virtual key and mTLS client certificate.",
+        "operationId": "verify_binding_api_v1_gateway_verify_binding_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyBindingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyBindingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/services": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "List all upstream backend services",
+        "description": "Retrieve all registered upstream API services.",
+        "operationId": "list_upstream_services_api_v1_gateway_services_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UpstreamServiceResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Upstream Services Api V1 Gateway Services Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Register a new upstream backend service",
+        "description": "Register an upstream API service destination.",
+        "operationId": "create_upstream_service_api_v1_gateway_services_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpstreamServiceCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpstreamServiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vault/projects/{project_id}/secrets": {
+      "post": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "Create Secret",
+        "description": "Create or update an encrypted configuration secret and broadcast change.",
+        "operationId": "create_secret_api_v1_vault_projects__project_id__secrets_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-actor-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "admin",
+              "title": "X-Actor-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSecretRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecretResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "Get Secrets",
+        "description": "Retrieve decrypted configuration secrets filtered by identity permissions.",
+        "operationId": "get_secrets_api_v1_vault_projects__project_id__secrets_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Scope"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Key"
+            }
+          },
+          {
+            "name": "x-identity-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Identity-Id"
+            }
+          },
+          {
+            "name": "x-user-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSecretsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vault/projects/{project_id}/scopes": {
+      "get": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "List all secret scopes in a project",
+        "description": "Retrieve all secret scopes created within a project.",
+        "operationId": "list_scopes_api_v1_vault_projects__project_id__scopes_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScopeResponse"
+                  },
+                  "title": "Response List Scopes Api V1 Vault Projects  Project Id  Scopes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vault/projects/{project_id}/permissions": {
+      "post": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "Grant Key Permission",
+        "description": "Grant an identity read permission for a secret key.",
+        "operationId": "grant_key_permission_api_v1_vault_projects__project_id__permissions_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "x-actor-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "admin",
+              "title": "X-Actor-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantKeyPermissionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyPermissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "Revoke Key Permission",
+        "description": "Revoke an identity's read permission for a secret key.",
+        "operationId": "revoke_key_permission_api_v1_vault_projects__project_id__permissions_delete",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "identity_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Identity Id"
+            }
+          },
+          {
+            "name": "secret_key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Secret Key"
+            }
+          },
+          {
+            "name": "x-actor-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "admin",
+              "title": "X-Actor-Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "List Identity Permissions",
+        "description": "List all permitted secret keys for an identity in a project.",
+        "operationId": "list_identity_permissions_api_v1_vault_projects__project_id__permissions_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "identity_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Identity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityPermissionsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vault/projects/{project_id}/stream": {
+      "get": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "Server-Sent Events stream for dynamic secret configuration updates",
+        "description": "Stream real-time secret update events filtered by caller key permissions.",
+        "operationId": "stream_project_secrets_api_v1_vault_projects__project_id__stream_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Scope"
+            }
+          },
+          {
+            "name": "max_events",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Max events to yield before closing stream (useful for testing)",
+              "title": "Max Events"
+            },
+            "description": "Max events to yield before closing stream (useful for testing)"
+          },
+          {
+            "name": "x-identity-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Identity-Id"
+            }
+          },
+          {
+            "name": "x-user-role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ClientSummaryResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "client_type": {
+            "type": "string",
+            "title": "Client Type"
+          },
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id"
+          },
+          "cert_fingerprint": {
+            "type": "string",
+            "title": "Cert Fingerprint"
+          },
+          "cert_serial": {
+            "type": "string",
+            "title": "Cert Serial"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "is_revoked": {
+            "type": "boolean",
+            "title": "Is Revoked"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "client_type",
+          "owner_id",
+          "cert_fingerprint",
+          "cert_serial",
+          "expires_at",
+          "is_revoked",
+          "created_at"
+        ],
+        "title": "ClientSummaryResponse"
+      },
+      "CreateSecretRequest": {
+        "properties": {
+          "scope_name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Scope Name"
+          },
+          "key": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scope_name",
+          "key",
+          "value"
+        ],
+        "title": "CreateSecretRequest"
+      },
+      "GenerateVirtualKeyRequest": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Client Id"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id",
+          "project_id"
+        ],
+        "title": "GenerateVirtualKeyRequest"
+      },
+      "GenerateVirtualKeyResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "virtual_key": {
+            "type": "string",
+            "title": "Virtual Key"
+          },
+          "key_prefix": {
+            "type": "string",
+            "title": "Key Prefix"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "client_id",
+          "project_id",
+          "virtual_key",
+          "key_prefix",
+          "status",
+          "created_at"
+        ],
+        "title": "GenerateVirtualKeyResponse"
+      },
+      "GetSecretsResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "scopes": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Scopes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "scopes"
+        ],
+        "title": "GetSecretsResponse"
+      },
+      "GrantKeyPermissionRequest": {
+        "properties": {
+          "identity_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Identity Id"
+          },
+          "identity_type": {
+            "type": "string",
+            "pattern": "^(client|user)$",
+            "title": "Identity Type",
+            "default": "client"
+          },
+          "secret_key": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Secret Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "identity_id",
+          "secret_key"
+        ],
+        "title": "GrantKeyPermissionRequest"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -336,6 +1512,76 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "IdentityPermissionsResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "identity_id": {
+            "type": "string",
+            "title": "Identity Id"
+          },
+          "permitted_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Permitted Keys"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "identity_id",
+          "permitted_keys"
+        ],
+        "title": "IdentityPermissionsResponse"
+      },
+      "KeyPermissionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "identity_id": {
+            "type": "string",
+            "title": "Identity Id"
+          },
+          "identity_type": {
+            "type": "string",
+            "title": "Identity Type"
+          },
+          "secret_key": {
+            "type": "string",
+            "title": "Secret Key"
+          },
+          "granted_by": {
+            "type": "string",
+            "title": "Granted By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "identity_id",
+          "identity_type",
+          "secret_key",
+          "granted_by",
+          "created_at"
+        ],
+        "title": "KeyPermissionResponse"
       },
       "PaginatedResponse_UserResponse_": {
         "properties": {
@@ -364,8 +1610,254 @@
           }
         },
         "type": "object",
-        "required": ["items", "total", "page", "page_size", "total_pages"],
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "total_pages"
+        ],
         "title": "PaginatedResponse[UserResponse]"
+      },
+      "ProjectCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Slug"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "slug"
+        ],
+        "title": "ProjectCreateRequest"
+      },
+      "ProjectResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "created_at"
+        ],
+        "title": "ProjectResponse"
+      },
+      "RegisterClientRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "client_type": {
+            "type": "string",
+            "title": "Client Type",
+            "default": "USER_DEVICE"
+          },
+          "owner_id": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Owner Id"
+          },
+          "validity_days": {
+            "type": "integer",
+            "maximum": 365.0,
+            "minimum": 1.0,
+            "title": "Validity Days",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "owner_id"
+        ],
+        "title": "RegisterClientRequest"
+      },
+      "RegisterClientResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "client_type": {
+            "type": "string",
+            "title": "Client Type"
+          },
+          "owner_id": {
+            "type": "string",
+            "title": "Owner Id"
+          },
+          "cert_fingerprint": {
+            "type": "string",
+            "title": "Cert Fingerprint"
+          },
+          "cert_serial": {
+            "type": "string",
+            "title": "Cert Serial"
+          },
+          "cert_pem": {
+            "type": "string",
+            "title": "Cert Pem"
+          },
+          "key_pem": {
+            "type": "string",
+            "title": "Key Pem"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "client_type",
+          "owner_id",
+          "cert_fingerprint",
+          "cert_serial",
+          "cert_pem",
+          "key_pem",
+          "expires_at"
+        ],
+        "title": "RegisterClientResponse"
+      },
+      "ScopeResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "created_at"
+        ],
+        "title": "ScopeResponse"
+      },
+      "SecretResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "scope_id": {
+            "type": "string",
+            "title": "Scope Id"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_id",
+          "scope_id",
+          "key",
+          "version",
+          "created_at"
+        ],
+        "title": "SecretResponse"
       },
       "TokenResponse": {
         "properties": {
@@ -384,9 +1876,207 @@
           }
         },
         "type": "object",
-        "required": ["access_token", "expires_in"],
+        "required": [
+          "access_token",
+          "expires_in"
+        ],
         "title": "TokenResponse",
         "description": "Schema for JWT access token response."
+      },
+      "UpstreamServiceCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Slug"
+          },
+          "base_url": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 5,
+            "title": "Base Url"
+          },
+          "auth_type": {
+            "type": "string",
+            "title": "Auth Type",
+            "default": "BEARER_TOKEN"
+          },
+          "credential": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Credential"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Timeout Seconds",
+            "default": 30
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "slug",
+          "base_url",
+          "credential"
+        ],
+        "title": "UpstreamServiceCreateRequest"
+      },
+      "UpstreamServiceResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url"
+          },
+          "auth_type": {
+            "type": "string",
+            "title": "Auth Type"
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "title": "Timeout Seconds"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "base_url",
+          "auth_type",
+          "timeout_seconds",
+          "is_active",
+          "created_at"
+        ],
+        "title": "UpstreamServiceResponse"
+      },
+      "UserDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Unique user integer identifier"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "role_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Role Ids"
+          },
+          "role_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Role Names"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Permissions"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "discord_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discord Id"
+          },
+          "zalo_bot_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zalo Bot Id"
+          },
+          "check_in_card_code_configured": {
+            "type": "boolean",
+            "title": "Check In Card Code Configured",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status"
+        ],
+        "title": "UserDetailResponse"
       },
       "UserLoginRequest": {
         "properties": {
@@ -401,40 +2091,47 @@
           }
         },
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "title": "UserLoginRequest",
         "description": "Schema for authenticating a user."
       },
-      "UserRegisterRequest": {
+      "UserOptionResponse": {
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
-          },
-          "password": {
-            "type": "string",
-            "maxLength": 128,
-            "minLength": 8,
-            "title": "Password"
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Unique user integer identifier"
           },
           "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "avatar_url": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 255
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Name"
+            "title": "Avatar Url"
           }
         },
         "type": "object",
-        "required": ["email", "password"],
-        "title": "UserRegisterRequest",
-        "description": "Schema for registering a new user."
+        "required": [
+          "id",
+          "name",
+          "email"
+        ],
+        "title": "UserOptionResponse"
       },
       "UserResponse": {
         "properties": {
@@ -506,7 +2203,10 @@
           }
         },
         "type": "object",
-        "required": ["id", "email"],
+        "required": [
+          "id",
+          "email"
+        ],
         "title": "UserResponse",
         "description": "Schema for user profile responses."
       },
@@ -543,8 +2243,107 @@
           }
         },
         "type": "object",
-        "required": ["loc", "msg", "type"],
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
         "title": "ValidationError"
+      },
+      "VerifyBindingRequest": {
+        "properties": {
+          "raw_virtual_key": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Raw Virtual Key"
+          },
+          "cert_fingerprint": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Cert Fingerprint"
+          },
+          "project_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Project Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "raw_virtual_key",
+          "cert_fingerprint",
+          "project_id"
+        ],
+        "title": "VerifyBindingRequest"
+      },
+      "VerifyBindingResponse": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid",
+          "message"
+        ],
+        "title": "VerifyBindingResponse"
+      },
+      "VirtualKeySummaryResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "key_prefix": {
+            "type": "string",
+            "title": "Key Prefix"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "client_id",
+          "project_id",
+          "key_prefix",
+          "status",
+          "created_at"
+        ],
+        "title": "VirtualKeySummaryResponse"
       }
     },
     "securitySchemes": {

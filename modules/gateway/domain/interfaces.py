@@ -4,6 +4,7 @@ from modules.gateway.domain.entities import (
     ClientType,
     ProjectEntity,
     RegisteredClientEntity,
+    UpstreamServiceEntity,
     VirtualAccessKeyEntity,
 )
 
@@ -19,6 +20,9 @@ class IProjectRepository(ABC):
     async def create(
         self, name: str, slug: str, description: str | None = None
     ) -> ProjectEntity: ...
+
+    @abstractmethod
+    async def list_all(self) -> list[ProjectEntity]: ...
 
 
 class IRegisteredClientRepository(ABC):
@@ -41,6 +45,9 @@ class IRegisteredClientRepository(ABC):
         expires_at,
     ) -> RegisteredClientEntity: ...
 
+    @abstractmethod
+    async def list_all(self) -> list[RegisteredClientEntity]: ...
+
 
 class IVirtualAccessKeyRepository(ABC):
     @abstractmethod
@@ -62,3 +69,30 @@ class IVirtualAccessKeyRepository(ABC):
 
     @abstractmethod
     async def revoke_active_keys(self, client_id: str, project_id: str) -> int: ...
+
+    @abstractmethod
+    async def list_by_project(
+        self, project_id: str
+    ) -> list[VirtualAccessKeyEntity]: ...
+
+    @abstractmethod
+    async def revoke_by_id(self, key_id: str) -> bool: ...
+
+
+class IUpstreamServiceRepository(ABC):
+    @abstractmethod
+    async def list_all(self) -> list[UpstreamServiceEntity]: ...
+
+    @abstractmethod
+    async def get_by_id(self, service_id: str) -> UpstreamServiceEntity | None: ...
+
+    @abstractmethod
+    async def create(
+        self,
+        name: str,
+        slug: str,
+        base_url: str,
+        auth_type: str,
+        encrypted_credential: str,
+        timeout_seconds: int = 30,
+    ) -> UpstreamServiceEntity: ...

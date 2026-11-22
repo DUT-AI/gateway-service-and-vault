@@ -22,7 +22,11 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 export type User = Schema<"UserResponse">;
 export type LoginPayload = Schema<"UserLoginRequest">;
-export type RegisterPayload = Schema<"UserRegisterRequest">;
+export type RegisterPayload = {
+  email: string;
+  password?: string;
+  name?: string;
+};
 export type TokenResponse = Schema<"TokenResponse">;
 
 export type AuthContextValue = {

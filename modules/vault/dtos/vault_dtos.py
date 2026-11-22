@@ -66,3 +66,11 @@ class IdentityPermissionsResponse(BaseModel):
     project_id: str
     identity_id: str
     permitted_keys: list[str]
+
+
+class ScopeResponse(BaseModel):
+    id: str
+    project_id: str
+    name: str
+    description: str | None = None
+    created_at: datetime

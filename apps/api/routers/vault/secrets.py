@@ -4,11 +4,13 @@ from fastapi import APIRouter, Header, Query, status
 from modules.vault.dtos.vault_dtos import (
     CreateSecretRequest,
     GetSecretsResponse,
+    ScopeResponse,
     SecretResponse,
 )
 from modules.vault.use_cases import (
     CreateSecretUseCase,
     GetSecretsByScopeUseCase,
+    ListScopesUseCase,
 )
 
 router = APIRouter()
@@ -69,3 +71,27 @@ async def get_secrets(
         project_id=project_id,
         scopes=decrypted_scopes,
     )
+
+
+@router.get(
+    "/projects/{project_id}/scopes",
+    response_model=list[ScopeResponse],
+    summary="List all secret scopes in a project",
+)
+@inject
+async def list_scopes(
+    project_id: str,
+    use_case: FromDishka[ListScopesUseCase],
+) -> list[ScopeResponse]:
+    """Retrieve all secret scopes created within a project."""
+    scopes = await use_case.execute(project_id)
+    return [
+        ScopeResponse(
+            id=s.id,
+            project_id=s.project_id,
+            name=s.name,
+            description=s.description,
+            created_at=s.created_at,
+        )
+        for s in scopes
+    ]

@@ -4,510 +4,1666 @@
  */
 
 export interface paths {
-  "/health": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health Check
+         * @description Basic liveness probe endpoint.
+         */
+        get: operations["health_check_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Health Check
-     * @description Basic liveness probe endpoint.
-     */
-    get: operations["health_check_health_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/ready": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Readiness Check
+         * @description Readiness probe checking live status of backing services.
+         */
+        get: operations["readiness_check_ready_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Readiness Check
-     * @description Readiness probe checking live status of backing services.
-     */
-    get: operations["readiness_check_ready_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/register": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/auth/sso-login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Authenticate against central DUT-AI SSO IdP
+         * @description Authenticate against DUT-AI Manage SSO Server using email and password.
+         */
+        post: operations["sso_login_api_v1_auth_sso_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Register
-     * @description Register a new user account.
-     */
-    post: operations["register_api_v1_auth_register_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Clear SSO authentication session
+         * @description Clear SSO authentication cookies on both .dutai.io.vn and local domain.
+         */
+        post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Login
-     * @description Authenticate with email and password and receive a JWT token.
-     */
-    post: operations["login_api_v1_auth_login_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/sso-login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get profile of authenticated SSO user
+         * @description Retrieve profile of currently authenticated user directly from SSO token.
+         */
+        get: operations["get_me_api_v1_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Sso Login
-     * @description Authenticate against DUT-AI Manage SSO Server using email and password.
-     */
-    post: operations["sso_login_api_v1_auth_sso_login_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/logout": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/auth/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve paginated list of users
+         * @description Retrieve paginated list of registered users.
+         */
+        get: operations["list_users_api_v1_auth_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Logout
-     * @description Clear SSO authentication cookies on both .dutai.io.vn and local domain.
-     */
-    post: operations["logout_api_v1_auth_logout_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/me": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/users/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get all available users for selection options
+         * @description Retrieve list of all active organization users from central directory.
+         */
+        get: operations["get_user_options_api_v1_users_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * Get Me
-     * @description Retrieve profile of currently authenticated user.
-     */
-    get: operations["get_me_api_v1_auth_me_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/auth/users": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/v1/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get detailed user profile by integer ID
+         * @description Retrieve detailed user profile for given integer ID from central directory.
+         */
+        get: operations["get_user_by_id_api_v1_users__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * List Users
-     * @description Retrieve paginated list of registered users.
-     */
-    get: operations["list_users_api_v1_auth_users_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/api/v1/gateway/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all registered projects
+         * @description Retrieve all business projects.
+         */
+        get: operations["list_projects_api_v1_gateway_projects_get"];
+        put?: never;
+        /**
+         * Create a new business project
+         * @description Create a new business project.
+         */
+        post: operations["create_project_api_v1_gateway_projects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get single project by ID
+         * @description Retrieve single project by ID.
+         */
+        get: operations["get_project_api_v1_gateway_projects__project_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all registered client identities
+         * @description Retrieve all registered device and machine client identities.
+         */
+        get: operations["list_clients_api_v1_gateway_clients_get"];
+        put?: never;
+        /**
+         * Register a client and issue mTLS certificate
+         * @description Issue a private mTLS client certificate and register the client identity.
+         */
+        post: operations["register_client_api_v1_gateway_clients_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/projects/{project_id}/keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List virtual keys for a project
+         * @description Retrieve all virtual access keys bound to a project.
+         */
+        get: operations["list_virtual_keys_api_v1_gateway_projects__project_id__keys_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate a Virtual Access Key bound to a client and project
+         * @description Generate a Virtual Access Key bound to a registered client and project.
+         */
+        post: operations["generate_virtual_key_api_v1_gateway_keys_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/keys/{key_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke a virtual access key
+         * @description Revoke a compromised or obsolete virtual access key.
+         */
+        post: operations["revoke_virtual_key_api_v1_gateway_keys__key_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/verify-binding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify identity binding between virtual key and certificate
+         * @description Verify identity binding between virtual key and mTLS client certificate.
+         */
+        post: operations["verify_binding_api_v1_gateway_verify_binding_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all upstream backend services
+         * @description Retrieve all registered upstream API services.
+         */
+        get: operations["list_upstream_services_api_v1_gateway_services_get"];
+        put?: never;
+        /**
+         * Register a new upstream backend service
+         * @description Register an upstream API service destination.
+         */
+        post: operations["create_upstream_service_api_v1_gateway_services_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vault/projects/{project_id}/secrets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Secrets
+         * @description Retrieve decrypted configuration secrets filtered by identity permissions.
+         */
+        get: operations["get_secrets_api_v1_vault_projects__project_id__secrets_get"];
+        put?: never;
+        /**
+         * Create Secret
+         * @description Create or update an encrypted configuration secret and broadcast change.
+         */
+        post: operations["create_secret_api_v1_vault_projects__project_id__secrets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vault/projects/{project_id}/scopes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all secret scopes in a project
+         * @description Retrieve all secret scopes created within a project.
+         */
+        get: operations["list_scopes_api_v1_vault_projects__project_id__scopes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vault/projects/{project_id}/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Identity Permissions
+         * @description List all permitted secret keys for an identity in a project.
+         */
+        get: operations["list_identity_permissions_api_v1_vault_projects__project_id__permissions_get"];
+        put?: never;
+        /**
+         * Grant Key Permission
+         * @description Grant an identity read permission for a secret key.
+         */
+        post: operations["grant_key_permission_api_v1_vault_projects__project_id__permissions_post"];
+        /**
+         * Revoke Key Permission
+         * @description Revoke an identity's read permission for a secret key.
+         */
+        delete: operations["revoke_key_permission_api_v1_vault_projects__project_id__permissions_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vault/projects/{project_id}/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Server-Sent Events stream for dynamic secret configuration updates
+         * @description Stream real-time secret update events filtered by caller key permissions.
+         */
+        get: operations["stream_project_secrets_api_v1_vault_projects__project_id__stream_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /** HTTPValidationError */
-    HTTPValidationError: {
-      /** Detail */
-      detail?: components["schemas"]["ValidationError"][];
+    schemas: {
+        /** ClientSummaryResponse */
+        ClientSummaryResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Client Type */
+            client_type: string;
+            /** Owner Id */
+            owner_id: string;
+            /** Cert Fingerprint */
+            cert_fingerprint: string;
+            /** Cert Serial */
+            cert_serial: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Is Revoked */
+            is_revoked: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** CreateSecretRequest */
+        CreateSecretRequest: {
+            /** Scope Name */
+            scope_name: string;
+            /** Key */
+            key: string;
+            /** Value */
+            value: string;
+        };
+        /** GenerateVirtualKeyRequest */
+        GenerateVirtualKeyRequest: {
+            /** Client Id */
+            client_id: string;
+            /** Project Id */
+            project_id: string;
+        };
+        /** GenerateVirtualKeyResponse */
+        GenerateVirtualKeyResponse: {
+            /** Id */
+            id: string;
+            /** Client Id */
+            client_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Virtual Key */
+            virtual_key: string;
+            /** Key Prefix */
+            key_prefix: string;
+            /** Status */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** GetSecretsResponse */
+        GetSecretsResponse: {
+            /** Project Id */
+            project_id: string;
+            /** Scopes */
+            scopes: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            };
+        };
+        /** GrantKeyPermissionRequest */
+        GrantKeyPermissionRequest: {
+            /** Identity Id */
+            identity_id: string;
+            /**
+             * Identity Type
+             * @default client
+             */
+            identity_type?: string;
+            /** Secret Key */
+            secret_key: string;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** IdentityPermissionsResponse */
+        IdentityPermissionsResponse: {
+            /** Project Id */
+            project_id: string;
+            /** Identity Id */
+            identity_id: string;
+            /** Permitted Keys */
+            permitted_keys: string[];
+        };
+        /** KeyPermissionResponse */
+        KeyPermissionResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Identity Id */
+            identity_id: string;
+            /** Identity Type */
+            identity_type: string;
+            /** Secret Key */
+            secret_key: string;
+            /** Granted By */
+            granted_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** PaginatedResponse[UserResponse] */
+        PaginatedResponse_UserResponse_: {
+            /** Items */
+            items: components["schemas"]["UserResponse"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total Pages */
+            total_pages: number;
+        };
+        /** ProjectCreateRequest */
+        ProjectCreateRequest: {
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** ProjectResponse */
+        ProjectResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** RegisterClientRequest */
+        RegisterClientRequest: {
+            /** Name */
+            name: string;
+            /**
+             * Client Type
+             * @default USER_DEVICE
+             */
+            client_type?: string;
+            /** Owner Id */
+            owner_id: string;
+            /**
+             * Validity Days
+             * @default 30
+             */
+            validity_days?: number;
+        };
+        /** RegisterClientResponse */
+        RegisterClientResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Client Type */
+            client_type: string;
+            /** Owner Id */
+            owner_id: string;
+            /** Cert Fingerprint */
+            cert_fingerprint: string;
+            /** Cert Serial */
+            cert_serial: string;
+            /** Cert Pem */
+            cert_pem: string;
+            /** Key Pem */
+            key_pem: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
+        /** ScopeResponse */
+        ScopeResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** SecretResponse */
+        SecretResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Scope Id */
+            scope_id: string;
+            /** Key */
+            key: string;
+            /** Version */
+            version: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * TokenResponse
+         * @description Schema for JWT access token response.
+         */
+        TokenResponse: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Token Type
+             * @default bearer
+             */
+            token_type?: string;
+            /** Expires In */
+            expires_in: number;
+        };
+        /** UpstreamServiceCreateRequest */
+        UpstreamServiceCreateRequest: {
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Base Url */
+            base_url: string;
+            /**
+             * Auth Type
+             * @default BEARER_TOKEN
+             */
+            auth_type?: string;
+            /** Credential */
+            credential: string;
+            /**
+             * Timeout Seconds
+             * @default 30
+             */
+            timeout_seconds?: number;
+        };
+        /** UpstreamServiceResponse */
+        UpstreamServiceResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+            /** Base Url */
+            base_url: string;
+            /** Auth Type */
+            auth_type: string;
+            /** Timeout Seconds */
+            timeout_seconds: number;
+            /** Is Active */
+            is_active: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** UserDetailResponse */
+        UserDetailResponse: {
+            /**
+             * Id
+             * @description Unique user integer identifier
+             */
+            id: number;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** Phone Number */
+            phone_number?: string | null;
+            /** Status */
+            status: string;
+            /** Role Ids */
+            role_ids?: number[];
+            /** Role Names */
+            role_names?: string[];
+            /** Permissions */
+            permissions?: string[];
+            /** Avatar Url */
+            avatar_url?: string | null;
+            /** Discord Id */
+            discord_id?: string | null;
+            /** Zalo Bot Id */
+            zalo_bot_id?: string | null;
+            /**
+             * Check In Card Code Configured
+             * @default false
+             */
+            check_in_card_code_configured?: boolean;
+        };
+        /**
+         * UserLoginRequest
+         * @description Schema for authenticating a user.
+         */
+        UserLoginRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /** UserOptionResponse */
+        UserOptionResponse: {
+            /**
+             * Id
+             * @description Unique user integer identifier
+             */
+            id: number;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** Avatar Url */
+            avatar_url?: string | null;
+        };
+        /**
+         * UserResponse
+         * @description Schema for user profile responses.
+         */
+        UserResponse: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /** Name */
+            name?: string | null;
+            /**
+             * Role
+             * @default member
+             */
+            role?: string;
+            /** Avatar Url */
+            avatar_url?: string | null;
+            /**
+             * Status
+             * @default ACTIVE
+             */
+            status?: string;
+            /** Role Names */
+            role_names?: string[];
+            /** Permissions */
+            permissions?: string[];
+            /** Created At */
+            created_at?: string | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+        /** VerifyBindingRequest */
+        VerifyBindingRequest: {
+            /** Raw Virtual Key */
+            raw_virtual_key: string;
+            /** Cert Fingerprint */
+            cert_fingerprint: string;
+            /** Project Id */
+            project_id: string;
+        };
+        /** VerifyBindingResponse */
+        VerifyBindingResponse: {
+            /** Valid */
+            valid: boolean;
+            /** Message */
+            message: string;
+        };
+        /** VirtualKeySummaryResponse */
+        VirtualKeySummaryResponse: {
+            /** Id */
+            id: string;
+            /** Client Id */
+            client_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Key Prefix */
+            key_prefix: string;
+            /** Status */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Revoked At */
+            revoked_at?: string | null;
+        };
     };
-    /** PaginatedResponse[UserResponse] */
-    PaginatedResponse_UserResponse_: {
-      /** Items */
-      items: components["schemas"]["UserResponse"][];
-      /** Total */
-      total: number;
-      /** Page */
-      page: number;
-      /** Page Size */
-      page_size: number;
-      /** Total Pages */
-      total_pages: number;
-    };
-    /**
-     * TokenResponse
-     * @description Schema for JWT access token response.
-     */
-    TokenResponse: {
-      /** Access Token */
-      access_token: string;
-      /**
-       * Token Type
-       * @default bearer
-       */
-      token_type?: string;
-      /** Expires In */
-      expires_in: number;
-    };
-    /**
-     * UserLoginRequest
-     * @description Schema for authenticating a user.
-     */
-    UserLoginRequest: {
-      /**
-       * Email
-       * Format: email
-       */
-      email: string;
-      /** Password */
-      password: string;
-    };
-    /**
-     * UserRegisterRequest
-     * @description Schema for registering a new user.
-     */
-    UserRegisterRequest: {
-      /**
-       * Email
-       * Format: email
-       */
-      email: string;
-      /** Password */
-      password: string;
-      /** Name */
-      name?: string | null;
-    };
-    /**
-     * UserResponse
-     * @description Schema for user profile responses.
-     */
-    UserResponse: {
-      /** Id */
-      id: number;
-      /** Email */
-      email: string;
-      /** Name */
-      name?: string | null;
-      /**
-       * Role
-       * @default member
-       */
-      role?: string;
-      /** Avatar Url */
-      avatar_url?: string | null;
-      /**
-       * Status
-       * @default ACTIVE
-       */
-      status?: string;
-      /** Role Names */
-      role_names?: string[];
-      /** Permissions */
-      permissions?: string[];
-      /** Created At */
-      created_at?: string | null;
-    };
-    /** ValidationError */
-    ValidationError: {
-      /** Location */
-      loc: (string | number)[];
-      /** Message */
-      msg: string;
-      /** Error Type */
-      type: string;
-      /** Input */
-      input?: unknown;
-      /** Context */
-      ctx?: Record<string, never>;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  health_check_health_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    health_check_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    readiness_check_ready_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            [key: string]: string;
-          };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
         };
-      };
     };
-  };
-  readiness_check_ready_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    sso_login_api_v1_auth_sso_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            [key: string]: unknown;
-          };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
         };
-      };
     };
-  };
-  register_api_v1_auth_register_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    get_me_api_v1_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UserRegisterRequest"];
-      };
+    list_users_api_v1_auth_users_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+                search?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_UserResponse_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
+    get_user_options_api_v1_users_options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
-        content: {
-          "application/json": components["schemas"]["UserResponse"];
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOptionResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  login_api_v1_auth_login_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    get_user_by_id_api_v1_users__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Strict user integer identifier */
+                id: number;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UserLoginRequest"];
-      };
+    list_projects_api_v1_gateway_projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponse"][];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    create_project_api_v1_gateway_projects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["TokenResponse"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectCreateRequest"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  sso_login_api_v1_auth_sso_login_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    get_project_api_v1_gateway_projects__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["UserLoginRequest"];
-      };
+    list_clients_api_v1_gateway_clients_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientSummaryResponse"][];
+                };
+            };
+        };
     };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    register_client_api_v1_gateway_clients_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["TokenResponse"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterClientRequest"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterClientResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  logout_api_v1_auth_logout_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    list_virtual_keys_api_v1_gateway_projects__project_id__keys_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VirtualKeySummaryResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    generate_virtual_key_api_v1_gateway_keys_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": {
-            [key: string]: string;
-          };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateVirtualKeyRequest"];
+            };
         };
-      };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GenerateVirtualKeyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-  };
-  get_me_api_v1_auth_me_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: {
-        access_token?: string | null;
-      };
+    revoke_virtual_key_api_v1_gateway_keys__key_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    verify_binding_api_v1_gateway_verify_binding_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["UserResponse"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyBindingRequest"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerifyBindingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
-  list_users_api_v1_auth_users_get: {
-    parameters: {
-      query?: {
-        page?: number;
-        page_size?: number;
-        search?: string | null;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
+    list_upstream_services_api_v1_gateway_services_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpstreamServiceResponse"][];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    create_upstream_service_api_v1_gateway_services_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["PaginatedResponse_UserResponse_"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpstreamServiceCreateRequest"];
+            };
         };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpstreamServiceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
     };
-  };
+    get_secrets_api_v1_vault_projects__project_id__secrets_get: {
+        parameters: {
+            query?: {
+                scope?: string | null;
+                key?: string | null;
+            };
+            header?: {
+                "x-identity-id"?: string | null;
+                "x-user-role"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetSecretsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_secret_api_v1_vault_projects__project_id__secrets_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-actor-id"?: string;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSecretRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecretResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_scopes_api_v1_vault_projects__project_id__scopes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScopeResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_identity_permissions_api_v1_vault_projects__project_id__permissions_get: {
+        parameters: {
+            query: {
+                identity_id: string;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentityPermissionsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    grant_key_permission_api_v1_vault_projects__project_id__permissions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-actor-id"?: string;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantKeyPermissionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeyPermissionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_key_permission_api_v1_vault_projects__project_id__permissions_delete: {
+        parameters: {
+            query: {
+                identity_id: string;
+                secret_key: string;
+            };
+            header?: {
+                "x-actor-id"?: string;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_project_secrets_api_v1_vault_projects__project_id__stream_get: {
+        parameters: {
+            query?: {
+                scope?: string | null;
+                /** @description Max events to yield before closing stream (useful for testing) */
+                max_events?: number | null;
+            };
+            header?: {
+                "x-identity-id"?: string | null;
+                "x-user-role"?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
 }

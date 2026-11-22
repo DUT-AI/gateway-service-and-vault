@@ -5,6 +5,7 @@ from modules.vault.use_cases.grant_key_permission import GrantKeyPermissionUseCa
 from modules.vault.use_cases.list_identity_permissions import (
     ListIdentityPermissionsUseCase,
 )
+from modules.vault.use_cases.list_scopes import ListScopesUseCase
 from modules.vault.use_cases.revoke_key_permission import RevokeKeyPermissionUseCase
 
 __all__ = [
@@ -12,6 +13,7 @@ __all__ = [
     "GetSecretsByScopeUseCase",
     "GrantKeyPermissionUseCase",
     "ListIdentityPermissionsUseCase",
+    "ListScopesUseCase",
     "RevokeKeyPermissionUseCase",
     "ScopePermissionDeniedError",
 ]

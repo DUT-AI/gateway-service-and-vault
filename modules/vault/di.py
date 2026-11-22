@@ -12,6 +12,7 @@ from modules.vault.use_cases import (
     GetSecretsByScopeUseCase,
     GrantKeyPermissionUseCase,
     ListIdentityPermissionsUseCase,
+    ListScopesUseCase,
     RevokeKeyPermissionUseCase,
 )
 
@@ -42,3 +43,4 @@ class VaultProvider(Provider):
     grant_key_permission_uc = provide(GrantKeyPermissionUseCase)
     revoke_key_permission_uc = provide(RevokeKeyPermissionUseCase)
     list_identity_permissions_uc = provide(ListIdentityPermissionsUseCase)
+    list_scopes_uc = provide(ListScopesUseCase)
