@@ -1,9 +1,11 @@
 import axios from "axios";
-import { getAuthToken } from "./auth-token";
+import { clearAuthToken, getAuthToken } from "./auth-token";
+import { redirectToSsoLogin } from "./auth-urls";
 
 export const api = axios.create({
   baseURL:
     process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1",
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -11,10 +13,22 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
-
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const isLoginRequest = error.config?.url?.includes("/auth/login");
+      if (!isLoginRequest && typeof window !== "undefined") {
+        clearAuthToken();
+        redirectToSsoLogin();
+      }
+    }
+    return Promise.reject(error);
+  }
+);

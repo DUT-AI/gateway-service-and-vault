@@ -1,0 +1,143 @@
+from collections.abc import AsyncIterator
+from typing import BinaryIO
+
+import pytest_asyncio
+from dishka import Provider, Scope, make_async_container, provide
+from dishka.integrations.fastapi import setup_dishka
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.pool import StaticPool
+
+# Import all models to register onto Base.metadata
+import core.events.models  # noqa: F401
+import modules.identity.models  # noqa: F401
+from apps.api.main import app
+from core.database.base import Base
+from core.database.unit_of_work import SqlAlchemyUnitOfWork
+from core.storage.interface import IStorageProvider
+from core.uow import IUnitOfWork
+from modules.identity.di import IdentityProvider
+
+
+@compiles(JSONB, "sqlite")
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
+
+# In-memory SQLite engine for tests with StaticPool
+test_engine = create_async_engine(
+    "sqlite+aiosqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+
+TestSessionLocal = async_sessionmaker(
+    bind=test_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autocommit=False,
+    autoflush=False,
+)
+
+
+class MockStorageProvider(IStorageProvider):
+    """Mock storage provider for testing without MinIO."""
+
+    def __init__(self) -> None:
+        self.storage: dict[str, bytes] = {}
+
+    async def upload(
+        self, bucket: str, key: str, data: BinaryIO, content_type: str | None = None
+    ) -> str:
+        self.storage[f"{bucket}/{key}"] = data.read()
+        return f"/{bucket}/{key}"
+
+    async def get_presigned_url(
+        self, bucket: str, key: str, *, expires: int = 3600
+    ) -> str:
+        return f"http://test-storage.local/{bucket}/{key}?exp={expires}"
+
+    async def delete(self, bucket: str, key: str) -> None:
+        self.storage.pop(f"{bucket}/{key}", None)
+
+    async def exists(self, bucket: str, key: str) -> bool:
+        return f"{bucket}/{key}" in self.storage
+
+
+class TestDatabaseProvider(Provider):
+    """Dishka provider for in-memory test database."""
+
+    @provide(scope=Scope.APP)
+    def get_engine(self) -> AsyncEngine:
+        return test_engine
+
+    @provide(scope=Scope.APP)
+    def get_session_factory(self) -> async_sessionmaker[AsyncSession]:
+        return TestSessionLocal
+
+    @provide(scope=Scope.REQUEST)
+    def get_unit_of_work(self, session: AsyncSession) -> IUnitOfWork:
+        return SqlAlchemyUnitOfWork(session)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_session(self) -> AsyncIterator[AsyncSession]:
+        async with TestSessionLocal() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+
+class TestStorageProvider(Provider):
+    """Dishka provider for mock storage in tests."""
+
+    scope = Scope.APP
+
+    @provide
+    def get_storage_provider(self) -> IStorageProvider:
+        return MockStorageProvider()
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def init_test_db():
+    """Create all schema tables in in-memory test database and wire test DI container."""
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    container = make_async_container(
+        TestDatabaseProvider(),
+        TestStorageProvider(),
+        IdentityProvider(),
+    )
+    setup_dishka(container, app)
+
+    yield
+
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await test_engine.dispose()
+
+
+@pytest_asyncio.fixture
+async def db_session() -> AsyncIterator[AsyncSession]:
+    """Provide a transactional database session for tests."""
+    async with TestSessionLocal() as session:
+        yield session
+        await session.rollback()
+
+
+@pytest_asyncio.fixture
+async def client() -> AsyncIterator[AsyncClient]:
+    """Async HTTP client for testing FastAPI endpoints."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac

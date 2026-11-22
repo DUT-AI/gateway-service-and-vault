@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-quality:
+    name: Backend Quality & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Check code formatting (ruff format)
+        run: uv run ruff format --check .
+
+      - name: Lint code (ruff check)
+        run: uv run ruff check .
+
+      - name: Type check (mypy)
+        run: uv run mypy core modules apps tests
+
+      - name: Run unit & integration tests (pytest)
+        run: uv run pytest
+
+      - name: Verify OpenAPI contract synchronization (drift check)
+        run: |
+          uv run python apps/api/openapi_export.py
+          git diff --exit-code openapi.json || (echo "Error: openapi.json is out of date. Run 'make openapi' and commit changes." && exit 1)
+
+  frontend-quality:
+    name: Frontend Quality & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./web
+        run: npm install --legacy-peer-deps
+
+      - name: Check OpenAPI type drift
+        working-directory: ./web
+        run: |
+          npx openapi-typescript ../openapi.json -o src/types/api.generated.d.ts
+          git diff --exit-code src/types/api.generated.d.ts || (echo "Error: Frontend api.generated.d.ts is out of date. Run 'make api-types' and commit changes." && exit 1)
+
+      - name: TypeScript typecheck
+        working-directory: ./web
+        run: npx tsc --noEmit

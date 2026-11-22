@@ -23,7 +23,21 @@ echo "=== Running Pre-Commit Hooks (Parallel Mode) ==="
 
 # ----------------- SERVER (BACKEND) CHECKS (Background) -----------------
 run_backend() {
-    if [ -d "backend" ]; then
+    # If root has modular monolith folders (core, modules, apps)
+    if [ -d "core" ] && [ -d "modules" ] && [ -d "apps" ]; then
+        echo "Running backend ruff format..."
+        uv run ruff format . || return 1
+        
+        echo "Running backend ruff check..."
+        uv run ruff check --fix . || return 1
+
+        echo "Running backend mypy check..."
+        uv run mypy core modules apps || return 1
+        
+        echo "Running backend pytest..."
+        uv run pytest tests/ || return 1
+        return 0
+    elif [ -d "backend" ]; then
         cd backend
         echo "Running backend ruff format..."
         uv run ruff format . || return 1
@@ -44,17 +58,26 @@ run_backend() {
 run_web() {
     if [ -d "web" ]; then
         cd web
+        export CI=true
+
+        # Determine pnpm runner compatible with Node.js
+        if npx --yes pnpm@9.15.5 -v >/dev/null 2>&1; then
+            PNPM_CMD="npx --yes pnpm@9.15.5"
+        else
+            PNPM_CMD="pnpm"
+        fi
+
         echo "Running pnpm install..."
-        pnpm install --ignore-scripts || return 1
+        $PNPM_CMD install --ignore-scripts || return 1
         
         echo "Running web lint..."
-        pnpm run lint || return 1
+        $PNPM_CMD run lint || return 1
         
         echo "Running web format..."
-        pnpm run format || return 1
+        $PNPM_CMD run format || return 1
         
         echo "Running web typecheck..."
-        pnpm run typecheck || return 1
+        $PNPM_CMD run typecheck || return 1
         return 0
     else
         echo "No web directory found."

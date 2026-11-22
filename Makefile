@@ -1,35 +1,56 @@
 FRONTEND_DIR=web
-.PHONY: help dev-api dev-web docker-dev-web migrate create-migration test install-hooks lint
+.PHONY: help dev-api dev-web dev-worker docker-up docker-down migrate create-migration test install-hooks lint ruff check api-types
 
 help:
 	@echo "Available commands:"
-	@echo "  make dev-api        - Start the local development server (uvicorn)"
-	@echo "  make dev-web        - Start the frontend development server (Next.js)"
-	@echo "  make docker-dev-web - Start the frontend development server with Docker Compose"
-	@echo "  make migrate        - Run all database migrations (locally using uv)"
-	@echo "  make create-migration DESC=\"msg\" - Create a new migration revision (locally)"
-	@echo "  make test           - Run backend test suite (locally)"
+	@echo "  make dev-api        - Start local FastAPI server (uvicorn)"
+	@echo "  make dev-web        - Start frontend dev server (Next.js)"
+	@echo "  make dev-worker     - Start background task worker (ARQ)"
+	@echo "  make docker-up      - Start backing services (PostgreSQL, Redis, MinIO)"
+	@echo "  make docker-down    - Stop and remove Docker Compose containers"
+	@echo "  make migrate        - Run database migrations (alembic upgrade head)"
+	@echo "  make create-migration DESC=\"msg\" - Create a new migration revision"
+	@echo "  make test           - Run backend test suite"
+	@echo "  make ruff           - Format and fix python code with ruff"
+	@echo "  make check          - Run static type checking (mypy)"
+	@echo "  make api-types      - Regenerate web API types from backend DTOs (offline)"
 	@echo "  make install-hooks  - Install git pre-commit hooks"
-	@echo "  make lint           - Run all formatting, linting, and tests (same as pre-commit)"
+	@echo "  make lint           - Run all formatting, linting, and tests"
 
 dev-api:
-	cd ./backend && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+	uv run uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
 
 dev-web:
 	cd ./$(FRONTEND_DIR) && pnpm dev
 
-docker-dev-web:
-	docker compose up web
+dev-worker:
+	uv run python -m apps.worker.main
+
+docker-up:
+	docker compose up -d
+
+docker-down:
+	docker compose down
 
 migrate:
-	cd ./backend && uv run alembic upgrade head
+	uv run alembic upgrade head
 
 create-migration:
 	@if [ -z "$(DESC)" ]; then echo "Error: Please specify DESC, e.g., make create-migration DESC=\"add new table\""; exit 1; fi
-	cd ./backend && uv run alembic revision --autogenerate -m "$(DESC)"
+	uv run alembic revision --autogenerate -m "$(DESC)"
 
 test:
-	cd ./backend && uv run pytest
+	uv run pytest tests/
+
+ruff:
+	uv run ruff format .
+	uv run ruff check --fix .
+
+check:
+	uv run mypy core modules apps
+
+api-types:
+	cd ./$(FRONTEND_DIR) && npm run sync:api
 
 install-hooks:
 	mkdir -p .git/hooks
@@ -39,4 +60,3 @@ install-hooks:
 
 lint:
 	./.githooks/pre-commit
-
