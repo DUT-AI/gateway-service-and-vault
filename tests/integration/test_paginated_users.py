@@ -13,7 +13,6 @@ async def test_get_paginated_users_endpoint(client: AsyncClient, db_session):
             UserModel(
                 email=f"list_user_{i}@example.com",
                 name=f"List User {i}",
-                password_hash="pwd",
                 role="user",
                 status="ACTIVE",
             )

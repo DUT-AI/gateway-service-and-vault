@@ -15,7 +15,6 @@ async def test_pagination_helper_slices_and_counts(db_session):
             UserModel(
                 email=f"user{i:02d}@example.com",
                 name=f"User {i:02d}",
-                password_hash="pwd",
                 role="user",
                 status="ACTIVE",
             )

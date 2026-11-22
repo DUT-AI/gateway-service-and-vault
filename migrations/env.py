@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 # Import all models to register onto Base.metadata
 import core.events.models  # noqa: F401
-import modules.identity.models  # noqa: F401
+import modules.gateway.models
+import modules.identity.models
+import modules.vault.models  # noqa: F401
 from core.config import db_settings
 from core.database.base import Base
 

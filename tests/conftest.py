@@ -17,13 +17,17 @@ from sqlalchemy.pool import StaticPool
 
 # Import all models to register onto Base.metadata
 import core.events.models  # noqa: F401
-import modules.identity.models  # noqa: F401
+import modules.gateway.models
+import modules.identity.models
+import modules.vault.models  # noqa: F401
 from apps.api.main import app
 from core.database.base import Base
 from core.database.unit_of_work import SqlAlchemyUnitOfWork
 from core.storage.interface import IStorageProvider
 from core.uow import IUnitOfWork
+from modules.gateway.di import GatewayProvider
 from modules.identity.di import IdentityProvider
+from modules.vault.di import VaultProvider
 
 
 @compiles(JSONB, "sqlite")
@@ -117,6 +121,8 @@ async def init_test_db():
         TestDatabaseProvider(),
         TestStorageProvider(),
         IdentityProvider(),
+        GatewayProvider(),
+        VaultProvider(),
     )
     setup_dishka(container, app)
 

@@ -20,7 +20,6 @@ class SqlUserRepository(IUserRepository):
             email=model.email,
             name=model.name,
             role=model.role,
-            password_hash=model.password_hash,
             avatar_url=model.avatar_url,
             status=model.status,
             created_at=model.created_at,
@@ -42,13 +41,12 @@ class SqlUserRepository(IUserRepository):
     async def create(
         self,
         email: str,
-        password_hash: str,
+        password_hash: str | None = None,
         name: str | None = None,
         role: str = "user",
     ) -> UserEntity:
         model = UserModel(
             email=email.lower().strip(),
-            password_hash=password_hash,
             name=name,
             role=role,
             status="ACTIVE",

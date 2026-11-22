@@ -4,7 +4,9 @@ from fastapi import FastAPI
 
 from core.database.session import DatabaseProvider
 from core.storage.di import StorageProvider
+from modules.gateway.di import GatewayProvider
 from modules.identity.di import IdentityProvider
+from modules.vault.di import VaultProvider
 
 
 def create_container() -> AsyncContainer:
@@ -13,6 +15,8 @@ def create_container() -> AsyncContainer:
         DatabaseProvider(),
         StorageProvider(),
         IdentityProvider(),
+        GatewayProvider(),
+        VaultProvider(),
     )
 
 

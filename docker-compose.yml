@@ -1,3 +1,5 @@
+name: project-boilerplate
+
 services:
   # ---------------------------------------------------------------------------
   # Infrastructure Services
@@ -58,6 +60,40 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # ---------------------------------------------------------------------------
+  # API Gateway Infrastructure (Apache APISIX + etcd)
+  # ---------------------------------------------------------------------------
+  etcd:
+    image: bitnamilegacy/etcd:3.5.11
+    container_name: boilerplate-etcd
+    restart: always
+    environment:
+      - ETCD_ENABLE_V2=true
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+    ports:
+      - "2379:2379"
+    volumes:
+      - etcd_data:/bitnami/etcd
+    networks:
+      - boilerplate-net
+
+  apisix:
+    image: apache/apisix:3.9.0-debian
+    container_name: boilerplate-apisix
+    restart: always
+    volumes:
+      - ./apps/apisix/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+    depends_on:
+      - etcd
+    ports:
+      - "9080:9080" # APISIX HTTP proxy
+      - "9443:9443" # APISIX HTTPS proxy
+      - "9180:9180" # APISIX Admin API
+    networks:
+      - boilerplate-net
 
   # ---------------------------------------------------------------------------
   # Application Services (Modular Monolith Processes)
@@ -140,3 +176,4 @@ volumes:
   postgres_data:
   redis_data:
   minio_data:
+  etcd_data:

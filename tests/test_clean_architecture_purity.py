@@ -7,12 +7,15 @@ have ZERO dependencies on frameworks like Pydantic, FastAPI, or SQLAlchemy.
 
 def test_domain_layer_purity_zero_framework_imports():
     """Verify that domain modules do not import Pydantic, FastAPI, or SQLAlchemy."""
+    from modules.gateway.domain import entities as gw_ent
     from modules.identity.domain import entities as id_ent
     from modules.identity.domain import exceptions as id_exc
     from modules.identity.domain import interfaces as id_iface
+    from modules.vault.domain import entities as vault_ent
+    from modules.vault.domain import interfaces as vault_iface
 
     forbidden = ["pydantic", "fastapi", "sqlalchemy"]
-    checked_modules = [id_ent, id_exc, id_iface]
+    checked_modules = [id_ent, id_exc, id_iface, gw_ent, vault_ent, vault_iface]
 
     for mod in checked_modules:
         mod_dict = mod.__dict__

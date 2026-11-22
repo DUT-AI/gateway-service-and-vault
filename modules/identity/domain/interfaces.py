@@ -1,6 +1,10 @@
 from typing import Protocol
 
-from modules.identity.domain.entities import UserEntity
+from modules.identity.domain.entities import (
+    ExternalUserDetailEntity,
+    ExternalUserOptionEntity,
+    UserEntity,
+)
 
 
 class IUserRepository(Protocol):
@@ -35,4 +39,20 @@ class IUserRepository(Protocol):
         search: str | None = None,
     ) -> tuple[list[UserEntity], int, int]:
         """Fetch paginated list of users returning (items, total_count, total_pages)."""
+        ...
+
+
+class IExternalUserDirectoryService(Protocol):
+    """Protocol for remote DUT-AI user directory queries."""
+
+    async def get_user_options(
+        self, auth_token: str | None = None
+    ) -> list[ExternalUserOptionEntity]:
+        """Fetch all user options from central directory."""
+        ...
+
+    async def get_user_by_id(
+        self, user_id: int, auth_token: str | None = None
+    ) -> ExternalUserDetailEntity | None:
+        """Fetch full user details by integer ID from central directory."""
         ...

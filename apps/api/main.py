@@ -4,7 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from apps.api.di import setup_di
 from apps.api.routers.auth_router import router as auth_router
+from apps.api.routers.gateway_router import router as gateway_router
 from apps.api.routers.health_router import router as health_router
+from apps.api.routers.user_router import router as user_router
+from apps.api.routers.vault_router import router as vault_router
 from core.config import settings
 from core.exceptions import setup_exception_handlers
 
@@ -45,6 +48,9 @@ app.add_middleware(
 # 4. Include Routers
 app.include_router(health_router)
 app.include_router(auth_router)
+app.include_router(user_router)
+app.include_router(gateway_router)
+app.include_router(vault_router)
 
 if __name__ == "__main__":
     uvicorn.run(
