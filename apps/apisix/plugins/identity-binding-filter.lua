@@ -71,21 +71,21 @@ function _M.rewrite(conf, ctx)
     if not res or res.status ~= 200 then
         core.log.warn("Identity binding check failed: ", err or (res and res.body))
         local detail = "Virtual Access Key is not bound to this client certificate, project, or service"
+        local status_code = (res and res.status == 429) and 429 or 403
         if res and res.body then
             local decoded = core.json.decode(res.body)
             if decoded then
                 detail = decoded.message or decoded.detail or detail
             end
         end
-        return 403, {
-            error = "IDENTITY_MISMATCH",
+        return status_code, {
+            error = (status_code == 429) and "DAILY_QUOTA_EXCEEDED" or "IDENTITY_MISMATCH",
             message = detail,
         }
     end
 
-    -- Success: Strip virtual key and internal routing headers before forwarding to upstream
-    core.request.set_header(ctx, "X-Virtual-Key", nil)
-    core.request.set_header(ctx, "X-Project-Id", nil)
+    -- Success: Identity binding verified. Virtual Key is retained for downstream rate limiting (limit-count),
+    -- and will be removed by proxy-rewrite before forwarding to the upstream service.
     return
 end
 

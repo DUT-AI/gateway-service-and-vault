@@ -122,6 +122,30 @@ class SqlProjectRepository(IProjectRepository):
             items.append((service_entity, quota_entity))
         return items
 
+    async def get_service_quota(
+        self, project_id: str, service_id: str
+    ) -> QuotaPolicyEntity | None:
+        stmt = select(QuotaPolicyModel).where(
+            (QuotaPolicyModel.project_id == project_id)
+            & (QuotaPolicyModel.service_id == service_id)
+            & (QuotaPolicyModel.is_active == True)
+        )
+        res = await self.session.execute(stmt)
+        model = res.scalar_one_or_none()
+        if not model:
+            return None
+        return QuotaPolicyEntity(
+            id=model.id,
+            project_id=model.project_id,
+            service_id=model.service_id,
+            client_id=model.client_id,
+            rate_limit_rpm=model.rate_limit_rpm,
+            quota_daily=model.quota_daily,
+            is_active=model.is_active,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+        )
+
     async def is_service_allowed(self, project_id: str, service_id: str) -> bool:
         stmt = select(project_upstream_association.c.project_id).where(
             (project_upstream_association.c.project_id == project_id)

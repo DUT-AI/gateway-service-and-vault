@@ -1,4 +1,9 @@
-from core.exceptions.base import ConflictError, EntityNotFoundError, ForbiddenError
+from core.exceptions.base import (
+    ConflictError,
+    EntityNotFoundError,
+    ForbiddenError,
+    RateLimitExceededError,
+)
 
 
 class ClientNotFoundError(EntityNotFoundError):
@@ -44,3 +49,12 @@ class IdentityMismatchError(ForbiddenError):
         message: str = "Identity mismatch: Virtual key is not bound to this client certificate or project",
     ) -> None:
         super().__init__(message=message)
+
+
+class DailyQuotaExceededError(RateLimitExceededError):
+    def __init__(
+        self,
+        message: str = "Daily request quota exceeded for this service",
+        details: dict | None = None,
+    ) -> None:
+        super().__init__(message=message, details=details)

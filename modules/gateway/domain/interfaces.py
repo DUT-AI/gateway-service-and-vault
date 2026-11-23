@@ -44,6 +44,11 @@ class IProjectRepository(ABC):
     ) -> QuotaPolicyEntity: ...
 
     @abstractmethod
+    async def get_service_quota(
+        self, project_id: str, service_id: str
+    ) -> QuotaPolicyEntity | None: ...
+
+    @abstractmethod
     async def is_service_allowed(self, project_id: str, service_id: str) -> bool: ...
 
 
@@ -124,3 +129,22 @@ class IUpstreamServiceRepository(ABC):
         encrypted_credential: str,
         timeout_seconds: int = 30,
     ) -> UpstreamServiceEntity: ...
+
+
+class IQuotaUsageTracker(ABC):
+    """Tracks and checks real-time request volume quotas against distributed counters."""
+
+    @abstractmethod
+    async def get_usage(self, project_id: str, service_id: str) -> int:
+        """Retrieve current day's request usage count."""
+        ...
+
+    @abstractmethod
+    async def increment_and_check(
+        self, project_id: str, service_id: str, quota_daily: int
+    ) -> tuple[int, bool]:
+        """Atomically increment usage counter and check whether within quota ceiling.
+
+        Returns: (new_count, is_within_quota)
+        """
+        ...

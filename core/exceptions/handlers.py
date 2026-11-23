@@ -8,6 +8,7 @@ from core.exceptions.base import (
     EntityNotFoundError,
     ForbiddenError,
     InvariantViolationError,
+    RateLimitExceededError,
     StorageError,
     UnauthorizedError,
 )
@@ -17,6 +18,7 @@ EXCEPTION_HTTP_STATUS_MAP: dict[type[DomainException], int] = {
     ConflictError: 409,
     UnauthorizedError: 401,
     ForbiddenError: 403,
+    RateLimitExceededError: 429,
     InvariantViolationError: 400,
     BusinessRuleViolationError: 400,
     StorageError: 500,

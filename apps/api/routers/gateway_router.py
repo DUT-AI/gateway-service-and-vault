@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 from modules.gateway.domain.entities import ClientType
 from modules.gateway.domain.interfaces import (
     IProjectRepository,
+    IQuotaUsageTracker,
     IUpstreamServiceRepository,
 )
 from modules.gateway.dtos.gateway_dtos import (
@@ -14,6 +15,7 @@ from modules.gateway.dtos.gateway_dtos import (
     ProjectAllowedServiceResponse,
     ProjectCreateRequest,
     ProjectResponse,
+    QuotaUsageResponse,
     RegisterClientRequest,
     RegisterClientResponse,
     RevokeClientResponse,
@@ -28,6 +30,7 @@ from modules.gateway.use_cases import (
     BindServiceToProjectUseCase,
     CreateUpstreamServiceUseCase,
     GenerateVirtualKeyUseCase,
+    GetProjectServiceUsageUseCase,
     GetProjectUseCase,
     ListProjectAllowedServicesUseCase,
     ListProjectsUseCase,
@@ -388,30 +391,53 @@ async def create_upstream_service(
 async def list_project_allowed_services(
     project_id: str,
     use_case: FromDishka[ListProjectAllowedServicesUseCase],
+    quota_tracker: FromDishka[IQuotaUsageTracker],
 ) -> list[ProjectAllowedServiceResponse]:
-    """Retrieve all upstream services bound to this project with their quota policies."""
+    """Retrieve all upstream services bound to this project with their quota policies and usage."""
     try:
         items = await use_case.execute(project_id)
-        return [
-            ProjectAllowedServiceResponse(
-                service_id=svc.id,
-                service_name=svc.name,
-                service_slug=svc.slug,
-                base_url=svc.base_url,
-                auth_type=svc.auth_type,
-                is_service_active=svc.is_active,
-                rate_limit_rpm=quota.rate_limit_rpm if quota else 60,
-                quota_daily=quota.quota_daily if quota else 10000,
-                is_quota_active=quota.is_active if quota else True,
-                bound_at=quota.created_at if quota else svc.created_at,
+        results = []
+        for svc, quota in items:
+            daily = quota.quota_daily if quota else 10000
+            usage = await quota_tracker.get_usage(project_id, svc.id)
+            pct = round((usage / daily) * 100, 1) if daily > 0 else 0.0
+            results.append(
+                ProjectAllowedServiceResponse(
+                    service_id=svc.id,
+                    service_name=svc.name,
+                    service_slug=svc.slug,
+                    base_url=svc.base_url,
+                    auth_type=svc.auth_type,
+                    is_service_active=svc.is_active,
+                    rate_limit_rpm=quota.rate_limit_rpm if quota else 60,
+                    quota_daily=daily,
+                    is_quota_active=quota.is_active if quota else True,
+                    usage_today=usage,
+                    usage_percentage=pct,
+                    bound_at=quota.created_at if quota else svc.created_at,
+                )
             )
-            for svc, quota in items
-        ]
+        return results
     except ProjectNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         )
+
+
+@router.get(
+    "/projects/{project_id}/services/{service_id}/usage",
+    response_model=QuotaUsageResponse,
+    summary="Get real-time daily quota usage for a service in a project",
+)
+@inject
+async def get_project_service_usage(
+    project_id: str,
+    service_id: str,
+    use_case: FromDishka[GetProjectServiceUsageUseCase],
+) -> QuotaUsageResponse:
+    """Retrieve today's request usage count and quota consumption percentage."""
+    return await use_case.execute(project_id, service_id)
 
 
 @router.post(

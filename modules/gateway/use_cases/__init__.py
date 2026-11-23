@@ -6,6 +6,7 @@ from modules.gateway.use_cases.create_upstream_service import (
 )
 from modules.gateway.use_cases.exceptions import (
     ClientNotFoundError,
+    DailyQuotaExceededError,
     IdentityMismatchError,
     ProjectNotFoundError,
     ServiceAlreadyBoundError,
@@ -15,6 +16,9 @@ from modules.gateway.use_cases.exceptions import (
 )
 from modules.gateway.use_cases.generate_virtual_key import GenerateVirtualKeyUseCase
 from modules.gateway.use_cases.get_project import GetProjectUseCase
+from modules.gateway.use_cases.get_project_service_usage import (
+    GetProjectServiceUsageUseCase,
+)
 from modules.gateway.use_cases.list_project_allowed_services import (
     ListProjectAllowedServicesUseCase,
 )
@@ -43,7 +47,9 @@ __all__ = [
     "BindServiceToProjectUseCase",
     "ClientNotFoundError",
     "CreateUpstreamServiceUseCase",
+    "DailyQuotaExceededError",
     "GenerateVirtualKeyUseCase",
+    "GetProjectServiceUsageUseCase",
     "GetProjectUseCase",
     "IdentityMismatchError",
     "ListProjectAllowedServicesUseCase",

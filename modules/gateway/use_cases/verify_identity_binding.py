@@ -3,11 +3,13 @@ import contextlib
 from core.security.ca import PrivateCA
 from modules.gateway.domain.interfaces import (
     IProjectRepository,
+    IQuotaUsageTracker,
     IRegisteredClientRepository,
     IUpstreamServiceRepository,
     IVirtualAccessKeyRepository,
 )
 from modules.gateway.use_cases.exceptions import (
+    DailyQuotaExceededError,
     IdentityMismatchError,
     ServiceNotPermittedError,
 )
@@ -22,11 +24,13 @@ class VerifyIdentityBindingUseCase:
         client_repo: IRegisteredClientRepository,
         project_repo: IProjectRepository,
         service_repo: IUpstreamServiceRepository,
+        quota_tracker: IQuotaUsageTracker,
     ) -> None:
         self.key_repo = key_repo
         self.client_repo = client_repo
         self.project_repo = project_repo
         self.service_repo = service_repo
+        self.quota_tracker = quota_tracker
 
     async def execute(
         self,
@@ -80,5 +84,27 @@ class VerifyIdentityBindingUseCase:
             raise ServiceNotPermittedError(
                 f"Upstream service '{service_slug or target_service_id}' is not permitted for project '{project_id}'"
             )
+
+        # Enforce daily quota ceiling if service is configured
+        if target_service_id and self.quota_tracker:
+            policy = await self.project_repo.get_service_quota(
+                project_id, target_service_id
+            )
+            if policy and policy.is_active:
+                current_count, is_within = await self.quota_tracker.increment_and_check(
+                    project_id=project_id,
+                    service_id=target_service_id,
+                    quota_daily=policy.quota_daily,
+                )
+                if not is_within:
+                    raise DailyQuotaExceededError(
+                        f"Daily request quota exceeded for service '{service_slug or target_service_id}' (limit: {policy.quota_daily})",
+                        details={
+                            "usage_today": current_count,
+                            "quota_daily": policy.quota_daily,
+                            "service_id": target_service_id,
+                            "project_id": project_id,
+                        },
+                    )
 
         return True

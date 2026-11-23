@@ -86,6 +86,12 @@ class ApisixAdminClient:
             rewrite_headers["X-API-KEY"] = upstream_credential
 
         control_plane_url = f"http://{apisix_settings.apisix_backend_host}:{apisix_settings.apisix_backend_port}/api/v1/gateway/verify-binding"
+        proxy_rewrite_headers: dict = {
+            "remove": ["X-Virtual-Key", "X-Project-Id"],
+        }
+        if rewrite_headers:
+            proxy_rewrite_headers["set"] = rewrite_headers
+
         plugins: dict = {
             "proxy-rewrite": {
                 "regex_uri": (
@@ -93,13 +99,21 @@ class ApisixAdminClient:
                     if base_path
                     else [f"^/services/{service_slug}/(.*)", "/$1"]
                 ),
+                "headers": proxy_rewrite_headers,
             },
             "identity-binding-filter": {
                 "control_plane_url": control_plane_url,
             },
+            "limit-count": {
+                "count": max(rate_limit_rpm, 1),
+                "time_window": 60,
+                "rejected_code": 429,
+                "rejected_msg": '{"error":"RATE_LIMIT_EXCEEDED","message":"Rate limit exceeded for this virtual key"}',
+                "key_type": "var",
+                "key": "http_x_virtual_key",
+                "show_limit_quota_header": True,
+            },
         }
-        if rewrite_headers:
-            plugins["proxy-rewrite"]["headers"] = rewrite_headers
 
         payload = {
             "name": f"route_{service_slug}",

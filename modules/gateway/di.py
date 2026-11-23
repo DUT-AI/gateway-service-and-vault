@@ -5,6 +5,7 @@ from core.security.ca import PrivateCA
 from modules.gateway.client.apisix_client import ApisixAdminClient
 from modules.gateway.domain.interfaces import (
     IProjectRepository,
+    IQuotaUsageTracker,
     IRegisteredClientRepository,
     IUpstreamServiceRepository,
     IVirtualAccessKeyRepository,
@@ -15,10 +16,12 @@ from modules.gateway.repository.gateway_repository import (
     SqlUpstreamServiceRepository,
     SqlVirtualAccessKeyRepository,
 )
+from modules.gateway.repository.redis_quota_tracker import RedisQuotaUsageTracker
 from modules.gateway.use_cases import (
     BindServiceToProjectUseCase,
     CreateUpstreamServiceUseCase,
     GenerateVirtualKeyUseCase,
+    GetProjectServiceUsageUseCase,
     GetProjectUseCase,
     ListProjectAllowedServicesUseCase,
     ListProjectsUseCase,
@@ -46,6 +49,10 @@ class GatewayProvider(Provider):
     @provide(scope=Scope.APP)
     def get_apisix_client(self) -> ApisixAdminClient:
         return ApisixAdminClient()
+
+    @provide(scope=Scope.APP)
+    def get_quota_tracker(self) -> IQuotaUsageTracker:
+        return RedisQuotaUsageTracker()
 
     @provide
     def get_project_repo(self, session: AsyncSession) -> IProjectRepository:
@@ -78,3 +85,4 @@ class GatewayProvider(Provider):
     bind_service_uc = provide(BindServiceToProjectUseCase)
     unbind_service_uc = provide(UnbindServiceFromProjectUseCase)
     update_quota_uc = provide(UpdateProjectServiceQuotaUseCase)
+    get_service_usage_uc = provide(GetProjectServiceUsageUseCase)

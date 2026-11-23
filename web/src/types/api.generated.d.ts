@@ -365,7 +365,7 @@ export interface paths {
         };
         /**
          * List all allowed upstream services and quota for a project
-         * @description Retrieve all upstream services bound to this project with their quota policies.
+         * @description Retrieve all upstream services bound to this project with their quota policies and usage.
          */
         get: operations["list_project_allowed_services_api_v1_gateway_projects__project_id__services_get"];
         put?: never;
@@ -374,6 +374,26 @@ export interface paths {
          * @description Authorize an upstream service for a project with defined rate limit and daily quota.
          */
         post: operations["bind_service_to_project_api_v1_gateway_projects__project_id__services_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/projects/{project_id}/services/{service_id}/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get real-time daily quota usage for a service in a project
+         * @description Retrieve today's request usage count and quota consumption percentage.
+         */
+        get: operations["get_project_service_usage_api_v1_gateway_projects__project_id__services__service_id__usage_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -684,6 +704,16 @@ export interface components {
             quota_daily: number;
             /** Is Quota Active */
             is_quota_active: boolean;
+            /**
+             * Usage Today
+             * @default 0
+             */
+            usage_today?: number;
+            /**
+             * Usage Percentage
+             * @default 0
+             */
+            usage_percentage?: number;
             /** Bound At */
             bound_at?: string | null;
         };
@@ -711,6 +741,23 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** QuotaUsageResponse */
+        QuotaUsageResponse: {
+            /** Project Id */
+            project_id: string;
+            /** Service Id */
+            service_id: string;
+            /** Usage Today */
+            usage_today: number;
+            /** Quota Daily */
+            quota_daily: number;
+            /** Rate Limit Rpm */
+            rate_limit_rpm: number;
+            /** Usage Percentage */
+            usage_percentage: number;
+            /** Is Exhausted */
+            is_exhausted: boolean;
         };
         /** RegisterClientRequest */
         RegisterClientRequest: {
@@ -976,6 +1023,8 @@ export interface components {
             raw_virtual_key: string;
             /** Cert Fingerprint */
             cert_fingerprint: string;
+            /** Client Raw Cert */
+            client_raw_cert?: string | null;
             /** Project Id */
             project_id: string;
             /** Service Id */
@@ -1651,6 +1700,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectAllowedServiceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_project_service_usage_api_v1_gateway_projects__project_id__services__service_id__usage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotaUsageResponse"];
                 };
             };
             /** @description Validation Error */

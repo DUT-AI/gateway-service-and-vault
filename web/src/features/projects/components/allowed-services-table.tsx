@@ -242,11 +242,47 @@ export function AllowedServicesTable({
                   </div>
                 </TableCell>
 
-                {/* Daily Quota */}
+                {/* Daily Quota & Usage Progress */}
                 <TableCell>
-                  <div className="flex items-center space-x-1 text-xs font-semibold text-blue-700">
-                    <ShieldCheck className="h-3 w-3 text-blue-500" />
-                    <span>{svc.quota_daily.toLocaleString()} req/ngày</span>
+                  <div className="flex flex-col space-y-1.5 min-w-[155px]">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-slate-800">
+                        {(svc.usage_today ?? 0).toLocaleString()} /{" "}
+                        {svc.quota_daily.toLocaleString()}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold ${
+                          (svc.usage_percentage ?? 0) >= 100
+                            ? "text-rose-600"
+                            : (svc.usage_percentage ?? 0) >= 80
+                              ? "text-amber-600"
+                              : "text-emerald-600"
+                        }`}
+                      >
+                        {svc.usage_percentage ?? 0}%
+                      </span>
+                    </div>
+                    {/* Progress track */}
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          (svc.usage_percentage ?? 0) >= 100
+                            ? "bg-rose-500"
+                            : (svc.usage_percentage ?? 0) >= 80
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
+                        }`}
+                        style={{
+                          width: `${Math.min(svc.usage_percentage ?? 0, 100)}%`,
+                        }}
+                      />
+                    </div>
+                    {(svc.usage_percentage ?? 0) >= 100 && (
+                      <span className="text-[9px] font-semibold text-rose-600 flex items-center">
+                        <AlertTriangle className="h-2.5 w-2.5 mr-0.5 inline" />
+                        Hết hạn mức ngày
+                      </span>
+                    )}
                   </div>
                 </TableCell>
 

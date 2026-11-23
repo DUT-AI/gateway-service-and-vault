@@ -847,7 +847,7 @@
           "Gateway"
         ],
         "summary": "List all allowed upstream services and quota for a project",
-        "description": "Retrieve all upstream services bound to this project with their quota policies.",
+        "description": "Retrieve all upstream services bound to this project with their quota policies and usage.",
         "operationId": "list_project_allowed_services_api_v1_gateway_projects__project_id__services_get",
         "parameters": [
           {
@@ -922,6 +922,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProjectAllowedServiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/projects/{project_id}/services/{service_id}/usage": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Get real-time daily quota usage for a service in a project",
+        "description": "Retrieve today's request usage count and quota consumption percentage.",
+        "operationId": "get_project_service_usage_api_v1_gateway_projects__project_id__services__service_id__usage_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Service Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotaUsageResponse"
                 }
               }
             }
@@ -1950,6 +2002,16 @@
             "type": "boolean",
             "title": "Is Quota Active"
           },
+          "usage_today": {
+            "type": "integer",
+            "title": "Usage Today",
+            "default": 0
+          },
+          "usage_percentage": {
+            "type": "number",
+            "title": "Usage Percentage",
+            "default": 0.0
+          },
           "bound_at": {
             "anyOf": [
               {
@@ -2049,6 +2111,49 @@
           "created_at"
         ],
         "title": "ProjectResponse"
+      },
+      "QuotaUsageResponse": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "service_id": {
+            "type": "string",
+            "title": "Service Id"
+          },
+          "usage_today": {
+            "type": "integer",
+            "title": "Usage Today"
+          },
+          "quota_daily": {
+            "type": "integer",
+            "title": "Quota Daily"
+          },
+          "rate_limit_rpm": {
+            "type": "integer",
+            "title": "Rate Limit Rpm"
+          },
+          "usage_percentage": {
+            "type": "number",
+            "title": "Usage Percentage"
+          },
+          "is_exhausted": {
+            "type": "boolean",
+            "title": "Is Exhausted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_id",
+          "service_id",
+          "usage_today",
+          "quota_daily",
+          "rate_limit_rpm",
+          "usage_percentage",
+          "is_exhausted"
+        ],
+        "title": "QuotaUsageResponse"
       },
       "RegisterClientRequest": {
         "properties": {
@@ -2662,6 +2767,17 @@
             "type": "string",
             "minLength": 1,
             "title": "Cert Fingerprint"
+          },
+          "client_raw_cert": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Raw Cert"
           },
           "project_id": {
             "type": "string",

@@ -123,7 +123,19 @@ class ProjectAllowedServiceResponse(BaseModel):
     rate_limit_rpm: int
     quota_daily: int
     is_quota_active: bool
+    usage_today: int = 0
+    usage_percentage: float = 0.0
     bound_at: datetime | None = None
+
+
+class QuotaUsageResponse(BaseModel):
+    project_id: str
+    service_id: str
+    usage_today: int
+    quota_daily: int
+    rate_limit_rpm: int
+    usage_percentage: float
+    is_exhausted: bool
 
 
 class BindServiceToProjectRequest(BaseModel):
