@@ -24,6 +24,7 @@ async def stream_project_secrets(
     project_id: str,
     secret_repo: FromDishka[ISecretRepository],
     scope: str | None = Query(default=None),
+    identity_id: str | None = Query(default=None),
     max_events: int | None = Query(
         default=None,
         description="Max events to yield before closing stream (useful for testing)",
@@ -32,7 +33,7 @@ async def stream_project_secrets(
     x_user_role: str | None = Header(default=None),
 ) -> StreamingResponse:
     """Stream real-time secret update events filtered by caller key permissions."""
-    caller_id = x_identity_id or x_user_role or "anonymous"
+    caller_id = x_identity_id or identity_id or x_user_role or "anonymous"
     permitted_keys = set(
         await secret_repo.get_permitted_keys_for_identity(
             project_id=project_id, identity_id=caller_id

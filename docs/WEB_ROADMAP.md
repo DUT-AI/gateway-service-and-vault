@@ -110,8 +110,8 @@ graph TD
 
 ---
 
-### Giai Đoạn 4: Quản Lý Thiết Bị mTLS & Cấp Phát Virtual Keys (Zero-Trust Gatekeeper)
-> **Mục tiêu:** Cấp phát chứng chỉ mTLS cho Developer PC và Docker Server; sinh Virtual Access Key ràng buộc 1:1 chống rò rỉ.
+### Giai Đoạn 4: Quản Lý Thiết Bị mTLS & Cấp Phát Virtual Keys (Zero-Trust Gatekeeper) - [x] Đã hoàn thành
+> **Mục tiêu:** Cấp phát chứng chỉ mTLS cho Developer PC và Docker Server; sinh Virtual Access Key ràng buộc 1:1 chống rò rỉ. *(Đã hoàn thành trong nhánh `010-web-mtls-virtual-keys`)*
 
 - **Nhiệm vụ cụ thể:**
   1. **Feature Clients (`web/src/features/clients/`):**
@@ -142,8 +142,8 @@ graph TD
 
 ---
 
-### Giai Đoạn 5: Quản Lý Upstream Services & Hoàn Thiện Trải Nghiệm (Polish & DoD)
-> **Mục tiêu:** Quản lý dịch vụ đối tác (OpenAI, Payment API,...) được Gateway bảo vệ, hoàn thiện giao diện tổng thể và kiểm thử đầu-cuối.
+### Giai Đoạn 5: Quản Lý Upstream Services & Hoàn Thiện Trải Nghiệm (Polish & DoD) - [x] Đã hoàn thành
+> **Mục tiêu:** Quản lý dịch vụ đối tác (OpenAI, Payment API,...) được Gateway bảo vệ, hoàn thiện giao diện tổng thể và kiểm thử đầu-cuối. *(Đã hoàn thành trong nhánh `011-web-upstream-services`)*
 
 - **Nhiệm vụ cụ thể:**
   1. **Feature Services (`web/src/features/services/`):**
@@ -229,3 +229,14 @@ web/src/
 - **Bước 1 (Ưu tiên cao nhất):** Xây dựng **Giai đoạn 1 (Project Hub)** và **Giai đoạn 2 (Dynamic Vault & Key Permissions)**. Hoàn thành 2 giai đoạn này sẽ giải quyết ngay bài toán cốt lõi: loại bỏ file `.env` và quản lý phân quyền biến môi trường.
 - **Bước 2:** Bổ sung **Giai đoạn 4 (Clients & Virtual Keys)** để hoàn thiện quy trình bảo mật Zero-Trust cho lập trình viên.
 - **Bước 3:** Tích hợp **Giai đoạn 3 (SSE Hot-reload)** và **Giai đoạn 5 (Services)** để nâng tầm sản phẩm hoàn chỉnh như một Cloud Control Plane chuyên nghiệp.
+
+---
+
+## 7. Trạng Thái Hoàn Thành Toàn Bộ Lộ Trình (Definition of Done)
+
+- [x] **Giai đoạn 1**: Project Hub & Core Navigation (`specs/007-web-project-hub/`)
+- [x] **Giai đoạn 2**: Dynamic Vault & Key-Level ACL (`specs/008-web-vault-acl/`)
+- [x] **Giai đoạn 3**: Real-Time In-Memory Hot-Reload Stream SSE (`specs/009-web-vault-sse-sync/`)
+- [x] **Giai đoạn 4**: Quản lý thiết bị mTLS & Cấp phát Virtual Keys (`specs/010-web-mtls-virtual-keys/`)
+- [x] **Giai đoạn 5**: Quản lý Upstream Services & Hoàn thiện trải nghiệm (`specs/011-web-upstream-services/`)
+

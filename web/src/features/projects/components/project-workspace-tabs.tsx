@@ -12,6 +12,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { VaultView } from "@/features/vault";
+import { VirtualKeysView } from "@/features/keys";
 import type { Project } from "../types";
 
 export interface ProjectWorkspaceTabsProps {
@@ -45,68 +47,14 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
         </TabsTrigger>
       </TabsList>
 
-      {/* Vault Tab (Phase 2 Preview) */}
+      {/* Vault Tab (Phase 2) */}
       <TabsContent value="vault" className="space-y-4">
-        <Card className="border-slate-200 bg-white">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-blue-600" />
-                  Dynamic Vault Engine
-                </CardTitle>
-                <p className="text-xs text-slate-500 mt-1">
-                  Mã hóa và quản trị các biến môi trường bảo mật (Environment Secrets) cho không gian làm việc{" "}
-                  <span className="font-semibold text-slate-700">{project.name}</span>.
-                </p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-8 text-center space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                <Sparkles className="h-6 w-6" />
-              </div>
-              <h4 className="text-sm font-semibold text-slate-800">
-                Sẵn sàng cho Giai đoạn 2 (Dynamic Vault Engine)
-              </h4>
-              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                Tại đây bạn sẽ tạo các Secret Key, phân loại theo môi trường
-                (Development, Staging, Production) và cấu hình mã hóa tự động
-                Zero-Knowledge.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <VaultView projectId={project.id} projectName={project.name} />
       </TabsContent>
 
-      {/* Virtual Keys Tab (Phase 3 Preview) */}
+      {/* Virtual Keys Tab (Phase 4 Zero-Trust Gatekeeper) */}
       <TabsContent value="keys" className="space-y-4">
-        <Card className="border-slate-200 bg-white">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-              <Key className="h-4 w-4 text-emerald-600" />
-              Virtual Keys & Zero-Trust Policies
-            </CardTitle>
-            <p className="text-xs text-slate-500 mt-1">
-              Phát hành và quản lý khóa ảo (Virtual Keys) cho phép ứng dụng client truy xuất tài nguyên gateway an toàn.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-8 text-center space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                <Key className="h-6 w-6" />
-              </div>
-              <h4 className="text-sm font-semibold text-slate-800">
-                Sẵn sàng cho Giai đoạn 3 (Virtual Keys)
-              </h4>
-              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                Quản lý vòng đời khóa ảo, thiết lập thời gian sống (TTL), giới hạn
-                hạn mức lưu lượng (Rate Limit) và danh sách địa chỉ IP hợp lệ.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <VirtualKeysView projectId={project.id} />
       </TabsContent>
 
       {/* Settings Tab */}
