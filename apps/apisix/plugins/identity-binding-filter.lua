@@ -71,9 +71,25 @@ function _M.rewrite(conf, ctx)
 
     if not res or res.status ~= 200 then
         core.log.warn("Identity binding check failed: ", err or (res and res.body))
+        
+        -- Fail-Closed Handling: Control Plane unavailable, network timeout, or internal error
+        if not res then
+            return 403, {
+                error = "CONTROL_PLANE_UNAVAILABLE",
+                message = "Gateway control plane unavailable or verification timed out: " .. tostring(err),
+            }
+        end
+
+        if res.status >= 500 then
+            return 403, {
+                error = "CONTROL_PLANE_UNAVAILABLE",
+                message = "Gateway control plane internal error during identity verification",
+            }
+        end
+
         local detail = "Virtual Access Key is not bound to this client certificate, project, or service"
-        local status_code = (res and res.status == 429) and 429 or 403
-        if res and res.body then
+        local status_code = (res.status == 429) and 429 or 403
+        if res.body then
             local decoded = core.json.decode(res.body)
             if decoded then
                 detail = decoded.message or decoded.detail or detail

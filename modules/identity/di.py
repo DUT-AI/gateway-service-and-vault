@@ -16,6 +16,7 @@ from modules.identity.use_cases import (
     ListUsersUseCase,
     LoginUserUseCase,
     RegisterUserUseCase,
+    SyncSsoUserRevocationUseCase,
 )
 
 
@@ -38,3 +39,4 @@ class IdentityProvider(Provider):
     list_users_uc = provide(ListUsersUseCase)
     get_user_options_uc = provide(GetUserOptionsUseCase)
     get_user_detail_uc = provide(GetUserDetailUseCase)
+    sync_sso_user_revocation_uc = provide(SyncSsoUserRevocationUseCase)

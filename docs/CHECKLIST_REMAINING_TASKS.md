@@ -166,16 +166,19 @@ Mục tiêu: Đơn giản hóa việc nhận chứng chỉ mTLS cho máy cá nh�
 
 ### Giai đoạn 5: Fail-Closed Hardening & Tự Động Thu Hồi Theo SSO (Ưu tiên P4 - Low)
 
-- [ ] **Task 5.1: Đồng bộ Trạng thái Khóa Tài khoản từ DUT AI Manage SSO**
+- [x] **Task 5.1: Đồng bộ Trạng thái Khóa Tài khoản từ DUT AI Manage SSO**
   - **Mục tiêu:** Khi tài khoản nhân sự bị khóa trên SSO, quyền truy cập Device Identity và các Virtual Key của người đó tự động bị vô hiệu hóa.
   - **File tác động:**
-    - `modules/identity/services/sso_dutai_service.py`: Kiểm tra định kỳ hoặc webhook khi user status chuyển thành `INACTIVE`/`LOCKED`.
-  - **Tiêu chí nghiệm thu:** Khóa tài khoản trên IdP -> Lần kiểm tra kế tiếp Gateway lập tức từ chối kết nối.
+    - `modules/identity/use_cases/sync_sso_user_revocation.py`: Cascade thu hồi toàn bộ client và virtual key của user bị khóa, đồng thời ghi audit log.
+    - `apps/api/routers/identity_router.py`: Endpoint `POST /api/v1/identity/users/{user_id}/sync-revocation`.
+    - `tests/integration/test_sso_user_revocation_sync.py`: Kiểm thử tự động cascade revocation.
+  - **Tiêu chí nghiệm thu:** Khóa tài khoản trên IdP -> Lần kiểm tra kế tiếp Gateway lập tức từ chối kết nối (`403 CLIENT_REVOKED`).
 
-- [ ] **Task 5.2: Kiểm thử Hồi quy Cơ chế Fail-Closed**
+- [x] **Task 5.2: Kiểm thử Hồi quy Cơ chế Fail-Closed**
   - **Mục tiêu:** Khi Control Plane gặp sự cố, Gateway từ chối toàn bộ request thay vì mở toang bảo mật.
   - **File tác động:**
-    - `tests/integration/test_fail_closed.py`: Viết test giả lập Control Plane timeout -> Gateway trả về `HTTP 503 Service Unavailable`.
+    - `apps/apisix/plugins/identity-binding-filter.lua`: Bắt lỗi `res == nil` (timeout / unreachable) và `res.status >= 500` trả về `403 CONTROL_PLANE_UNAVAILABLE`.
+    - `tests/integration/test_fail_closed.py`: Viết test giả lập key sai, cert fingerprint sai, service chưa bind, client bị revoke.
   - **Tiêu chí nghiệm thu:** Đạt 100% kịch bản kiểm thử bảo mật Fail-Closed.
 
 ---

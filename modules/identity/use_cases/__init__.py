@@ -7,6 +7,9 @@ from modules.identity.use_cases.get_user_options import GetUserOptionsUseCase
 from modules.identity.use_cases.list_users import ListUsersUseCase
 from modules.identity.use_cases.login_user import LoginUserUseCase
 from modules.identity.use_cases.register_user import RegisterUserUseCase
+from modules.identity.use_cases.sync_sso_user_revocation import (
+    SyncSsoUserRevocationUseCase,
+)
 
 __all__ = [
     "GetCurrentUserUseCase",
@@ -15,5 +18,6 @@ __all__ = [
     "ListUsersUseCase",
     "LoginUserUseCase",
     "RegisterUserUseCase",
+    "SyncSsoUserRevocationUseCase",
     "UserNotFoundError",
 ]
