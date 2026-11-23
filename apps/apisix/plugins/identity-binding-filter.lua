@@ -65,6 +65,7 @@ function _M.rewrite(conf, ctx)
             client_raw_cert = client_raw_cert,
             project_id = project_id,
             service_slug = service_slug,
+            client_ip = ngx.var.remote_addr,
         }),
     })
 

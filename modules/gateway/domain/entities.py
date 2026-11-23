@@ -91,3 +91,16 @@ class AuditEventEntity:
     client_ip: str | None = None
     error_code: str | None = None
     metadata: dict = field(default_factory=dict)
+
+
+@dataclass
+class SecurityAlertEntity:
+    alert_id: str
+    severity: str  # HIGH, MEDIUM, LOW
+    anomaly_type: str  # REPEATED_IDENTITY_MISMATCH
+    description: str
+    actor_id: str | None
+    client_ip: str | None
+    event_count: int
+    first_seen_at: datetime
+    last_seen_at: datetime

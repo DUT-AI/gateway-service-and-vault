@@ -58,6 +58,7 @@ class VerifyBindingRequest(BaseModel):
     project_id: str = Field(..., min_length=1)
     service_id: str | None = None
     service_slug: str | None = None
+    client_ip: str | None = None
 
 
 class VerifyBindingResponse(BaseModel):

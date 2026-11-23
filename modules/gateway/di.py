@@ -4,12 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.security.ca import PrivateCA
 from modules.gateway.client.apisix_client import ApisixAdminClient
 from modules.gateway.domain.interfaces import (
+    IAuditEventRepository,
     IProjectRepository,
     IQuotaUsageTracker,
     IRegisteredClientRepository,
     IUpstreamServiceRepository,
     IVirtualAccessKeyRepository,
 )
+from modules.gateway.repository.audit_repository import SqlAuditEventRepository
 from modules.gateway.repository.gateway_repository import (
     SqlProjectRepository,
     SqlRegisteredClientRepository,
@@ -23,6 +25,8 @@ from modules.gateway.use_cases import (
     GenerateVirtualKeyUseCase,
     GetProjectServiceUsageUseCase,
     GetProjectUseCase,
+    GetSecurityAlertsUseCase,
+    ListAuditEventsUseCase,
     ListProjectAllowedServicesUseCase,
     ListProjectsUseCase,
     ListRegisteredClientsUseCase,
@@ -70,6 +74,10 @@ class GatewayProvider(Provider):
     def get_service_repo(self, session: AsyncSession) -> IUpstreamServiceRepository:
         return SqlUpstreamServiceRepository(session)
 
+    @provide
+    def get_audit_repo(self, session: AsyncSession) -> IAuditEventRepository:
+        return SqlAuditEventRepository(session)
+
     register_client_uc = provide(RegisterClientUseCase)
     generate_key_uc = provide(GenerateVirtualKeyUseCase)
     verify_binding_uc = provide(VerifyIdentityBindingUseCase)
@@ -86,3 +94,5 @@ class GatewayProvider(Provider):
     unbind_service_uc = provide(UnbindServiceFromProjectUseCase)
     update_quota_uc = provide(UpdateProjectServiceQuotaUseCase)
     get_service_usage_uc = provide(GetProjectServiceUsageUseCase)
+    list_audit_events_uc = provide(ListAuditEventsUseCase)
+    get_security_alerts_uc = provide(GetSecurityAlertsUseCase)

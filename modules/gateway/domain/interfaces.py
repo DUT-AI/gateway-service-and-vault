@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from modules.gateway.domain.entities import (
+    AuditEventEntity,
     ClientType,
     ProjectEntity,
     QuotaPolicyEntity,
     RegisteredClientEntity,
+    SecurityAlertEntity,
     UpstreamServiceEntity,
     VirtualAccessKeyEntity,
 )
@@ -147,4 +150,41 @@ class IQuotaUsageTracker(ABC):
 
         Returns: (new_count, is_within_quota)
         """
+        ...
+
+
+class IAuditEventRepository(ABC):
+    """Repository interface for immutable audit log records and security anomaly detection."""
+
+    @abstractmethod
+    async def record_event(
+        self,
+        event: AuditEventEntity,
+    ) -> AuditEventEntity:
+        """Persist an immutable audit log record."""
+        ...
+
+    @abstractmethod
+    async def list_events(
+        self,
+        project_id: str | None = None,
+        client_type: str | None = None,
+        decision: str | None = None,
+        action: str | None = None,
+        error_code: str | None = None,
+        date_from: datetime | None = None,
+        date_to: datetime | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[AuditEventEntity], int]:
+        """Query audit events with filters and total count."""
+        ...
+
+    @abstractmethod
+    async def get_security_alerts(
+        self,
+        window_minutes: int = 5,
+        threshold: int = 3,
+    ) -> list[SecurityAlertEntity]:
+        """Detect real-time anomalies (e.g. repeated identity mismatches)."""
         ...

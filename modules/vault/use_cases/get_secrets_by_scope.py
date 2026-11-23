@@ -70,7 +70,7 @@ class GetSecretsByScopeUseCase:
                     )
                     scope_dict[sec.key] = decrypted
                 except Exception as err:
-                    logger.warning("Decryption failed for key {}: {}", sec.key, err)
+                    logger.warning(f"Decryption failed for key {sec.key}: {err}")
                     continue
 
             if scope_dict:

@@ -10,6 +10,7 @@ import {
   Server,
   LogOut,
   Menu,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   X,
@@ -50,6 +51,12 @@ const NAV_ITEMS: NavItemConfig[] = [
     icon: Server,
     match: (pathname: string) => pathname.startsWith("/services"),
   },
+  {
+    href: "/audit",
+    label: "Nhật ký an ninh",
+    icon: ShieldAlert,
+    match: (pathname: string) => pathname.startsWith("/audit"),
+  },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -62,6 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (pathname.startsWith("/projects")) return "Dự án & Không gian làm việc";
     if (pathname.startsWith("/clients")) return "Thiết bị & Client";
     if (pathname.startsWith("/services")) return "Dịch vụ hệ thống";
+    if (pathname.startsWith("/audit")) return "Nhật ký an ninh & Cảnh báo";
     return "Không gian làm việc";
   };
 
@@ -126,7 +134,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {user?.avatar_url ? (
             <img
               src={user.avatar_url}
-              alt={user.name || user.email}
+              alt={user.name}
               className="h-8 w-8 rounded-full object-cover"
             />
           ) : (
@@ -196,10 +204,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 sm:inline-flex">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              Đã xác thực DUT
-            </span>
 
             {/* DUT-AI Ecosystem Waffle Launcher */}
             <div className="flex items-center border-l border-slate-200 pl-3">

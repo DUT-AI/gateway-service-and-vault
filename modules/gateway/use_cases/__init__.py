@@ -19,6 +19,12 @@ from modules.gateway.use_cases.get_project import GetProjectUseCase
 from modules.gateway.use_cases.get_project_service_usage import (
     GetProjectServiceUsageUseCase,
 )
+from modules.gateway.use_cases.get_security_alerts import (
+    GetSecurityAlertsUseCase,
+)
+from modules.gateway.use_cases.list_audit_events import (
+    ListAuditEventsUseCase,
+)
 from modules.gateway.use_cases.list_project_allowed_services import (
     ListProjectAllowedServicesUseCase,
 )
@@ -51,7 +57,9 @@ __all__ = [
     "GenerateVirtualKeyUseCase",
     "GetProjectServiceUsageUseCase",
     "GetProjectUseCase",
+    "GetSecurityAlertsUseCase",
     "IdentityMismatchError",
+    "ListAuditEventsUseCase",
     "ListProjectAllowedServicesUseCase",
     "ListProjectsUseCase",
     "ListRegisteredClientsUseCase",

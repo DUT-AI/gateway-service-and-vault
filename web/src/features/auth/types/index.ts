@@ -25,7 +25,7 @@ export type LoginPayload = Schema<"UserLoginRequest">;
 export type RegisterPayload = {
   email: string;
   password?: string;
-  name?: string;
+  name: string;
 };
 export type TokenResponse = Schema<"TokenResponse">;
 

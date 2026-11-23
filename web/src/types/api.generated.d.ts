@@ -440,6 +440,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gateway/audit-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Query audit log records with filters and pagination
+         * @description Query immutable security audit logs with filtering and pagination.
+         */
+        get: operations["list_audit_events_api_v1_gateway_audit_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/security-alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve active security anomaly alerts
+         * @description Retrieve active security anomalies such as repeated Identity Mismatch violations.
+         */
+        get: operations["get_security_alerts_api_v1_gateway_security_alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/vault/projects/{project_id}/secrets": {
         parameters: {
             query?: never;
@@ -536,6 +576,47 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AuditEventListResponse */
+        AuditEventListResponse: {
+            /** Items */
+            items: components["schemas"]["AuditEventResponse"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** AuditEventResponse */
+        AuditEventResponse: {
+            /** Id */
+            id: string;
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
+            /** Client Type */
+            client_type: string;
+            /** Actor Id */
+            actor_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Service Id */
+            service_id?: string | null;
+            /** Action */
+            action: string;
+            /** Decision */
+            decision: string;
+            /** Client Ip */
+            client_ip?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
         /** BindServiceToProjectRequest */
         BindServiceToProjectRequest: {
             /** Service Id */
@@ -843,6 +924,40 @@ export interface components {
              */
             created_at: string;
         };
+        /** SecurityAlertItemResponse */
+        SecurityAlertItemResponse: {
+            /** Alert Id */
+            alert_id: string;
+            /** Severity */
+            severity: string;
+            /** Anomaly Type */
+            anomaly_type: string;
+            /** Description */
+            description: string;
+            /** Actor Id */
+            actor_id?: string | null;
+            /** Client Ip */
+            client_ip?: string | null;
+            /** Event Count */
+            event_count: number;
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /**
+             * Last Seen At
+             * Format: date-time
+             */
+            last_seen_at: string;
+        };
+        /** SecurityAlertsResponse */
+        SecurityAlertsResponse: {
+            /** Alerts */
+            alerts: components["schemas"]["SecurityAlertItemResponse"][];
+            /** Total Active */
+            total_active: number;
+        };
         /**
          * TokenResponse
          * @description Schema for JWT access token response.
@@ -1031,6 +1146,8 @@ export interface components {
             service_id?: string | null;
             /** Service Slug */
             service_slug?: string | null;
+            /** Client Ip */
+            client_ip?: string | null;
         };
         /** VerifyBindingResponse */
         VerifyBindingResponse: {
@@ -1799,6 +1916,77 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_audit_events_api_v1_gateway_audit_events_get: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                client_type?: string | null;
+                decision?: string | null;
+                action?: string | null;
+                error_code?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_security_alerts_api_v1_gateway_security_alerts_get: {
+        parameters: {
+            query?: {
+                window_minutes?: number;
+                threshold?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecurityAlertsResponse"];
+                };
             };
             /** @description Validation Error */
             422: {

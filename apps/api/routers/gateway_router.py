@@ -1,11 +1,19 @@
+from datetime import datetime
+
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 
 from modules.gateway.domain.entities import ClientType
 from modules.gateway.domain.interfaces import (
     IProjectRepository,
     IQuotaUsageTracker,
     IUpstreamServiceRepository,
+)
+from modules.gateway.dtos.audit_dtos import (
+    AuditEventListResponse,
+    AuditEventResponse,
+    SecurityAlertItemResponse,
+    SecurityAlertsResponse,
 )
 from modules.gateway.dtos.gateway_dtos import (
     BindServiceToProjectRequest,
@@ -32,6 +40,8 @@ from modules.gateway.use_cases import (
     GenerateVirtualKeyUseCase,
     GetProjectServiceUsageUseCase,
     GetProjectUseCase,
+    GetSecurityAlertsUseCase,
+    ListAuditEventsUseCase,
     ListProjectAllowedServicesUseCase,
     ListProjectsUseCase,
     ListRegisteredClientsUseCase,
@@ -302,8 +312,10 @@ async def revoke_virtual_key(
 async def verify_binding(
     req: VerifyBindingRequest,
     use_case: FromDishka[VerifyIdentityBindingUseCase],
+    request: Request,
 ) -> VerifyBindingResponse:
     """Verify identity binding between virtual key and mTLS client certificate."""
+    client_ip = req.client_ip or (request.client.host if request.client else None)
     await use_case.execute(
         raw_virtual_key=req.raw_virtual_key,
         cert_fingerprint=req.cert_fingerprint,
@@ -311,6 +323,7 @@ async def verify_binding(
         service_id=req.service_id,
         service_slug=req.service_slug,
         client_raw_cert=req.client_raw_cert,
+        client_ip=client_ip,
     )
     return VerifyBindingResponse(
         valid=True,
@@ -543,3 +556,99 @@ async def unbind_service_from_project(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ServiceNotBoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+# --- Audit Events & Security Alerts Endpoints ---
+
+
+@router.get(
+    "/audit-events",
+    response_model=AuditEventListResponse,
+    summary="Query audit log records with filters and pagination",
+)
+@inject
+async def list_audit_events(
+    use_case: FromDishka[ListAuditEventsUseCase],
+    project_id: str | None = None,
+    client_type: str | None = None,
+    decision: str | None = None,
+    action: str | None = None,
+    error_code: str | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> AuditEventListResponse:
+    """Query immutable security audit logs with filtering and pagination."""
+    events, total = await use_case.execute(
+        project_id=project_id,
+        client_type=client_type,
+        decision=decision,
+        action=action,
+        error_code=error_code,
+        date_from=date_from,
+        date_to=date_to,
+        limit=limit,
+        offset=offset,
+    )
+    return AuditEventListResponse(
+        items=[
+            AuditEventResponse(
+                id=e.id,
+                timestamp=e.timestamp,
+                client_type=(
+                    e.client_type.value
+                    if hasattr(e.client_type, "value")
+                    else str(e.client_type)
+                ),
+                actor_id=e.actor_id,
+                project_id=e.project_id,
+                service_id=e.service_id,
+                action=e.action,
+                decision=e.decision,
+                client_ip=e.client_ip,
+                error_code=e.error_code,
+                metadata=e.metadata,
+            )
+            for e in events
+        ],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get(
+    "/security-alerts",
+    response_model=SecurityAlertsResponse,
+    summary="Retrieve active security anomaly alerts",
+)
+@inject
+async def get_security_alerts(
+    use_case: FromDishka[GetSecurityAlertsUseCase],
+    window_minutes: int = Query(default=5, ge=1, le=60),
+    threshold: int = Query(default=3, ge=1, le=100),
+) -> SecurityAlertsResponse:
+    """Retrieve active security anomalies such as repeated Identity Mismatch violations."""
+    alerts = await use_case.execute(
+        window_minutes=window_minutes,
+        threshold=threshold,
+    )
+    items = [
+        SecurityAlertItemResponse(
+            alert_id=a.alert_id,
+            severity=a.severity,
+            anomaly_type=a.anomaly_type,
+            description=a.description,
+            actor_id=a.actor_id,
+            client_ip=a.client_ip,
+            event_count=a.event_count,
+            first_seen_at=a.first_seen_at,
+            last_seen_at=a.last_seen_at,
+        )
+        for a in alerts
+    ]
+    return SecurityAlertsResponse(
+        alerts=items,
+        total_active=len(items),
+    )

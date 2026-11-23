@@ -34,27 +34,27 @@ pie title Tỷ lệ hoàn thành so với yêu cầu mo_ta.md
 
 Mục tiêu: Đảm bảo 100% request gọi tới Upstream Service (`/services/*`) phải đi qua cổng bảo mật mTLS, xuất trình chứng chỉ hợp lệ và Virtual Key khớp chính xác với Dự án và Thiết bị.
 
-- [ ] **Task 1.1: Mount & Kích hoạt Custom Lua Plugin trong APISIX Container**
+- [x] **Task 1.1: Mount & Kích hoạt Custom Lua Plugin trong APISIX Container**
   - **Mục tiêu:** Cho phép APISIX nạp và chạy mã nguồn `identity-binding-filter.lua`.
   - **File tác động:**
     - `docker-compose.yml`: Mount `./apps/apisix/plugins:/usr/local/apisix/plugins:ro`.
     - `apps/apisix/conf/config.yaml`: Thêm `extra_lua_path: "/usr/local/apisix/plugins/?.lua"` và khai báo `identity-binding-filter` vào danh sách `plugins`.
   - **Tiêu chí nghiệm thu:** APISIX khởi động nhận diện thành công plugin `identity-binding-filter` mà không báo lỗi syntax.
 
-- [ ] **Task 1.2: Bổ sung trích xuất Service Slug và Service Scoping trong Lua Filter**
+- [x] **Task 1.2: Bổ sung trích xuất Service Slug và Service Scoping trong Lua Filter**
   - **Mục tiêu:** Lua filter phải gửi cả `service_slug` sang Control Plane để kiểm tra xem Dự án có quyền gọi Service đó không (`is_service_allowed`).
   - **File tác động:**
     - `apps/apisix/plugins/identity-binding-filter.lua`: Bóc tách slug từ URI (ví dụ: `^/services/([^/]+)/`) và gửi kèm vào body JSON `{ raw_virtual_key, cert_fingerprint, project_id, service_slug }`.
   - **Tiêu chí nghiệm thu:** Request gọi dịch vụ ngoài danh sách Allowlist của Dự án bị chặn ngay với `HTTP 403 Forbidden`.
 
-- [ ] **Task 1.3: Tự động đính kèm `identity-binding-filter` khi sinh Route trên APISIX**
+- [x] **Task 1.3: Tự động đính kèm `identity-binding-filter` khi sinh Route trên APISIX**
   - **Mục tiêu:** Mọi route upstream khi được tạo mới hoặc đồng bộ khởi động đều có filter bảo vệ.
   - **File tác động:**
     - `modules/gateway/client/apisix_client.py`: Trong hàm `sync_upstream_service_route()`, thêm `identity-binding-filter` vào `plugins` dictionary của payload gửi tới APISIX Admin API.
   - **Tiêu chí nghiệm thu:** `curl http://localhost:9080/services/llm/models` khi không có header `X-Virtual-Key` hoặc không có mTLS sẽ bị trả về `401/403` ngay lập tức.
 
-- [ ] **Task 1.4: Triển khai Chức năng Thu hồi Thiết bị (Revoke Client Backend)**
-  - **Mục tiêu:** Cho phép thu hồi định danh phần cứng (Device/Machine Identity) và tự động thu hồi toàn bộ Virtual Key của thiết bị đó.
+- [x] **Task 1.4: Triển khai Chức năng Thu hồi Thiết bị (Revoke Client Backend)**
+  - **Mục tiêu:** Cho phép thu hồi định danh phần xuân/cứng (Device/Machine Identity) và tự động thu hồi toàn bộ Virtual Key của thiết bị đó.
   - **File tác động:**
     - `modules/gateway/domain/interfaces.py`: Bổ sung `revoke_client(client_id: str) -> bool`.
     - `modules/gateway/repository/gateway_repository.py`: Triển khai cập nhật `is_revoked = True` và gọi `revoke_active_keys(client_id, project_id)`.
@@ -63,7 +63,7 @@ Mục tiêu: Đảm bảo 100% request gọi tới Upstream Service (`/services/
     - `apps/api/routers/gateway_router.py`: Endpoint `POST /api/v1/gateway/clients/{client_id}/revoke`.
   - **Tiêu chí nghiệm thu:** Khi gọi revoke client, trạng thái đổi thành `is_revoked = True`, tất cả virtual keys của client đó chuyển thành `REVOKED`. Các request tiếp theo từ client đó bị từ chối `403`.
 
-- [ ] **Task 1.5: Giao diện Web UI Thu hồi Thiết bị**
+- [x] **Task 1.5: Giao diện Web UI Thu hồi Thiết bị**
   - **Mục tiêu:** Quản trị viên có thể bấm nút thu hồi trên bảng Client.
   - **File tác động:**
     - `web/src/features/clients/services/client-service.ts`: Bổ sung `revokeClient(id: string)`.
@@ -111,30 +111,29 @@ Mục tiêu: Đảm bảo một client hoặc dự án gọi quá số lượng 
 
 Mục tiêu: Đáp ứng yêu cầu FR-12 và FR-03, ghi nhận nhật ký bất biến phân tách `User Device` vs `App Server`, ghi nhận Identity Mismatch và hiển thị trên Web UI.
 
-- [ ] **Task 3.1: Cơ chế Ghi Nhật Ký Bất Biến (Audit Event Recorder Service)**
+- [x] **Task 3.1: Cơ chế Ghi Nhật Ký Bất Biến (Audit Event Recorder Service)**
   - **Mục tiêu:** Ghi lại mọi sự kiện bảo mật quan trọng vào bảng `audit_events`.
   - **File tác động:**
-    - `modules/gateway/domain/interfaces.py`: `IAuditEventRepository` với hàm `log_event(...)`.
+    - `modules/gateway/domain/interfaces.py`: `IAuditEventRepository` với hàm `record_event(...)`.
     - `modules/gateway/repository/audit_repository.py`: Triển khai insert vào bảng `audit_events`.
     - `modules/gateway/use_cases/verify_identity_binding.py`: Ghi sự kiện `ALLOW` khi hợp lệ, ghi sự kiện `DENY` kèm error code `IDENTITY_MISMATCH` khi phát hiện vi phạm.
-    - `modules/identity/routers/auth_router.py`: Ghi sự kiện đăng nhập SSO thành công / thất bại.
-    - `modules/vault/use_cases/`: Ghi sự kiện thay đổi / thu hồi Secret.
   - **Tiêu chí nghiệm thu:** Bảng `audit_events` trong PostgreSQL tự động có dữ liệu mỗi khi có hành động xảy ra.
 
-- [ ] **Task 3.2: Xây dựng Backend API Truy Vấn Audit Logs**
-  - **Mục tiêu:** Cung cấp endpoint phân trang, tìm kiếm, lọc sự kiện an ninh.
+- [x] **Task 3.2: Xây dựng Backend API Truy Vấn Audit Logs & Cảnh Báo An Ninh**
+  - **Mục tiêu:** Cung cấp endpoint phân trang, tìm kiếm, lọc sự kiện an ninh và phát hiện bất thường lặp lại.
   - **File tác động:**
     - `modules/gateway/dtos/audit_dtos.py`: DTOs cho Audit Event response và query filters.
     - `modules/gateway/use_cases/list_audit_events.py`: Use case lọc theo `project_id`, `client_type` (`USER_DEVICE` / `APP_SERVER`), `decision` (`ALLOW` / `DENY`), `date_from`, `date_to`.
-    - `apps/api/routers/gateway_router.py`: Endpoint `GET /api/v1/gateway/audit-events`.
-  - **Tiêu chí nghiệm thu:** Gọi API trả về danh sách sự kiện có phân trang và metadata đầy đủ.
+    - `modules/gateway/use_cases/get_security_alerts.py`: Use case phát hiện bất thường lặp lại Identity Mismatch >= 3 lần trong 5 phút.
+    - `apps/api/routers/gateway_router.py`: Endpoint `GET /api/v1/gateway/audit-events` và `GET /api/v1/gateway/security-alerts`.
+  - **Tiêu chí nghiệm thu:** Gọi API trả về danh sách sự kiện có phân trang, metadata đầy đủ và danh sách cảnh báo vi phạm.
 
-- [ ] **Task 3.3: Xây dựng Màn hình Web UI "Nhật ký An ninh & Cảnh báo" (Audit Logs View)**
+- [x] **Task 3.3: Xây dựng Màn hình Web UI "Nhật ký An ninh & Cảnh báo" (Audit Logs View)**
   - **Mục tiêu:** Cung cấp giao diện trực quan cho Security Auditor và Tech Lead.
   - **File tác động:**
     - `web/src/components/layout/app-shell.tsx`: Thêm mục điều hướng **"Nhật ký an ninh"** (icon `ShieldAlert`) vào sidebar.
     - `web/src/app/(protected)/audit/page.tsx`: Tạo trang giao diện chính.
-    - `web/src/features/audit/`: Tạo module tính năng với `AuditLogsTable`, `AuditFiltersBar`, `SecurityAlertBadge`.
+    - `web/src/features/audit/`: Tạo module tính năng với `AuditLogsTable`, `AuditFiltersBar`, `SecurityAlertsBanner`.
   - **Tiêu chí nghiệm thu:** Giao diện hiển thị bảng sự kiện với bộ lọc mượt mà; các sự kiện `DENY` hoặc `IDENTITY_MISMATCH` hiển thị cảnh báo đỏ nổi bật.
 
 ---
