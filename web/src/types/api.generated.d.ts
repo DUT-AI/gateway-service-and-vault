@@ -336,6 +336,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gateway/projects/{project_id}/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all allowed upstream services and quota for a project
+         * @description Retrieve all upstream services bound to this project with their quota policies.
+         */
+        get: operations["list_project_allowed_services_api_v1_gateway_projects__project_id__services_get"];
+        put?: never;
+        /**
+         * Bind an upstream service to a project with quota policy
+         * @description Authorize an upstream service for a project with defined rate limit and daily quota.
+         */
+        post: operations["bind_service_to_project_api_v1_gateway_projects__project_id__services_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/projects/{project_id}/services/{service_id}/quota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update quota policy for a bound project service
+         * @description Update rate limit RPM or daily quota for a project-service binding.
+         */
+        put: operations["update_project_service_quota_api_v1_gateway_projects__project_id__services__service_id__quota_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/projects/{project_id}/services/{service_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke/unbind an upstream service from a project
+         * @description Revoke a project's access to an upstream service and delete its quota policy.
+         */
+        delete: operations["unbind_service_from_project_api_v1_gateway_projects__project_id__services__service_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/vault/projects/{project_id}/secrets": {
         parameters: {
             query?: never;
@@ -432,6 +496,21 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BindServiceToProjectRequest */
+        BindServiceToProjectRequest: {
+            /** Service Id */
+            service_id: string;
+            /**
+             * Rate Limit Rpm
+             * @default 60
+             */
+            rate_limit_rpm?: number;
+            /**
+             * Quota Daily
+             * @default 10000
+             */
+            quota_daily?: number;
+        };
         /** ClientSummaryResponse */
         ClientSummaryResponse: {
             /** Id */
@@ -565,6 +644,29 @@ export interface components {
             /** Total Pages */
             total_pages: number;
         };
+        /** ProjectAllowedServiceResponse */
+        ProjectAllowedServiceResponse: {
+            /** Service Id */
+            service_id: string;
+            /** Service Name */
+            service_name: string;
+            /** Service Slug */
+            service_slug: string;
+            /** Base Url */
+            base_url: string;
+            /** Auth Type */
+            auth_type: string;
+            /** Is Service Active */
+            is_service_active: boolean;
+            /** Rate Limit Rpm */
+            rate_limit_rpm: number;
+            /** Quota Daily */
+            quota_daily: number;
+            /** Is Quota Active */
+            is_quota_active: boolean;
+            /** Bound At */
+            bound_at?: string | null;
+        };
         /** ProjectCreateRequest */
         ProjectCreateRequest: {
             /** Name */
@@ -679,6 +781,19 @@ export interface components {
             token_type?: string;
             /** Expires In */
             expires_in: number;
+        };
+        /** UpdateServiceQuotaRequest */
+        UpdateServiceQuotaRequest: {
+            /**
+             * Rate Limit Rpm
+             * @default 60
+             */
+            rate_limit_rpm?: number;
+            /**
+             * Quota Daily
+             * @default 10000
+             */
+            quota_daily?: number;
         };
         /** UpstreamServiceCreateRequest */
         UpstreamServiceCreateRequest: {
@@ -834,6 +949,8 @@ export interface components {
             cert_fingerprint: string;
             /** Project Id */
             project_id: string;
+            /** Service Id */
+            service_id?: string | null;
         };
         /** VerifyBindingResponse */
         VerifyBindingResponse: {
@@ -1419,6 +1536,138 @@ export interface operations {
             };
         };
     };
+    list_project_allowed_services_api_v1_gateway_projects__project_id__services_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectAllowedServiceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bind_service_to_project_api_v1_gateway_projects__project_id__services_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BindServiceToProjectRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectAllowedServiceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_project_service_quota_api_v1_gateway_projects__project_id__services__service_id__quota_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateServiceQuotaRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectAllowedServiceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unbind_service_from_project_api_v1_gateway_projects__project_id__services__service_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_secrets_api_v1_vault_projects__project_id__secrets_get: {
         parameters: {
             query?: {
@@ -1632,6 +1881,7 @@ export interface operations {
         parameters: {
             query?: {
                 scope?: string | null;
+                identity_id?: string | null;
                 /** @description Max events to yield before closing stream (useful for testing) */
                 max_events?: number | null;
             };

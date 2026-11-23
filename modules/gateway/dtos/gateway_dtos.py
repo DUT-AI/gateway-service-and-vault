@@ -55,6 +55,7 @@ class VerifyBindingRequest(BaseModel):
     raw_virtual_key: str = Field(..., min_length=1)
     cert_fingerprint: str = Field(..., min_length=1)
     project_id: str = Field(..., min_length=1)
+    service_id: str | None = None
 
 
 class VerifyBindingResponse(BaseModel):
@@ -102,3 +103,27 @@ class UpstreamServiceResponse(BaseModel):
     timeout_seconds: int
     is_active: bool
     created_at: datetime
+
+
+class ProjectAllowedServiceResponse(BaseModel):
+    service_id: str
+    service_name: str
+    service_slug: str
+    base_url: str
+    auth_type: str
+    is_service_active: bool
+    rate_limit_rpm: int
+    quota_daily: int
+    is_quota_active: bool
+    bound_at: datetime | None = None
+
+
+class BindServiceToProjectRequest(BaseModel):
+    service_id: str = Field(..., min_length=26, max_length=26)
+    rate_limit_rpm: int = Field(default=60, ge=1, le=100000)
+    quota_daily: int = Field(default=10000, ge=1, le=10000000)
+
+
+class UpdateServiceQuotaRequest(BaseModel):
+    rate_limit_rpm: int = Field(default=60, ge=1, le=100000)
+    quota_daily: int = Field(default=10000, ge=1, le=10000000)

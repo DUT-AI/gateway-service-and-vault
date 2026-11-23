@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from modules.gateway.domain.entities import (
     ClientType,
     ProjectEntity,
+    QuotaPolicyEntity,
     RegisteredClientEntity,
     UpstreamServiceEntity,
     VirtualAccessKeyEntity,
@@ -23,6 +24,27 @@ class IProjectRepository(ABC):
 
     @abstractmethod
     async def list_all(self) -> list[ProjectEntity]: ...
+
+    @abstractmethod
+    async def list_allowed_services(
+        self, project_id: str
+    ) -> list[tuple[UpstreamServiceEntity, QuotaPolicyEntity | None]]: ...
+
+    @abstractmethod
+    async def bind_service(
+        self, project_id: str, service_id: str, rate_limit_rpm: int, quota_daily: int
+    ) -> tuple[UpstreamServiceEntity, QuotaPolicyEntity]: ...
+
+    @abstractmethod
+    async def unbind_service(self, project_id: str, service_id: str) -> bool: ...
+
+    @abstractmethod
+    async def update_service_quota(
+        self, project_id: str, service_id: str, rate_limit_rpm: int, quota_daily: int
+    ) -> QuotaPolicyEntity: ...
+
+    @abstractmethod
+    async def is_service_allowed(self, project_id: str, service_id: str) -> bool: ...
 
 
 class IRegisteredClientRepository(ABC):

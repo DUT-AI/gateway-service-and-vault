@@ -4,16 +4,14 @@ import React from "react";
 import {
   Key,
   Lock,
+  Server,
   Settings,
-  Sparkles,
-  ShieldAlert,
-  ArrowRight,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { VaultView } from "@/features/vault";
 import { VirtualKeysView } from "@/features/keys";
+import { ProjectAllowedServicesView } from "./project-allowed-services-view";
 import type { Project } from "../types";
 
 export interface ProjectWorkspaceTabsProps {
@@ -39,6 +37,13 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
           Virtual Keys
         </TabsTrigger>
         <TabsTrigger
+          value="services"
+          className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+        >
+          <Server className="h-4 w-4 mr-2 text-slate-500" />
+          Dịch vụ liên kết
+        </TabsTrigger>
+        <TabsTrigger
           value="settings"
           className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
         >
@@ -55,6 +60,11 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
       {/* Virtual Keys Tab (Phase 4 Zero-Trust Gatekeeper) */}
       <TabsContent value="keys" className="space-y-4">
         <VirtualKeysView projectId={project.id} />
+      </TabsContent>
+
+      {/* Allowed Services & Quotas Tab (Feature 012) */}
+      <TabsContent value="services" className="space-y-4">
+        <ProjectAllowedServicesView projectId={project.id} />
       </TabsContent>
 
       {/* Settings Tab */}

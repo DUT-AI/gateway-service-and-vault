@@ -2,15 +2,21 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, HTTPException, status
 
 from modules.gateway.domain.entities import ClientType
-from modules.gateway.domain.interfaces import IProjectRepository
+from modules.gateway.domain.interfaces import (
+    IProjectRepository,
+    IUpstreamServiceRepository,
+)
 from modules.gateway.dtos.gateway_dtos import (
+    BindServiceToProjectRequest,
     ClientSummaryResponse,
     GenerateVirtualKeyRequest,
     GenerateVirtualKeyResponse,
+    ProjectAllowedServiceResponse,
     ProjectCreateRequest,
     ProjectResponse,
     RegisterClientRequest,
     RegisterClientResponse,
+    UpdateServiceQuotaRequest,
     UpstreamServiceCreateRequest,
     UpstreamServiceResponse,
     VerifyBindingRequest,
@@ -18,9 +24,11 @@ from modules.gateway.dtos.gateway_dtos import (
     VirtualKeySummaryResponse,
 )
 from modules.gateway.use_cases import (
+    BindServiceToProjectUseCase,
     CreateUpstreamServiceUseCase,
     GenerateVirtualKeyUseCase,
     GetProjectUseCase,
+    ListProjectAllowedServicesUseCase,
     ListProjectsUseCase,
     ListRegisteredClientsUseCase,
     ListUpstreamServicesUseCase,
@@ -28,6 +36,11 @@ from modules.gateway.use_cases import (
     ProjectNotFoundError,
     RegisterClientUseCase,
     RevokeVirtualKeyUseCase,
+    ServiceAlreadyBoundError,
+    ServiceNotBoundError,
+    ServiceNotFoundError,
+    UnbindServiceFromProjectUseCase,
+    UpdateProjectServiceQuotaUseCase,
     VerifyIdentityBindingUseCase,
 )
 
@@ -266,6 +279,7 @@ async def verify_binding(
         raw_virtual_key=req.raw_virtual_key,
         cert_fingerprint=req.cert_fingerprint,
         project_id=req.project_id,
+        service_id=req.service_id,
     )
     return VerifyBindingResponse(
         valid=True,
@@ -332,3 +346,146 @@ async def create_upstream_service(
         is_active=service.is_active,
         created_at=service.created_at,
     )
+
+
+# --- Project Upstream Service Binding & Quota Endpoints ---
+
+
+@router.get(
+    "/projects/{project_id}/services",
+    response_model=list[ProjectAllowedServiceResponse],
+    summary="List all allowed upstream services and quota for a project",
+)
+@inject
+async def list_project_allowed_services(
+    project_id: str,
+    use_case: FromDishka[ListProjectAllowedServicesUseCase],
+) -> list[ProjectAllowedServiceResponse]:
+    """Retrieve all upstream services bound to this project with their quota policies."""
+    try:
+        items = await use_case.execute(project_id)
+        return [
+            ProjectAllowedServiceResponse(
+                service_id=svc.id,
+                service_name=svc.name,
+                service_slug=svc.slug,
+                base_url=svc.base_url,
+                auth_type=svc.auth_type,
+                is_service_active=svc.is_active,
+                rate_limit_rpm=quota.rate_limit_rpm if quota else 60,
+                quota_daily=quota.quota_daily if quota else 10000,
+                is_quota_active=quota.is_active if quota else True,
+                bound_at=quota.created_at if quota else svc.created_at,
+            )
+            for svc, quota in items
+        ]
+    except ProjectNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+
+
+@router.post(
+    "/projects/{project_id}/services",
+    response_model=ProjectAllowedServiceResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Bind an upstream service to a project with quota policy",
+)
+@inject
+async def bind_service_to_project(
+    project_id: str,
+    req: BindServiceToProjectRequest,
+    use_case: FromDishka[BindServiceToProjectUseCase],
+) -> ProjectAllowedServiceResponse:
+    """Authorize an upstream service for a project with defined rate limit and daily quota."""
+    try:
+        svc, quota = await use_case.execute(
+            project_id=project_id,
+            service_id=req.service_id,
+            rate_limit_rpm=req.rate_limit_rpm,
+            quota_daily=req.quota_daily,
+        )
+        return ProjectAllowedServiceResponse(
+            service_id=svc.id,
+            service_name=svc.name,
+            service_slug=svc.slug,
+            base_url=svc.base_url,
+            auth_type=svc.auth_type,
+            is_service_active=svc.is_active,
+            rate_limit_rpm=quota.rate_limit_rpm,
+            quota_daily=quota.quota_daily,
+            is_quota_active=quota.is_active,
+            bound_at=quota.created_at,
+        )
+    except ProjectNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ServiceNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ServiceAlreadyBoundError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+
+
+@router.put(
+    "/projects/{project_id}/services/{service_id}/quota",
+    response_model=ProjectAllowedServiceResponse,
+    summary="Update quota policy for a bound project service",
+)
+@inject
+async def update_project_service_quota(
+    project_id: str,
+    service_id: str,
+    req: UpdateServiceQuotaRequest,
+    use_case: FromDishka[UpdateProjectServiceQuotaUseCase],
+    service_repo: FromDishka[IUpstreamServiceRepository],
+) -> ProjectAllowedServiceResponse:
+    """Update rate limit RPM or daily quota for a project-service binding."""
+    try:
+        quota = await use_case.execute(
+            project_id=project_id,
+            service_id=service_id,
+            rate_limit_rpm=req.rate_limit_rpm,
+            quota_daily=req.quota_daily,
+        )
+        svc = await service_repo.get_by_id(service_id)
+        if not svc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Upstream service '{service_id}' not found",
+            )
+        return ProjectAllowedServiceResponse(
+            service_id=svc.id,
+            service_name=svc.name,
+            service_slug=svc.slug,
+            base_url=svc.base_url,
+            auth_type=svc.auth_type,
+            is_service_active=svc.is_active,
+            rate_limit_rpm=quota.rate_limit_rpm,
+            quota_daily=quota.quota_daily,
+            is_quota_active=quota.is_active,
+            bound_at=quota.created_at,
+        )
+    except ProjectNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ServiceNotBoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.delete(
+    "/projects/{project_id}/services/{service_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Revoke/unbind an upstream service from a project",
+)
+@inject
+async def unbind_service_from_project(
+    project_id: str,
+    service_id: str,
+    use_case: FromDishka[UnbindServiceFromProjectUseCase],
+) -> None:
+    """Revoke a project's access to an upstream service and delete its quota policy."""
+    try:
+        await use_case.execute(project_id, service_id)
+    except ProjectNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ServiceNotBoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

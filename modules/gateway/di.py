@@ -2,6 +2,7 @@ from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.security.ca import PrivateCA
+from modules.gateway.client.apisix_client import ApisixAdminClient
 from modules.gateway.domain.interfaces import (
     IProjectRepository,
     IRegisteredClientRepository,
@@ -15,15 +16,19 @@ from modules.gateway.repository.gateway_repository import (
     SqlVirtualAccessKeyRepository,
 )
 from modules.gateway.use_cases import (
+    BindServiceToProjectUseCase,
     CreateUpstreamServiceUseCase,
     GenerateVirtualKeyUseCase,
     GetProjectUseCase,
+    ListProjectAllowedServicesUseCase,
     ListProjectsUseCase,
     ListRegisteredClientsUseCase,
     ListUpstreamServicesUseCase,
     ListVirtualKeysUseCase,
     RegisterClientUseCase,
     RevokeVirtualKeyUseCase,
+    UnbindServiceFromProjectUseCase,
+    UpdateProjectServiceQuotaUseCase,
     VerifyIdentityBindingUseCase,
 )
 
@@ -36,6 +41,10 @@ class GatewayProvider(Provider):
     @provide(scope=Scope.APP)
     def get_ca(self) -> PrivateCA:
         return PrivateCA()
+
+    @provide(scope=Scope.APP)
+    def get_apisix_client(self) -> ApisixAdminClient:
+        return ApisixAdminClient()
 
     @provide
     def get_project_repo(self, session: AsyncSession) -> IProjectRepository:
@@ -63,3 +72,7 @@ class GatewayProvider(Provider):
     revoke_virtual_key_uc = provide(RevokeVirtualKeyUseCase)
     list_services_uc = provide(ListUpstreamServicesUseCase)
     create_service_uc = provide(CreateUpstreamServiceUseCase)
+    list_allowed_services_uc = provide(ListProjectAllowedServicesUseCase)
+    bind_service_uc = provide(BindServiceToProjectUseCase)
+    unbind_service_uc = provide(UnbindServiceFromProjectUseCase)
+    update_quota_uc = provide(UpdateProjectServiceQuotaUseCase)

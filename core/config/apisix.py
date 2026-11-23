@@ -19,3 +19,5 @@ class ApisixSettings(BaseSettings):
     apisix_admin_key: str = "edd1c9f034335f136f87ad84b625c8f1"
     apisix_gateway_url: str = "http://localhost:9080"
     apisix_gateway_ssl_url: str = "https://localhost:9443"
+    apisix_backend_host: str = "host.docker.internal"
+    apisix_backend_port: int = 8000

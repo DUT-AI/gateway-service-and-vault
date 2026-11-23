@@ -798,6 +798,211 @@
         }
       }
     },
+    "/api/v1/gateway/projects/{project_id}/services": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "List all allowed upstream services and quota for a project",
+        "description": "Retrieve all upstream services bound to this project with their quota policies.",
+        "operationId": "list_project_allowed_services_api_v1_gateway_projects__project_id__services_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectAllowedServiceResponse"
+                  },
+                  "title": "Response List Project Allowed Services Api V1 Gateway Projects  Project Id  Services Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Bind an upstream service to a project with quota policy",
+        "description": "Authorize an upstream service for a project with defined rate limit and daily quota.",
+        "operationId": "bind_service_to_project_api_v1_gateway_projects__project_id__services_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindServiceToProjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectAllowedServiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/projects/{project_id}/services/{service_id}/quota": {
+      "put": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Update quota policy for a bound project service",
+        "description": "Update rate limit RPM or daily quota for a project-service binding.",
+        "operationId": "update_project_service_quota_api_v1_gateway_projects__project_id__services__service_id__quota_put",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Service Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceQuotaRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectAllowedServiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gateway/projects/{project_id}/services/{service_id}": {
+      "delete": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Revoke/unbind an upstream service from a project",
+        "description": "Revoke a project's access to an upstream service and delete its quota policy.",
+        "operationId": "unbind_service_from_project_api_v1_gateway_projects__project_id__services__service_id__delete",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Service Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/vault/projects/{project_id}/secrets": {
       "post": {
         "tags": [
@@ -1226,6 +1431,22 @@
             }
           },
           {
+            "name": "identity_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Identity Id"
+            }
+          },
+          {
             "name": "max_events",
             "in": "query",
             "required": false,
@@ -1301,6 +1522,35 @@
   },
   "components": {
     "schemas": {
+      "BindServiceToProjectRequest": {
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "maxLength": 26,
+            "minLength": 26,
+            "title": "Service Id"
+          },
+          "rate_limit_rpm": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Rate Limit Rpm",
+            "default": 60
+          },
+          "quota_daily": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "minimum": 1.0,
+            "title": "Quota Daily",
+            "default": 10000
+          }
+        },
+        "type": "object",
+        "required": [
+          "service_id"
+        ],
+        "title": "BindServiceToProjectRequest"
+      },
       "ClientSummaryResponse": {
         "properties": {
           "id": {
@@ -1619,6 +1869,71 @@
         ],
         "title": "PaginatedResponse[UserResponse]"
       },
+      "ProjectAllowedServiceResponse": {
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "title": "Service Id"
+          },
+          "service_name": {
+            "type": "string",
+            "title": "Service Name"
+          },
+          "service_slug": {
+            "type": "string",
+            "title": "Service Slug"
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url"
+          },
+          "auth_type": {
+            "type": "string",
+            "title": "Auth Type"
+          },
+          "is_service_active": {
+            "type": "boolean",
+            "title": "Is Service Active"
+          },
+          "rate_limit_rpm": {
+            "type": "integer",
+            "title": "Rate Limit Rpm"
+          },
+          "quota_daily": {
+            "type": "integer",
+            "title": "Quota Daily"
+          },
+          "is_quota_active": {
+            "type": "boolean",
+            "title": "Is Quota Active"
+          },
+          "bound_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bound At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service_id",
+          "service_name",
+          "service_slug",
+          "base_url",
+          "auth_type",
+          "is_service_active",
+          "rate_limit_rpm",
+          "quota_daily",
+          "is_quota_active"
+        ],
+        "title": "ProjectAllowedServiceResponse"
+      },
       "ProjectCreateRequest": {
         "properties": {
           "name": {
@@ -1882,6 +2197,26 @@
         ],
         "title": "TokenResponse",
         "description": "Schema for JWT access token response."
+      },
+      "UpdateServiceQuotaRequest": {
+        "properties": {
+          "rate_limit_rpm": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Rate Limit Rpm",
+            "default": 60
+          },
+          "quota_daily": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "minimum": 1.0,
+            "title": "Quota Daily",
+            "default": 10000
+          }
+        },
+        "type": "object",
+        "title": "UpdateServiceQuotaRequest"
       },
       "UpstreamServiceCreateRequest": {
         "properties": {
@@ -2266,6 +2601,17 @@
             "type": "string",
             "minLength": 1,
             "title": "Project Id"
+          },
+          "service_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Id"
           }
         },
         "type": "object",

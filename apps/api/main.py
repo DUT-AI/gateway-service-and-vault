@@ -1,3 +1,6 @@
+import logging
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,10 +14,49 @@ from apps.api.routers.vault_router import router as vault_router
 from core.config import settings
 from core.exceptions import setup_exception_handlers
 
+logger = logging.getLogger("apisix_sync")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager that synchronizes routes to APISIX on startup."""
+    try:
+        from core.database.session import AsyncSessionLocal
+        from modules.gateway.client.apisix_client import ApisixAdminClient
+        from modules.gateway.repository.gateway_repository import (
+            SqlUpstreamServiceRepository,
+        )
+
+        client = ApisixAdminClient()
+        # 1. Sync unified control plane backend route (/api/*)
+        await client.sync_control_plane_route()
+
+        # 2. Sync all active upstream services (/services/{slug}/*)
+        async with AsyncSessionLocal() as session:
+            repo = SqlUpstreamServiceRepository(session)
+            services = await repo.list_all()
+            for s in services:
+                if s.is_active:
+                    await client.sync_upstream_service_route(
+                        service_slug=s.slug,
+                        upstream_base_url=s.base_url,
+                        upstream_auth_type=s.auth_type,
+                        upstream_credential=s.encrypted_credential,
+                    )
+        logger.info(
+            "Successfully synchronized APISIX routes for unified gateway entrypoint."
+        )
+    except Exception as e:
+        logger.warning("Could not synchronize APISIX routes on startup: %s", e)
+
+    yield
+
+
 app = FastAPI(
     title="Modular Monolith Backend API",
     description="Scalable Modular Monolith Backend with Clean Architecture & Dishka DI",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # 1. Setup global exception handlers
