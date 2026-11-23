@@ -27,6 +27,7 @@ from modules.gateway.use_cases.list_upstream_services import (
 )
 from modules.gateway.use_cases.list_virtual_keys import ListVirtualKeysUseCase
 from modules.gateway.use_cases.register_client import RegisterClientUseCase
+from modules.gateway.use_cases.revoke_client import RevokeClientUseCase
 from modules.gateway.use_cases.revoke_virtual_key import RevokeVirtualKeyUseCase
 from modules.gateway.use_cases.unbind_service_from_project import (
     UnbindServiceFromProjectUseCase,
@@ -52,6 +53,7 @@ __all__ = [
     "ListVirtualKeysUseCase",
     "ProjectNotFoundError",
     "RegisterClientUseCase",
+    "RevokeClientUseCase",
     "RevokeVirtualKeyUseCase",
     "ServiceAlreadyBoundError",
     "ServiceNotBoundError",

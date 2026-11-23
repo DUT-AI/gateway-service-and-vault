@@ -554,6 +554,49 @@
         }
       }
     },
+    "/api/v1/gateway/clients/{client_id}/revoke": {
+      "post": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "Revoke a registered client hardware device",
+        "description": "Revoke a registered client and all active virtual keys bound to it.",
+        "operationId": "revoke_client_api_v1_gateway_clients__client_id__revoke_post",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Client Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeClientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/gateway/projects/{project_id}/keys": {
       "get": {
         "tags": [
@@ -2095,6 +2138,29 @@
         ],
         "title": "RegisterClientResponse"
       },
+      "RevokeClientResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "is_revoked": {
+            "type": "boolean",
+            "title": "Is Revoked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "client_id",
+          "is_revoked"
+        ],
+        "title": "RevokeClientResponse"
+      },
       "ScopeResponse": {
         "properties": {
           "id": {
@@ -2612,6 +2678,17 @@
               }
             ],
             "title": "Service Id"
+          },
+          "service_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Slug"
           }
         },
         "type": "object",

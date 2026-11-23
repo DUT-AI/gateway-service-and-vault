@@ -16,6 +16,7 @@ from modules.gateway.dtos.gateway_dtos import (
     ProjectResponse,
     RegisterClientRequest,
     RegisterClientResponse,
+    RevokeClientResponse,
     UpdateServiceQuotaRequest,
     UpstreamServiceCreateRequest,
     UpstreamServiceResponse,
@@ -35,6 +36,7 @@ from modules.gateway.use_cases import (
     ListVirtualKeysUseCase,
     ProjectNotFoundError,
     RegisterClientUseCase,
+    RevokeClientUseCase,
     RevokeVirtualKeyUseCase,
     ServiceAlreadyBoundError,
     ServiceNotBoundError,
@@ -188,6 +190,30 @@ async def register_client(
     )
 
 
+@router.post(
+    "/clients/{client_id}/revoke",
+    response_model=RevokeClientResponse,
+    summary="Revoke a registered client hardware device",
+)
+@inject
+async def revoke_client(
+    client_id: str,
+    use_case: FromDishka[RevokeClientUseCase],
+) -> RevokeClientResponse:
+    """Revoke a registered client and all active virtual keys bound to it."""
+    success = await use_case.execute(client_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Client '{client_id}' not found",
+        )
+    return RevokeClientResponse(
+        message="Client and all associated virtual keys revoked successfully",
+        client_id=client_id,
+        is_revoked=True,
+    )
+
+
 # --- Virtual Access Keys Endpoints ---
 
 
@@ -280,6 +306,8 @@ async def verify_binding(
         cert_fingerprint=req.cert_fingerprint,
         project_id=req.project_id,
         service_id=req.service_id,
+        service_slug=req.service_slug,
+        client_raw_cert=req.client_raw_cert,
     )
     return VerifyBindingResponse(
         valid=True,

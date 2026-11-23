@@ -43,8 +43,23 @@ async def lifespan(app: FastAPI):
                         upstream_auth_type=s.auth_type,
                         upstream_credential=s.encrypted_credential,
                     )
+
+        # 3. Register SSL Certificate & Enable mTLS Client Verification in APISIX
+        from core.security.ca import PrivateCA
+
+        ca = PrivateCA()
+        server_cert = ca.get_or_create_server_certificate(
+            sans=["localhost", "127.0.0.1", "apisix", "gateway"]
+        )
+        await client.sync_ssl_certificate(
+            ssl_id="1",
+            cert_pem=server_cert.cert_pem,
+            key_pem=server_cert.key_pem,
+            snis=["localhost", "127.0.0.1"],
+            ca_pem=ca.ca_cert_pem,
+        )
         logger.info(
-            "Successfully synchronized APISIX routes for unified gateway entrypoint."
+            "Successfully synchronized APISIX routes and mTLS SSL certificate for unified gateway entrypoint."
         )
     except Exception as e:
         logger.warning("Could not synchronize APISIX routes on startup: %s", e)

@@ -3,12 +3,15 @@
 import React, { useMemo, useState } from "react";
 import {
   AlertCircle,
+  AlertTriangle,
+  Ban,
   Calendar,
   Check,
   Copy,
   Filter,
   HardDrive,
   Laptop,
+  Loader2,
   Plus,
   RefreshCw,
   Search,
@@ -24,7 +27,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { useClientsQuery } from "../hooks/use-clients-queries";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useClientsQuery, useRevokeClientMutation } from "../hooks/use-clients-queries";
 import { RegisterClientDialog } from "./register-client-dialog";
 import { CertDownloadDialog } from "./cert-download-dialog";
 import type { Client, ClientType, RegisterClientResult } from "../types";
@@ -42,6 +53,22 @@ export function ClientsTable() {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [downloadBundle, setDownloadBundle] =
     useState<RegisterClientResult | null>(null);
+  const [clientToRevoke, setClientToRevoke] = useState<Client | null>(null);
+
+  const revokeMutation = useRevokeClientMutation();
+
+  const handleConfirmRevoke = async () => {
+    if (!clientToRevoke) return;
+    try {
+      await revokeMutation.mutateAsync(clientToRevoke.id);
+      toast.success(`Đã thu hồi thiết bị "${clientToRevoke.name}" thành công`);
+      setClientToRevoke(null);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Không thể thu hồi thiết bị";
+      toast.error(msg);
+    }
+  };
 
   const handleCopyFingerprint = async (clientId: string, fingerprint: string) => {
     try {
@@ -204,6 +231,7 @@ export function ClientsTable() {
                   <th className="py-3 px-4">Fingerprint SHA-256</th>
                   <th className="py-3 px-4">Hạn chứng chỉ</th>
                   <th className="py-3 px-4 text-center">Trạng thái</th>
+                  <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -232,12 +260,15 @@ export function ClientsTable() {
                       <td className="py-3.5 px-4 text-center">
                         <Skeleton className="h-5 w-24 rounded-full mx-auto" />
                       </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <Skeleton className="h-7 w-16 rounded-md ml-auto" />
+                      </td>
                     </tr>
                   ))
                 ) : error ? (
                   // Error State
                   <tr>
-                    <td colSpan={5} className="py-8 text-center">
+                    <td colSpan={6} className="py-8 text-center">
                       <div className="inline-flex flex-col items-center justify-center text-rose-600 gap-2">
                         <AlertCircle className="h-6 w-6" />
                         <span className="font-semibold">
@@ -261,7 +292,7 @@ export function ClientsTable() {
                 ) : filteredClients.length === 0 ? (
                   // Empty State
                   <tr>
-                    <td colSpan={5} className="py-12 text-center">
+                    <td colSpan={6} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-center space-y-3">
                         <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                           <HardDrive className="h-6 w-6" />
@@ -405,6 +436,27 @@ export function ClientsTable() {
                             {status.label}
                           </Badge>
                         </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-4 text-right">
+                          {client.is_revoked ? (
+                            <span className="text-[11px] text-slate-400 font-medium">
+                              Đã thu hồi
+                            </span>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setClientToRevoke(client)}
+                              className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2"
+                              title="Thu hồi thiết bị và tất cả Virtual Keys liên kết"
+                            >
+                              <Ban className="h-3 w-3 mr-1" />
+                              Thu hồi
+                            </Button>
+                          )}
+                        </td>
                       </tr>
                     );
                   })
@@ -414,6 +466,83 @@ export function ClientsTable() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Revocation Confirmation Dialog */}
+      <Dialog
+        open={!!clientToRevoke}
+        onOpenChange={(open) => !open && setClientToRevoke(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-rose-600 mb-1">
+              <AlertTriangle className="h-5 w-5" />
+              <DialogTitle>Xác nhận thu hồi thiết bị mTLS</DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-slate-500">
+              Hành động này sẽ vô hiệu hóa vĩnh viễn thiết bị phần cứng này và lập
+              tức thu hồi toàn bộ Virtual Access Keys đang hoạt động liên kết với
+              thiết bị này.
+            </DialogDescription>
+          </DialogHeader>
+
+          {clientToRevoke && (
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1.5 my-2">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Thiết bị:</span>
+                <span className="font-semibold text-slate-900">
+                  {clientToRevoke.name}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Fingerprint:</span>
+                <span className="font-mono text-slate-700">
+                  {clientToRevoke.cert_fingerprint.slice(0, 16)}...
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Loại:</span>
+                <span className="font-medium text-slate-800">
+                  {clientToRevoke.client_type === "USER_DEVICE"
+                    ? "Developer PC"
+                    : "Workload Server"}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setClientToRevoke(null)}
+              disabled={revokeMutation.isPending}
+              className="text-xs"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleConfirmRevoke}
+              disabled={revokeMutation.isPending}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium"
+            >
+              {revokeMutation.isPending ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                  Đang thu hồi...
+                </>
+              ) : (
+                <>
+                  <Ban className="h-3.5 w-3.5 mr-1" />
+                  Xác nhận thu hồi ngay
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialogs */}
       <RegisterClientDialog

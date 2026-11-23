@@ -70,6 +70,9 @@ class IRegisteredClientRepository(ABC):
     @abstractmethod
     async def list_all(self) -> list[RegisteredClientEntity]: ...
 
+    @abstractmethod
+    async def revoke_client(self, client_id: str) -> bool: ...
+
 
 class IVirtualAccessKeyRepository(ABC):
     @abstractmethod
@@ -104,6 +107,9 @@ class IVirtualAccessKeyRepository(ABC):
 class IUpstreamServiceRepository(ABC):
     @abstractmethod
     async def list_all(self) -> list[UpstreamServiceEntity]: ...
+
+    @abstractmethod
+    async def get_by_slug(self, slug: str) -> UpstreamServiceEntity | None: ...
 
     @abstractmethod
     async def get_by_id(self, service_id: str) -> UpstreamServiceEntity | None: ...

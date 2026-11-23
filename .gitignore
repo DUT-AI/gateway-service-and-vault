@@ -48,6 +48,13 @@ next-env.d.ts
 # OS & IDE
 .DS_Store
 Thumbs.db
+
+# Certificates and Keys
+certs/
+*.crt
+*.key
+apps/apisix/conf/certs/
+
 .idea/
 .vscode/
 *.swp

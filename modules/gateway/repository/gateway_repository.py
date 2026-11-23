@@ -335,6 +335,29 @@ class SqlRegisteredClientRepository(IRegisteredClientRepository):
         models = result.scalars().all()
         return [self._to_entity(m) for m in models]
 
+    async def revoke_client(self, client_id: str) -> bool:
+        now = datetime.now(UTC)
+        stmt_client = (
+            update(RegisteredClientModel)
+            .where(RegisteredClientModel.id == client_id)
+            .values(is_revoked=True)
+        )
+        res = await self.session.execute(stmt_client)
+        if res.rowcount == 0:
+            return False
+
+        stmt_keys = (
+            update(VirtualAccessKeyModel)
+            .where(
+                VirtualAccessKeyModel.client_id == client_id,
+                VirtualAccessKeyModel.status == KeyStatus.ACTIVE.value,
+            )
+            .values(status=KeyStatus.REVOKED.value, revoked_at=now)
+        )
+        await self.session.execute(stmt_keys)
+        await self.session.commit()
+        return True
+
 
 class SqlVirtualAccessKeyRepository(IVirtualAccessKeyRepository):
     def __init__(self, session: AsyncSession) -> None:
@@ -458,6 +481,12 @@ class SqlUpstreamServiceRepository(IUpstreamServiceRepository):
 
     async def get_by_id(self, service_id: str) -> UpstreamServiceEntity | None:
         stmt = select(UpstreamServiceModel).where(UpstreamServiceModel.id == service_id)
+        result = await self.session.execute(stmt)
+        model = result.scalar_one_or_none()
+        return self._to_entity(model) if model else None
+
+    async def get_by_slug(self, slug: str) -> UpstreamServiceEntity | None:
+        stmt = select(UpstreamServiceModel).where(UpstreamServiceModel.slug == slug)
         result = await self.session.execute(stmt)
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None

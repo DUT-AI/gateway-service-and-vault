@@ -16,4 +16,15 @@ export const clientService = {
     );
     return data;
   },
+
+  async revokeClient(
+    clientId: string
+  ): Promise<{ message: string; client_id: string; is_revoked: boolean }> {
+    const { data } = await api.post<{
+      message: string;
+      client_id: string;
+      is_revoked: boolean;
+    }>(`/gateway/clients/${clientId}/revoke`);
+    return data;
+  },
 };

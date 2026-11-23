@@ -85,6 +85,7 @@ class ApisixAdminClient:
         elif upstream_auth_type.upper() == "API_KEY" and upstream_credential:
             rewrite_headers["X-API-KEY"] = upstream_credential
 
+        control_plane_url = f"http://{apisix_settings.apisix_backend_host}:{apisix_settings.apisix_backend_port}/api/v1/gateway/verify-binding"
         plugins: dict = {
             "proxy-rewrite": {
                 "regex_uri": (
@@ -92,7 +93,10 @@ class ApisixAdminClient:
                     if base_path
                     else [f"^/services/{service_slug}/(.*)", "/$1"]
                 ),
-            }
+            },
+            "identity-binding-filter": {
+                "control_plane_url": control_plane_url,
+            },
         }
         if rewrite_headers:
             plugins["proxy-rewrite"]["headers"] = rewrite_headers

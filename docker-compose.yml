@@ -86,6 +86,7 @@ services:
     restart: always
     volumes:
       - ./apps/apisix/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./apps/apisix/plugins/identity-binding-filter.lua:/usr/local/apisix/apisix/plugins/identity-binding-filter.lua:ro
     depends_on:
       - etcd
     ports:

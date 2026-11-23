@@ -26,6 +26,7 @@ from modules.gateway.use_cases import (
     ListUpstreamServicesUseCase,
     ListVirtualKeysUseCase,
     RegisterClientUseCase,
+    RevokeClientUseCase,
     RevokeVirtualKeyUseCase,
     UnbindServiceFromProjectUseCase,
     UpdateProjectServiceQuotaUseCase,
@@ -68,6 +69,7 @@ class GatewayProvider(Provider):
     list_projects_uc = provide(ListProjectsUseCase)
     get_project_uc = provide(GetProjectUseCase)
     list_clients_uc = provide(ListRegisteredClientsUseCase)
+    revoke_client_uc = provide(RevokeClientUseCase)
     list_virtual_keys_uc = provide(ListVirtualKeysUseCase)
     revoke_virtual_key_uc = provide(RevokeVirtualKeyUseCase)
     list_services_uc = provide(ListUpstreamServicesUseCase)

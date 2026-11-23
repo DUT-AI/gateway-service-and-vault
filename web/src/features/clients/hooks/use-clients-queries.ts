@@ -23,3 +23,16 @@ export function useRegisterClientMutation() {
     },
   });
 }
+
+export function useRevokeClientMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ message: string; client_id: string; is_revoked: boolean }, Error, string>({
+    mutationFn: (clientId: string) => clientService.revokeClient(clientId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["gateway", "keys"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}

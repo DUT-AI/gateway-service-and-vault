@@ -54,13 +54,21 @@ class GenerateVirtualKeyResponse(BaseModel):
 class VerifyBindingRequest(BaseModel):
     raw_virtual_key: str = Field(..., min_length=1)
     cert_fingerprint: str = Field(..., min_length=1)
+    client_raw_cert: str | None = None
     project_id: str = Field(..., min_length=1)
     service_id: str | None = None
+    service_slug: str | None = None
 
 
 class VerifyBindingResponse(BaseModel):
     valid: bool
     message: str
+
+
+class RevokeClientResponse(BaseModel):
+    message: str
+    client_id: str
+    is_revoked: bool
 
 
 class ClientSummaryResponse(BaseModel):

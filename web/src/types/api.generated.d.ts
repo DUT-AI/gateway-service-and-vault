@@ -232,6 +232,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gateway/clients/{client_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke a registered client hardware device
+         * @description Revoke a registered client and all active virtual keys bound to it.
+         */
+        post: operations["revoke_client_api_v1_gateway_clients__client_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gateway/projects/{project_id}/keys": {
         parameters: {
             query?: never;
@@ -733,6 +753,15 @@ export interface components {
              */
             expires_at: string;
         };
+        /** RevokeClientResponse */
+        RevokeClientResponse: {
+            /** Message */
+            message: string;
+            /** Client Id */
+            client_id: string;
+            /** Is Revoked */
+            is_revoked: boolean;
+        };
         /** ScopeResponse */
         ScopeResponse: {
             /** Id */
@@ -951,6 +980,8 @@ export interface components {
             project_id: string;
             /** Service Id */
             service_id?: string | null;
+            /** Service Slug */
+            service_slug?: string | null;
         };
         /** VerifyBindingResponse */
         VerifyBindingResponse: {
@@ -1340,6 +1371,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegisterClientResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_client_api_v1_gateway_clients__client_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevokeClientResponse"];
                 };
             };
             /** @description Validation Error */
