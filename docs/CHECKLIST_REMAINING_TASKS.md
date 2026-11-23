@@ -77,7 +77,7 @@ Mục tiêu: Đảm bảo 100% request gọi tới Upstream Service (`/services/
 
 Mục tiêu: Đảm bảo một client hoặc dự án gọi quá số lượng request (RPM hoặc ngày) sẽ bị Gateway điều tiết với mã `HTTP 429 Too Many Requests`.
 
-- [ ] **Task 2.1: Kích hoạt APISIX Rate Limiting Plugin (`limit-req` hoặc `limit-count`)**
+- [x] **Task 2.1: Kích hoạt APISIX Rate Limiting Plugin (`limit-req` hoặc `limit-count`)**
   - **Mục tiêu:** Áp dụng giới hạn `rate_limit_rpm` đã cấu hình cho từng Upstream Route.
   - **File tác động:**
     - `modules/gateway/client/apisix_client.py`: Bổ sung plugin `limit-count` vào route payload:
@@ -92,14 +92,14 @@ Mục tiêu: Đảm bảo một client hoặc dự án gọi quá số lượng 
       ```
   - **Tiêu chí nghiệm thu:** Gửi liên tiếp quá số request RPM quy định bằng cURL/ApacheBench -> APISIX trả về `HTTP 429 Too Many Requests`.
 
-- [ ] **Task 2.2: Kiểm soát Hạn mức Ngày (`quota_daily`) qua Redis Atomic Counter**
+- [x] **Task 2.2: Kiểm soát Hạn mức Ngày (`quota_daily`) qua Redis Atomic Counter**
   - **Mục tiêu:** Tích lũy số lượt gọi trong ngày theo cặp `(Project, Client, Service)`.
   - **File tác động:**
     - `modules/gateway/use_cases/verify_identity_binding.py` hoặc Lua plugin: Tăng biến đếm Redis `INCR gateway:quota:{project_id}:{date}` với TTL 24h.
     - Trả về lỗi `QuotaExceededError` nếu vượt quá `quota_daily`.
   - **Tiêu chí nghiệm thu:** Khi đạt trần quota ngày, hệ thống từ chối các request tiếp theo và trả về `HTTP 429`.
 
-- [ ] **Task 2.3: Hiển thị Mức Sử Dụng Quota trên Giao diện Web UI**
+- [x] **Task 2.3: Hiển thị Mức Sử Dụng Quota trên Giao diện Web UI**
   - **Mục tiêu:** Tech Lead theo dõi trực quan lưu lượng của từng dịch vụ trong dự án.
   - **File tác động:**
     - `web/src/features/projects/components/allowed-services-table.tsx`: Hiển thị thanh tiến trình (Progress Bar) % quota đã dùng trong ngày.
