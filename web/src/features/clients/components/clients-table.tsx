@@ -7,6 +7,7 @@ import {
   Ban,
   Calendar,
   Check,
+  Container,
   Copy,
   Filter,
   HardDrive,
@@ -38,6 +39,7 @@ import {
 import { useClientsQuery, useRevokeClientMutation } from "../hooks/use-clients-queries";
 import { RegisterClientDialog } from "./register-client-dialog";
 import { CertDownloadDialog } from "./cert-download-dialog";
+import { DockerDeploymentGuideDialog } from "./docker-deployment-guide-dialog";
 import type { Client, ClientType, RegisterClientResult } from "../types";
 
 export function ClientsTable() {
@@ -51,6 +53,7 @@ export function ClientsTable() {
   // Dialog states
   const [registerOpen, setRegisterOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
+  const [dockerGuideOpen, setDockerGuideOpen] = useState(false);
   const [downloadBundle, setDownloadBundle] =
     useState<RegisterClientResult | null>(null);
   const [clientToRevoke, setClientToRevoke] = useState<Client | null>(null);
@@ -205,6 +208,17 @@ export function ClientsTable() {
             <RefreshCw
               className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
             />
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setDockerGuideOpen(true)}
+            className="h-9 px-3 text-xs text-slate-700 border-slate-200 hover:bg-slate-50"
+          >
+            <Container className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+            Hướng dẫn Docker Workload
           </Button>
 
           <Button
@@ -555,6 +569,11 @@ export function ClientsTable() {
         open={downloadOpen}
         onOpenChange={setDownloadOpen}
         bundle={downloadBundle}
+      />
+
+      <DockerDeploymentGuideDialog
+        open={dockerGuideOpen}
+        onOpenChange={setDockerGuideOpen}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
+  Terminal,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import { SecretDialog } from "./secret-dialog";
 import { KeyPermissionMatrixModal } from "./key-permission-matrix-modal";
 import { LiveSyncStatusBadge } from "./live-sync-status-badge";
 import { LiveAuditFeed } from "./live-audit-feed";
+import { SdkQuickstartDialog } from "./sdk-quickstart-dialog";
 import type { FlatSecretItem } from "../types";
 
 export interface VaultViewProps {
@@ -36,6 +38,7 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
   );
   const [permissionsModalOpen, setPermissionsModalOpen] =
     useState<boolean>(false);
+  const [sdkQuickstartOpen, setSdkQuickstartOpen] = useState<boolean>(false);
 
   // Real-Time SSE Stream Hook
   const sseState = useVaultSse(projectId, {
@@ -150,6 +153,16 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setSdkQuickstartOpen(true)}
+                className="border-slate-200 text-slate-700 hover:bg-slate-50"
+              >
+                <Terminal className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+                Tích hợp SDK
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPermissionsModalOpen(true)}
                 className="border-slate-200 text-slate-700 hover:bg-slate-50"
               >
@@ -238,6 +251,15 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
         open={permissionsModalOpen}
         onOpenChange={setPermissionsModalOpen}
         availableKeys={availableKeys}
+      />
+
+      {/* Zero-.env SDK Quickstart Dialog */}
+      <SdkQuickstartDialog
+        projectId={projectId}
+        projectName={projectName}
+        selectedScope={selectedScope}
+        open={sdkQuickstartOpen}
+        onOpenChange={setSdkQuickstartOpen}
       />
     </div>
   );

@@ -5,3 +5,4 @@ export * from "./utils/download-file";
 export * from "./components/clients-table";
 export * from "./components/register-client-dialog";
 export * from "./components/cert-download-dialog";
+export * from "./components/docker-deployment-guide-dialog";

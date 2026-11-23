@@ -142,23 +142,24 @@ Mục tiêu: Đáp ứng yêu cầu FR-12 và FR-03, ghi nhận nhật ký bất
 
 Mục tiêu: Đơn giản hóa việc nhận chứng chỉ mTLS cho máy cá nhân và workload Docker, đồng thời giúp lập trình viên tích hợp SDK hot-reload trong 1 phút.
 
-- [ ] **Task 4.1: Nút Tải Bộ Chứng Chỉ (.crt + .key) Sau Khi Cấp Phát Client**
+- [x] **Task 4.1: Nút Tải Bộ Chứng Chỉ (.crt + .key) Sau Khi Cấp Phát Client**
   - **Mục tiêu:** Người dùng không phải copy thủ công từ JSON mà tải trực tiếp file về máy.
   - **File tác động:**
-    - `web/src/features/clients/components/client-certificate-dialog.tsx`: Bổ sung nút "Tải trọn bộ chứng chỉ (.zip hoặc .crt/.key)" và nút copy fingerprint.
+    - `web/src/features/clients/components/cert-download-dialog.tsx`: Bổ sung nút "Tải trọn bộ chứng chỉ (.zip hoặc .crt/.key)" và nút copy fingerprint.
   - **Tiêu chí nghiệm thu:** Bấm nút tải về được file `client.crt` và `client.key` đúng định dạng PEM.
 
-- [ ] **Task 4.2: Hộp Thoại Hướng Dẫn Cấu Hình Docker Workload (Machine Identity Guide)**
+- [x] **Task 4.2: Hộp Thoại Hướng Dẫn Cấu Hình Docker Workload (Machine Identity Guide)**
   - **Mục tiêu:** Hướng dẫn rõ ràng cách mount chứng chỉ vào Docker container cho App Server.
   - **File tác động:**
-    - `web/src/features/clients/components/docker-deployment-guide.tsx`: Snippet mẫu `docker-compose.yml` có volume mount chứng chỉ và biến môi trường `VIRTUAL_ACCESS_KEY`.
+    - `web/src/features/clients/components/docker-deployment-guide-dialog.tsx`: Snippet mẫu `docker-compose.yml` có volume mount chứng chỉ và biến môi trường `VIRTUAL_ACCESS_KEY`.
+    - `web/src/features/clients/components/clients-table.tsx`: Đặt nút "Hướng dẫn Docker Workload" trên thanh công cụ.
   - **Tiêu chí nghiệm thu:** Lập trình viên có thể copy ngay đoạn cấu hình Docker Compose chuẩn vào dự án của mình.
 
-- [ ] **Task 4.3: Hướng Dẫn Tích Hợp SDK (SDK Quickstart Drawer) trong Tab Vault**
+- [x] **Task 4.3: Hướng Dẫn Tích Hợp SDK (SDK Quickstart Drawer) trong Tab Vault**
   - **Mục tiêu:** Giúp lập trình viên nạp biến môi trường vào RAM mà không cần file `.env`.
   - **File tác động:**
     - `web/src/features/vault/components/sdk-quickstart-dialog.tsx`: Hướng dẫn cài đặt `pip install dut-vault-sdk` và đoạn code khởi tạo `DutVaultClient`.
-    - `web/src/features/vault/components/vault-view.tsx`: Đặt nút "Hướng dẫn tích hợp SDK" ở thanh công cụ đầu trang.
+    - `web/src/features/vault/components/vault-view.tsx`: Đặt nút "Tích hợp SDK" ở thanh công cụ đầu trang.
   - **Tiêu chí nghiệm thu:** Người dùng mở popup thấy ngay code mẫu tương ứng với dự án đang chọn.
 
 ---

@@ -110,17 +110,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex min-h-[44px] items-center justify-between rounded-lg border px-3 text-xs font-semibold transition-colors duration-150 ${
-                isActive
+              className={`flex min-h-[44px] items-center justify-between rounded-lg border px-3 text-xs font-semibold transition-colors duration-150 ${isActive
                   ? "border-blue-200 bg-blue-50 text-blue-800"
                   : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-950"
-              }`}
+                }`}
             >
               <span className="flex items-center gap-2.5">
                 <Icon
-                  className={`h-4 w-4 ${
-                    isActive ? "text-blue-600" : "text-slate-400"
-                  }`}
+                  className={`h-4 w-4 ${isActive ? "text-blue-600" : "text-slate-400"
+                    }`}
                 />
                 {item.label}
               </span>
@@ -134,7 +132,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {user?.avatar_url ? (
             <img
               src={user.avatar_url}
-              alt={user.name}
               className="h-8 w-8 rounded-full object-cover"
             />
           ) : (
