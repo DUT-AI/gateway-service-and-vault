@@ -1,4 +1,4 @@
-.PHONY: help dev-api dev-web dev-worker docker-up docker-down migrate create-migration test install-hooks lint ruff check api-types
+.PHONY: help dev-api dev-web dev-worker docker-up docker-down migrate create-migration test test-e2e install-hooks lint ruff check api-types
 
 help:
 	@echo "Available commands:"
@@ -10,6 +10,7 @@ help:
 	@echo "  make migrate        - Run database migrations (alembic upgrade head)"
 	@echo "  make create-migration DESC=\"msg\" - Create a new migration revision"
 	@echo "  make test           - Run backend test suite"
+	@echo "  make test-e2e       - Run live gateway mTLS E2E tests against APISIX"
 	@echo "  make ruff           - Format and fix python code with ruff"
 	@echo "  make check          - Run static type checking (mypy)"
 	@echo "  make api-types      - Regenerate web API types from backend DTOs (offline)"
@@ -40,6 +41,9 @@ create-migration:
 
 test:
 	uv run pytest tests/
+
+test-e2e:
+	uv run pytest tests/integration/test_gateway_live_e2e.py -v
 
 ruff:
 	uv run ruff format .
