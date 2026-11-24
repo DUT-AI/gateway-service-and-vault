@@ -1,9 +1,9 @@
 <!--
 SYNC IMPACT REPORT
-- Version Change: 2.0.0 → 2.1.0
-- Bump Rationale: MINOR. Material expansion of Core Principle I (Clean Architecture, Domain Purity & Repository Isolation) to codify strict Aggregate Root boundaries for persistence layers. Explicitly mandates one repository per Aggregate Root, prohibits monolithic "God Repositories", forbids repositories from importing application use-case exceptions, bans internal session.commit() calls inside repositories to preserve Unit of Work integrity, and mandates dedicated repository abstractions for cross-aggregate policies.
+- Version Change: 2.1.0 → 2.2.0
+- Bump Rationale: MINOR. Expanded Core Principle V (Standardized DUT-AI SSO & External User Directory) to mandate Redis caching for external user lookups (with fail-open resilience and reactive cache invalidation upon SSO user revocation). Formally codifies the complete eradication of local user database tables, models, and repositories in the identity module.
 - Modified Principles:
-  - I. Clean Architecture & Domain Purity → I. Clean Architecture, Domain Purity & Repository Isolation (NON-NEGOTIABLE)
+  - V. Standardized DUT-AI SSO & External User Directory (Pure SSO) → V. Standardized DUT-AI SSO, External User Directory & Redis Caching (Pure SSO) (NON-NEGOTIABLE)
 - Added Sections: None
 - Removed Sections: None
 - Follow-up TODOs: None
@@ -48,14 +48,18 @@ Developers MUST NOT manually author parallel TypeScript interfaces for backend A
 
 *Rationale*: Eliminates runtime contract drift between frontend and backend while removing the requirement to run live backend server processes during frontend code generation or CI validation.
 
-### V. Standardized DUT-AI SSO & External User Directory (Pure SSO)
+### V. Standardized DUT-AI SSO, External User Directory & Redis Caching (Pure SSO) (NON-NEGOTIABLE)
 External single sign-on authentication MUST interface exclusively with the central DUT-AI Identity Provider (`https://manage.dutai.io.vn`).
-The platform MUST NOT store user passwords, password hashes, or manage independent local user accounts in its database.
+The platform MUST NOT store user passwords, password hashes, or manage independent local user accounts in its database. Local database tables, ORM models, and repositories for user persistence are strictly forbidden; the `identity` bounded context MUST operate with zero local database persistence tables.
 User identity context MUST be extracted directly from validated SSO tokens (`Authorization: Bearer` or `access_token` cookie).
-User directory lookups (options listing and profile inspection) MUST delegate directly to the external user directory service (`GET /api/v1/users/options` and `GET /api/v1/users/{id}`).
+User directory lookups (options listing and profile inspection) MUST delegate directly to the external user directory service via `IExternalUserDirectoryService` (`GET /api/v1/users/options` and `GET /api/v1/users/{id}`).
+To optimize query latency and protect central IdP availability, the service layer MUST cache external user directory responses in Redis (e.g. `identity:users:options` and `identity:users:detail:{user_id}`) with:
+- Configurable TTL (default 300 seconds).
+- Resilient fail-open behavior (Redis failures MUST NOT block incoming user requests; the service MUST fallback to direct IdP queries gracefully).
+- Event-driven cache invalidation triggered upon SSO user revocation or administrative purge.
 User identifiers MUST be strictly represented and processed as native integers (`id: int`) across all domain entities, DTOs, endpoint parameters (`id: int = Path(..., ge=1)`), and database foreign keys; string type-coercion workarounds are strictly prohibited.
 
-*Rationale*: Centralizes enterprise identity lifecycle management, prevents credential desynchronization, eliminates credential compromise risk in the local database, and enforces strict typing integrity across all bounded contexts.
+*Rationale*: Centralizes enterprise identity lifecycle management, eliminates credential compromise risk in the local database, shields the central IdP from redundant high-frequency polling through resilient caching, and enforces strict typing integrity across all bounded contexts.
 
 ### VI. Dynamic Vault & Granular Key-Level Access Control (Zero .env Files)
 Secrets and environment configurations MUST NOT be stored in plaintext `.env` files on developer machines, production hosts, or committed to version control.
@@ -133,4 +137,4 @@ All pull requests and code modifications MUST satisfy the following quality gate
   - **PATCH**: Wording improvements, clarifications, typo corrections, or non-semantic refinements.
 - **Compliance Verification**: All architectural design artifacts (`spec.md`, `plan.md`, `tasks.md`) and code reviews MUST explicitly reference and verify compliance with Core Principles I through VIII.
 
-**Version**: 2.1.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-24
+**Version**: 2.2.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-24

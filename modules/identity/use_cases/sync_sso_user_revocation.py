@@ -9,6 +9,7 @@ from modules.gateway.domain.interfaces import (
     IRegisteredClientRepository,
     IVirtualAccessKeyRepository,
 )
+from modules.identity.domain.interfaces import IExternalUserDirectoryService
 
 
 class SyncSsoUserRevocationUseCase:
@@ -19,10 +20,12 @@ class SyncSsoUserRevocationUseCase:
         client_repo: IRegisteredClientRepository,
         key_repo: IVirtualAccessKeyRepository,
         audit_repo: IAuditEventRepository,
+        directory_service: IExternalUserDirectoryService,
     ) -> None:
         self.client_repo = client_repo
         self.key_repo = key_repo
         self.audit_repo = audit_repo
+        self.directory_service = directory_service
 
     async def execute(self, user_id: int) -> dict[str, Any]:
         owner_str = str(user_id)
@@ -35,6 +38,10 @@ class SyncSsoUserRevocationUseCase:
                 if success:
                     await self.key_repo.revoke_all_by_client(client.id)
                     revoked_count += 1
+
+        # Invalidate user cache in Redis
+        with contextlib.suppress(Exception):
+            await self.directory_service.invalidate_cache(user_id)
 
         # Record immutable audit log
         with contextlib.suppress(Exception):

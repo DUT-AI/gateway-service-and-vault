@@ -1,3 +1,3 @@
-from modules.identity.models.user import UserModel
+"""Identity models package. Local user database persistence is deprecated and removed per SSO architecture."""
 
-__all__ = ["UserModel"]
+__all__: list[str] = []

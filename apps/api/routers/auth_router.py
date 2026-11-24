@@ -1,11 +1,8 @@
 from typing import Annotated
 
-from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Response, status
 
 from core.config.auth import auth_settings
-from core.pagination.params import PaginationParams
-from core.pagination.response import PaginatedResponse
 from core.security.deps import get_current_user_payload
 from modules.identity.dtos.auth_dtos import (
     TokenResponse,
@@ -13,7 +10,6 @@ from modules.identity.dtos.auth_dtos import (
     UserResponse,
 )
 from modules.identity.services import sso_dutai_service
-from modules.identity.use_cases import ListUsersUseCase
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Identity"])
 
@@ -99,17 +95,3 @@ async def get_me(
         role_names=payload.get("role_names", []),
         permissions=payload.get("permissions", []),
     )
-
-
-@router.get(
-    "/users",
-    response_model=PaginatedResponse[UserResponse],
-    summary="Retrieve paginated list of users",
-)
-@inject
-async def list_users(
-    params: Annotated[PaginationParams, Depends()],
-    use_case: FromDishka[ListUsersUseCase],
-) -> PaginatedResponse[UserResponse]:
-    """Retrieve paginated list of registered users."""
-    return await use_case.execute(params)

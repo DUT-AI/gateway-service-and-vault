@@ -11,7 +11,6 @@ class UserEntity:
     email: str
     name: str | None = None
     role: str = "user"
-    password_hash: str | None = None
     avatar_url: str | None = None
     status: str = "ACTIVE"
     created_at: datetime | None = None
