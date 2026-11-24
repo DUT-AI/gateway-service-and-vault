@@ -3,23 +3,27 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { Sparkles } from "lucide-react";
 import {
-  useLoginMutation,
-  useLoginSsoMutation,
-} from "../hooks/use-auth-queries";
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Info,
+  Loader2,
+  Lock,
+  Mail,
+  ShieldCheck,
+} from "lucide-react";
+import { useLoginMutation } from "../hooks/use-auth-queries";
 import { loginSchema, type LoginInput } from "../types";
 
 export function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLoginMutation();
-  const loginSsoMutation = useLoginSsoMutation();
 
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -34,112 +38,140 @@ export function LoginForm() {
     try {
       await loginMutation.mutateAsync(data);
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { detail?: string } } };
-      setErrorMessage(
-        e.response?.data?.detail ??
-          "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
-      );
+      console.error("[SSO Login] Error:", err);
+      const e = err as {
+        response?: {
+          status?: number;
+          data?: { detail?: string; message?: string };
+        };
+        message?: string;
+      };
+
+      if (e.response?.data?.detail) {
+        setErrorMessage(e.response.data.detail);
+      } else if (e.response?.data?.message) {
+        setErrorMessage(e.response.data.message);
+      } else if (e.response?.status === 401) {
+        setErrorMessage(
+          "Email hoặc mật khẩu SSO không chính xác. Vui lòng kiểm tra lại thông tin tài khoản DUT-AI của bạn."
+        );
+      } else if (e.response?.status === 502 || e.response?.status === 504) {
+        setErrorMessage(
+          "Máy chủ trung tâm DUT-AI phản hồi quá lâu hoặc đang bảo trì. Vui lòng thử lại sau giây lát."
+        );
+      } else if (e.message === "Network Error" || !e.response) {
+        setErrorMessage(
+          "Không thể kết nối tới máy chủ API Gateway. Vui lòng kiểm tra kết nối mạng và đảm bảo Gateway đang hoạt động."
+        );
+      } else {
+        setErrorMessage(
+          e.message ??
+            "Xác thực SSO thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu DUT-AI của bạn."
+        );
+      }
     }
   };
 
-  const handleSsoSubmit = async () => {
-    setErrorMessage(null);
-    const data = getValues();
-    if (!data.email || !data.password) {
-      setErrorMessage("Vui lòng nhập Email và Mật khẩu để đăng nhập SSO.");
-      return;
-    }
-    try {
-      await loginSsoMutation.mutateAsync(data);
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { detail?: string } } };
-      setErrorMessage(
-        e.response?.data?.detail ??
-          "Đăng nhập SSO thất bại. Vui lòng kiểm tra lại tài khoản."
-      );
-    }
-  };
+  const isLoading = isSubmitting || loginMutation.isPending;
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="w-full max-w-sm space-y-4"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
       {errorMessage && (
-        <div className="rounded-lg bg-red-100 p-3 text-sm text-red-700">
-          {errorMessage}
+        <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3.5 text-sm text-red-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          type="email"
-          {...register("email")}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-          placeholder="user@example.com"
-        />
+        <label className="block text-sm font-medium text-gray-700">
+          Email tài khoản DUT-AI
+        </label>
+        <div className="relative mt-1">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Mail className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="email"
+            autoComplete="username"
+            disabled={isLoading}
+            {...register("email")}
+            className="block w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-500"
+            placeholder="user@dutai.io.vn"
+          />
+        </div>
         {errors.email && (
           <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
         )}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Mật khẩu
-        </label>
-        <input
-          type="password"
-          {...register("password")}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-          placeholder="••••••••"
-        />
+        <div className="flex items-center justify-between">
+          <label className="block text-sm font-medium text-gray-700">
+            Mật khẩu SSO
+          </label>
+        </div>
+        <div className="relative mt-1">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <Lock className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            disabled={isLoading}
+            {...register("password")}
+            className="block w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-500"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            tabIndex={-1}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
         {errors.password && (
           <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
         )}
       </div>
 
-      <div className="space-y-2.5 pt-1">
+      <div className="pt-2">
         <button
           type="submit"
-          disabled={
-            isSubmitting ||
-            loginMutation.isPending ||
-            loginSsoMutation.isPending
-          }
-          className="flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          disabled={isLoading}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/25 transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting || loginMutation.isPending
-            ? "Đang đăng nhập..."
-            : "Đăng nhập"}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleSsoSubmit}
-          disabled={
-            isSubmitting ||
-            loginMutation.isPending ||
-            loginSsoMutation.isPending
-          }
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-blue-600 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          <Sparkles className="h-4 w-4 text-blue-600" />
-          {loginSsoMutation.isPending
-            ? "Đang xác thực SSO..."
-            : "Đăng nhập bằng DUT-AI Workspace (SSO)"}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin text-white" />
+              <span>Đang xác thực SSO...</span>
+            </>
+          ) : (
+            <>
+              <ShieldCheck className="h-4 w-4 text-white" />
+              <span>Đăng nhập SSO DUT-AI</span>
+            </>
+          )}
         </button>
       </div>
 
-      <p className="text-center text-sm text-gray-600">
-        Chưa có tài khoản?{" "}
-        <Link
-          href="/register"
-          className="font-medium text-blue-600 hover:text-blue-500"
-        >
-          Đăng ký ngay
-        </Link>
-      </p>
+      <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-900">
+        <div className="flex items-start gap-2">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-600" />
+          <p className="leading-relaxed">
+            Hệ thống áp dụng <strong>DUT-AI Pure SSO</strong>. Tài khoản được cấp
+            và quản lý tập trung từ hệ thống quản trị DUT-AI Workspace. Nếu bạn
+            chưa có tài khoản hoặc quên mật khẩu, vui lòng liên hệ quản trị viên
+            hệ thống.
+          </p>
+        </div>
+      </div>
     </form>
   );
 }

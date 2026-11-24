@@ -46,6 +46,16 @@ class ApisixAdminClient:
                 "nodes": {f"{host}:{port}": 1},
                 "pass_host": "pass",
             },
+            "plugins": {
+                "cors": {
+                    "allow_origins": "http://localhost:3000,http://127.0.0.1:3000,https://manage.dutai.io.vn",
+                    "allow_methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+                    "allow_headers": "Authorization,Content-Type,Accept,Origin,X-Requested-With,X-Virtual-Key,X-Project-Id",
+                    "expose_headers": "Authorization,Content-Type",
+                    "allow_credential": True,
+                    "max_age": 3600,
+                }
+            },
         }
 
         async with httpx.AsyncClient(timeout=10.0) as client:

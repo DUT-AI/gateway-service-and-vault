@@ -1,9 +1,10 @@
 <!--
 SYNC IMPACT REPORT
-- Version Change: 2.1.0 → 2.2.0
-- Bump Rationale: MINOR. Expanded Core Principle V (Standardized DUT-AI SSO & External User Directory) to mandate Redis caching for external user lookups (with fail-open resilience and reactive cache invalidation upon SSO user revocation). Formally codifies the complete eradication of local user database tables, models, and repositories in the identity module.
+- Version Change: 2.2.0 → 2.3.0
+- Bump Rationale: MINOR. Formally codifies Presentation Layer Purity (Thin Controllers & Zero Repository Injections in Routers) under Principle I, and Gateway Edge CORS Preflight & Proxy Buffer Standards (minimum 64k for enterprise JWT tokens) under Principle VIII.
 - Modified Principles:
-  - V. Standardized DUT-AI SSO & External User Directory (Pure SSO) → V. Standardized DUT-AI SSO, External User Directory & Redis Caching (Pure SSO) (NON-NEGOTIABLE)
+  - I. Clean Architecture, Domain Purity & Repository Isolation (NON-NEGOTIABLE) → I. Clean Architecture, Domain Purity, Repository Isolation & Thin Presentation Layer (NON-NEGOTIABLE)
+  - VIII. Zero-Trust Identity Binding & Reverse Proxy Gateway → VIII. Zero-Trust Identity Binding, Gateway Edge CORS & Proxy Buffer Governance
 - Added Sections: None
 - Removed Sections: None
 - Follow-up TODOs: None
@@ -13,18 +14,28 @@ SYNC IMPACT REPORT
 
 ## Core Principles
 
-### I. Clean Architecture, Domain Purity & Repository Isolation (NON-NEGOTIABLE)
+### I. Clean Architecture, Domain Purity, Repository Isolation & Thin Presentation Layer (NON-NEGOTIABLE)
 Entities located in `modules/*/domain/entities.py` MUST be pure Python dataclasses without external framework dependencies.
 Domain models MUST NOT import framework or persistence libraries (such as `pydantic`, `fastapi`, `sqlalchemy`, `httpx`, or ORM components).
 Business rules, domain invariants, and core domain calculations MUST reside exclusively within the domain layer or application services, never inside route handlers, controller scripts, or database ORM models.
+
+**Repository Isolation & Persistence Rules**:
 Repository implementations in `modules/*/repository/` MUST strictly observe Single Responsibility and Aggregate Root isolation:
 - Each repository file MUST manage a single Aggregate Root or distinct persistence concern; monolithic "God Repositories" combining multiple aggregate roots into one file are strictly forbidden.
 - Repositories MUST NOT import Application layer exceptions (`use_cases/exceptions`) or embed workflow orchestration; failure conditions in persistence must be raised via domain or standard infrastructure errors.
 - Repositories MUST NOT call `session.commit()` internally. Transaction commit lifecycles belong strictly to the Unit of Work / Request-scoped transaction manager.
 - Cross-aggregate relationships and policy bindings (e.g., project-service bindings and quota policies) MUST be abstracted into dedicated repository contracts (`IQuotaPolicyRepository`) rather than overloading individual aggregate repositories.
+
+**Thin Presentation Layer (Router Purity)**:
+Route handlers in `apps/api/routers/` MUST operate strictly as thin HTTP adaptors:
+- Routers MUST NOT inject repository interfaces (`IRepository`) directly; all data access and operational actions MUST be encapsulated within dedicated Application Use Cases injected via Dishka (`FromDishka[UseCase]`).
+- Routers MUST NOT embed business calculations, fallback policy defaults (e.g. default quota limits), or loops orchestrating multiple downstream queries.
+- Use Cases MUST execute all business orchestration and return structured Application/Domain DTOs containing complete, pre-computed data ready for direct mapping to HTTP response schemas.
+- Route definitions spanning multiple distinct operational sub-concerns (e.g., projects, clients, keys, services, audit) MUST be modularized into dedicated sub-router modules within a package rather than aggregated into single monolithic files.
+
 This invariant is enforced by automated test suite gates (`tests/test_clean_architecture_purity.py`) and code review checks.
 
-*Rationale*: Keeping business rules completely decoupled from delivery mechanisms and persistence infrastructure guarantees frictionless testability without mocking DB/HTTP layers, shields core domain models from framework churn, and preserves atomic transaction boundaries across distinct aggregates.
+*Rationale*: Keeping business rules and query orchestration completely decoupled from delivery mechanisms and persistence infrastructure guarantees frictionless testability without mocking DB/HTTP layers, shields core domain models from framework churn, prevents presentation layer degradation, and preserves atomic transaction boundaries across distinct aggregates.
 
 ### II. Modular Monolith with Dishka IoC
 The application is structured as a modular monolith where each distinct bounded context resides in its own isolated package under `modules/<context>/` (including `identity`, `vault`, and `gateway`).
@@ -77,13 +88,17 @@ SDKs MUST update in-memory configurations and trigger registered reload callback
 
 *Rationale*: Zero-downtime configuration updates enable immediate secret rotation during security incidents and seamless development without operational disruptions.
 
-### VIII. Zero-Trust Identity Binding & Reverse Proxy Gateway
+### VIII. Zero-Trust Identity Binding, Gateway Edge CORS & Proxy Buffer Governance
 All external traffic to backend services MUST route through Apache APISIX operating as a Zero-Trust API Gateway.
 Clients MUST present both a valid Virtual Access Key (`X-Virtual-Key`) and a cryptographic client certificate (mTLS for Device Identity or Machine Identity issued by the internal CA).
 The gateway MUST enforce Identity Binding via high-performance custom Lua filter (`identity-binding-filter`), verifying the certificate fingerprint against Redis mappings in under 2ms. If a key is copied to an uncertified machine or mismatched project, the gateway MUST fail closed and return `HTTP 403 Forbidden`.
 The gateway MUST inject real upstream credentials into forwarded requests, shielding underlying service credentials from downstream clients.
 
-*Rationale*: Mitigates token theft and replay attacks by tying cryptographic possession of client hardware/deployment certificates to API access credentials while centralizing upstream security governance.
+**Edge CORS & Proxy Buffer Governance**:
+- The API Gateway MUST terminate and approve cross-origin preflight `OPTIONS` requests at the edge via the native `cors` plugin across all unified routes (`/api/*`), guaranteeing uniform header exchange and eliminating browser `405 Method Not Allowed` or `Network Error` blocks.
+- The API Gateway proxy buffer configuration MUST allocate sufficient capacity (`proxy_buffer_size 64k;`, `proxy_buffers 4 64k;`, `proxy_busy_buffers_size 128k;`) to handle cryptographically signed enterprise tokens and authentication headers without upstream truncation or `502 Bad Gateway` drops.
+
+*Rationale*: Mitigates token theft and replay attacks by tying cryptographic possession of client hardware/deployment certificates to API access credentials, centralizes upstream security governance, and ensures resilient edge routing for high-entropy enterprise authentication payloads.
 
 ## Technical Constraints & Standards
 
@@ -101,6 +116,7 @@ The gateway MUST inject real upstream credentials into forwarded requests, shiel
 - **TLS Termination**: mTLS with client certificate verification via custom CA certificate authority.
 - **Custom Plugins**: `identity-binding-filter` Lua plugin for atomic fingerprint and virtual key validation against Redis cache.
 - **Upstream Protection**: Credential injection via `proxy-rewrite` plugin and rate limiting via `limit-count`.
+- **Edge Routing & Buffers**: Native `cors` plugin active on control plane routes and 64k proxy buffer allocation in `nginx_config`.
 
 ### Client SDKs Stack
 - **Python SDK**: `packages/dut-vault-sdk` providing synchronous and asynchronous in-memory secret loaders.
@@ -111,7 +127,7 @@ The gateway MUST inject real upstream credentials into forwarded requests, shiel
 - **Framework**: Next.js 16 (App Router) with React 19.
 - **Styling**: Tailwind CSS v4 and Radix UI / shadcn accessible design patterns.
 - **State & Data Fetching**: TanStack React Query with Axios client and centralized 401 interception.
-- **API Boundary**: Pure client Next.js application (no Next.js route handlers `app/api/`; all API interactions route directly to FastAPI `/api/v1`).
+- **API Boundary**: Pure client Next.js application (no Next.js route handlers `app/api/`; all API interactions route directly to FastAPI `/api/v1` via Gateway).
 - **Quality Tooling**: TypeScript compiler (`tsc --noEmit`) and ESLint.
 
 ### Infrastructure & Security
@@ -137,4 +153,4 @@ All pull requests and code modifications MUST satisfy the following quality gate
   - **PATCH**: Wording improvements, clarifications, typo corrections, or non-semantic refinements.
 - **Compliance Verification**: All architectural design artifacts (`spec.md`, `plan.md`, `tasks.md`) and code reviews MUST explicitly reference and verify compliance with Core Principles I through VIII.
 
-**Version**: 2.2.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-24
+**Version**: 2.3.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-25

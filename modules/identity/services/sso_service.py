@@ -67,7 +67,11 @@ class DutAiSsoService:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 res = await client.get(
                     self.me_url,
-                    headers={"Authorization": f"Bearer {token}"},
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Cookie": f"access_token={token}",
+                        "Accept": "application/json",
+                    },
                 )
                 if res.status_code == 200:
                     body = res.json()

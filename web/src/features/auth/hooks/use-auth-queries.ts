@@ -12,7 +12,14 @@ export function useUserQuery() {
   return useQuery({
     queryKey: AUTH_QUERY_KEY,
     queryFn: () => authService.getMe(),
-    retry: false,
+    retry: (failureCount, error: unknown) => {
+      // Không retry nếu là 401 (chưa đăng nhập / hết hạn)
+      const err = error as { response?: { status?: number } };
+      if (err?.response?.status === 401) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     staleTime: 5 * 60 * 1000,
     // Chỉ kích hoạt query khi không ở các trang public auth để tránh 401 loop
     enabled:
@@ -22,17 +29,31 @@ export function useUserQuery() {
   });
 }
 
+function handleLoginSuccess(
+  queryClient: ReturnType<typeof useQueryClient>,
+  router: ReturnType<typeof useRouter>
+) {
+  queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+  const redirectUrl =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("redirect") ||
+        "/dashboard"
+      : "/dashboard";
+
+  if (typeof window !== "undefined") {
+    window.location.assign(redirectUrl);
+  } else {
+    router.push(redirectUrl);
+  }
+}
+
 export function useLoginMutation() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
   return useMutation({
     mutationFn: (data: LoginInput) => authService.login(data),
-    onSuccess: async () => {
-      const user = await authService.getMe();
-      queryClient.setQueryData(AUTH_QUERY_KEY, user);
-      router.push("/dashboard");
-    },
+    onSuccess: () => handleLoginSuccess(queryClient, router),
   });
 }
 
@@ -42,11 +63,7 @@ export function useLoginSsoMutation() {
 
   return useMutation({
     mutationFn: (data: LoginInput) => authService.loginSso(data),
-    onSuccess: async () => {
-      const user = await authService.getMe();
-      queryClient.setQueryData(AUTH_QUERY_KEY, user);
-      router.push("/dashboard");
-    },
+    onSuccess: () => handleLoginSuccess(queryClient, router),
   });
 }
 

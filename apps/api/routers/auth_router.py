@@ -28,25 +28,22 @@ async def sso_login(
     access_token = sso_data.access_token
     refresh_token = sso_data.refresh_token
 
-    # Set SSO cookies (both on .dutai.io.vn and host)
-    for domain in [".dutai.io.vn", None]:
+    # Set SSO cookies on current host
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        path="/",
+        httponly=True,
+        samesite="lax",
+    )
+    if refresh_token:
         response.set_cookie(
-            key="access_token",
-            value=access_token,
+            key="refresh_token",
+            value=refresh_token,
             path="/",
-            domain=domain,
             httponly=True,
             samesite="lax",
         )
-        if refresh_token:
-            response.set_cookie(
-                key="refresh_token",
-                value=refresh_token,
-                path="/",
-                domain=domain,
-                httponly=True,
-                samesite="lax",
-            )
 
     return TokenResponse(
         access_token=access_token,
@@ -62,16 +59,14 @@ async def sso_login(
     summary="Clear SSO authentication session",
 )
 async def logout(response: Response) -> dict[str, str]:
-    """Clear SSO authentication cookies on both .dutai.io.vn and local domain."""
-    for domain in [".dutai.io.vn", None]:
-        for key in ["access_token", "refresh_token"]:
-            response.delete_cookie(
-                key=key,
-                path="/",
-                domain=domain,
-                httponly=True,
-                samesite="lax",
-            )
+    """Clear SSO authentication cookies."""
+    for key in ["access_token", "refresh_token"]:
+        response.delete_cookie(
+            key=key,
+            path="/",
+            httponly=True,
+            samesite="lax",
+        )
     return {"message": "Đăng xuất thành công"}
 
 

@@ -1,6 +1,7 @@
 from modules.gateway.use_cases.bind_service_to_project import (
     BindServiceToProjectUseCase,
 )
+from modules.gateway.use_cases.create_project import CreateProjectUseCase
 from modules.gateway.use_cases.create_upstream_service import (
     CreateUpstreamServiceUseCase,
 )
@@ -26,6 +27,7 @@ from modules.gateway.use_cases.list_audit_events import (
     ListAuditEventsUseCase,
 )
 from modules.gateway.use_cases.list_project_allowed_services import (
+    AllowedServiceUsageDTO,
     ListProjectAllowedServicesUseCase,
 )
 from modules.gateway.use_cases.list_projects import ListProjectsUseCase
@@ -50,8 +52,10 @@ from modules.gateway.use_cases.verify_identity_binding import (
 )
 
 __all__ = [
+    "AllowedServiceUsageDTO",
     "BindServiceToProjectUseCase",
     "ClientNotFoundError",
+    "CreateProjectUseCase",
     "CreateUpstreamServiceUseCase",
     "DailyQuotaExceededError",
     "GenerateVirtualKeyUseCase",

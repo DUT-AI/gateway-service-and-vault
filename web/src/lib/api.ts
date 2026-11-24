@@ -14,7 +14,12 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    if (config.headers && typeof config.headers.set === "function") {
+      config.headers.set("Authorization", `Bearer ${token}`);
+    } else {
+      config.headers = config.headers || {};
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -23,7 +28,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const isLoginRequest = error.config?.url?.includes("/auth/login");
+      const url = error.config?.url || "";
+      const isLoginRequest =
+        url.includes("/auth/login") || url.includes("/auth/sso-login");
       const isAlreadyOnAuthPage =
         typeof window !== "undefined" &&
         (window.location.pathname === "/login" ||

@@ -98,3 +98,49 @@ async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
     assert unauth_fin_res.status_code == 403
     err_json = unauth_fin_res.json()
     assert "ScopePermissionDeniedError" in err_json.get("code", "")
+
+
+@pytest.mark.asyncio
+async def test_vault_jwt_sso_bearer_token_access(client: AsyncClient):
+    """Test that authenticated SSO admin Bearer tokens automatically resolve permissions without manual headers."""
+    import jwt
+
+    # 1. Create a Project
+    proj_res = await client.post(
+        "/api/v1/gateway/projects",
+        json={"name": "SSO Vault Project", "slug": "sso-vault-proj"},
+    )
+    assert proj_res.status_code == 201
+    proj_id = proj_res.json()["id"]
+
+    # 2. Add Secret
+    add_res = await client.post(
+        f"/api/v1/vault/projects/{proj_id}/secrets",
+        json={
+            "scope_name": "Common",
+            "key": "SSO_CONFIG_KEY",
+            "value": "super_secret_sso_val",
+        },
+        headers={"x-actor-id": "admin"},
+    )
+    assert add_res.status_code == 201
+
+    # 3. Request without any auth headers -> Deny-by-default (empty scopes)
+    anon_res = await client.get(f"/api/v1/vault/projects/{proj_id}/secrets")
+    assert anon_res.status_code == 200
+    assert anon_res.json()["scopes"] == {}
+
+    # 4. Request with SSO Admin Bearer token (no x-identity-id header!)
+    admin_token = jwt.encode(
+        {"sub": "1", "user_id": 1, "roles": ["admin"], "name": "Admin User"},
+        "test-secret",
+        algorithm="HS256",
+    )
+    admin_res = await client.get(
+        f"/api/v1/vault/projects/{proj_id}/secrets",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert admin_res.status_code == 200
+    admin_scopes = admin_res.json()["scopes"]
+    assert "Common" in admin_scopes
+    assert admin_scopes["Common"]["SSO_CONFIG_KEY"] == "super_secret_sso_val"

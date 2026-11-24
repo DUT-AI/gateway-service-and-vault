@@ -1,6 +1,10 @@
-from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Header, Query, status
+from typing import Annotated
 
+from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Depends, Header, Query, status
+
+from apps.api.routers.vault.auth_helpers import resolve_caller_identity
+from core.security.deps import get_optional_user_payload
 from modules.vault.dtos.vault_dtos import (
     CreateSecretRequest,
     GetSecretsResponse,
@@ -26,15 +30,20 @@ async def create_secret(
     project_id: str,
     req: CreateSecretRequest,
     use_case: FromDishka[CreateSecretUseCase],
+    user_payload: Annotated[dict | None, Depends(get_optional_user_payload)] = None,
     x_actor_id: str = Header(default="admin"),
 ) -> SecretResponse:
     """Create or update an encrypted configuration secret and broadcast change."""
+    actor = x_actor_id
+    if user_payload and x_actor_id == "admin":
+        actor = user_payload.get("email") or str(user_payload.get("user_id")) or "admin"
+
     secret = await use_case.execute(
         project_id=project_id,
         scope_name=req.scope_name,
         key=req.key,
         value=req.value,
-        actor=x_actor_id,
+        actor=actor,
     )
     return SecretResponse(
         id=secret.id,
@@ -56,11 +65,12 @@ async def get_secrets(
     use_case: FromDishka[GetSecretsByScopeUseCase],
     scope: str | None = Query(default=None),
     key: str | None = Query(default=None),
+    user_payload: Annotated[dict | None, Depends(get_optional_user_payload)] = None,
     x_identity_id: str | None = Header(default=None),
     x_user_role: str | None = Header(default=None),
 ) -> GetSecretsResponse:
     """Retrieve decrypted configuration secrets filtered by identity permissions."""
-    caller_id = x_identity_id or x_user_role or "anonymous"
+    caller_id = resolve_caller_identity(user_payload, x_identity_id, x_user_role)
     decrypted_scopes = await use_case.execute(
         project_id=project_id,
         caller_identity_id=caller_id,

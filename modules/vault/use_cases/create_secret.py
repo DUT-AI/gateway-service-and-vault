@@ -1,5 +1,9 @@
 from modules.vault.domain.entities import ConfigChangeEvent, SecretItemEntity
-from modules.vault.domain.interfaces import ISecretRepository, IVaultBroadcaster
+from modules.vault.domain.interfaces import (
+    IKeyPermissionRepository,
+    ISecretRepository,
+    IVaultBroadcaster,
+)
 from modules.vault.services.encryption import VaultEncryptionService
 
 
@@ -11,10 +15,12 @@ class CreateSecretUseCase:
         secret_repo: ISecretRepository,
         encryption_service: VaultEncryptionService,
         broadcaster: IVaultBroadcaster,
+        permission_repo: IKeyPermissionRepository,
     ) -> None:
         self.secret_repo = secret_repo
         self.encryption_service = encryption_service
         self.broadcaster = broadcaster
+        self.permission_repo = permission_repo
 
     async def execute(
         self,
@@ -38,6 +44,20 @@ class CreateSecretUseCase:
             auth_tag=auth_tag,
             actor=actor,
         )
+
+        # Automatically grant creator read permission if specific actor provided and not system/admin
+        if (
+            self.permission_repo
+            and actor
+            and actor.lower() not in ["admin", "system", "anonymous"]
+        ):
+            await self.permission_repo.grant_key_permission(
+                project_id=project_id,
+                identity_id=actor,
+                secret_key=key,
+                identity_type="user",
+                granted_by=actor,
+            )
 
         event = ConfigChangeEvent(
             project_id=project_id,

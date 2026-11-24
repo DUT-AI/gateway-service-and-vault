@@ -42,3 +42,48 @@ def test_user_id_standardization_is_int():
     assert isinstance(user.id, int)
     assert user.is_active() is True
     assert user.is_admin() is False
+
+
+def test_routers_thin_layer_zero_repository_injections():
+    """Verify that Presentation routers never inject Repository interfaces directly (Principle I)."""
+    import re
+    from pathlib import Path
+
+    routers_dir = Path(__file__).resolve().parent.parent / "apps" / "api" / "routers"
+    repo_pattern = re.compile(
+        r"FromDishka\[.*Repository.*\]|from .* import .*Repository"
+    )
+
+    violations = []
+    for py_file in routers_dir.rglob("*.py"):
+        content = py_file.read_text(encoding="utf-8")
+        matches = repo_pattern.findall(content)
+        if matches:
+            violations.append(f"{py_file.name}: {matches}")
+
+    assert not violations, f"Forbidden Repository injection in routers: {violations}"
+
+
+def test_repositories_zero_use_case_and_commit_calls():
+    """Verify that Repositories never import Use Cases or execute commit() (Principle I)."""
+    from pathlib import Path
+
+    modules_dir = Path(__file__).resolve().parent.parent / "modules"
+    commit_violations = []
+    use_case_violations = []
+
+    for py_file in modules_dir.glob("*/repository/*.py"):
+        if py_file.name == "__init__.py":
+            continue
+        content = py_file.read_text(encoding="utf-8")
+        if ".commit()" in content:
+            commit_violations.append(py_file.name)
+        if "use_cases" in content:
+            use_case_violations.append(py_file.name)
+
+    assert not commit_violations, (
+        f"Forbidden .commit() call in repositories: {commit_violations}"
+    )
+    assert not use_case_violations, (
+        f"Forbidden use_cases import in repositories: {use_case_violations}"
+    )

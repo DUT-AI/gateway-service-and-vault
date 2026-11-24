@@ -2,15 +2,18 @@ import asyncio
 import json
 import time
 from datetime import UTC, datetime
+from typing import Annotated
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Depends, Header, Query
 from fastapi.responses import StreamingResponse
 from loguru import logger
 
+from apps.api.routers.vault.auth_helpers import resolve_caller_identity
 from core.config import redis_settings
-from modules.vault.domain.interfaces import IKeyPermissionRepository
+from core.security.deps import get_optional_user_payload
 from modules.vault.services.broadcaster import RedisVaultBroadcaster
+from modules.vault.use_cases import ListIdentityPermissionsUseCase
 
 router = APIRouter()
 
@@ -22,22 +25,26 @@ router = APIRouter()
 @inject
 async def stream_project_secrets(
     project_id: str,
-    permission_repo: FromDishka[IKeyPermissionRepository],
+    permissions_use_case: FromDishka[ListIdentityPermissionsUseCase],
     scope: str | None = Query(default=None),
     identity_id: str | None = Query(default=None),
     max_events: int | None = Query(
         default=None,
         description="Max events to yield before closing stream (useful for testing)",
     ),
+    user_payload: Annotated[dict | None, Depends(get_optional_user_payload)] = None,
     x_identity_id: str | None = Header(default=None),
     x_user_role: str | None = Header(default=None),
 ) -> StreamingResponse:
     """Stream real-time secret update events filtered by caller key permissions."""
-    caller_id = x_identity_id or identity_id or x_user_role or "anonymous"
+    caller_id = resolve_caller_identity(
+        user_payload,
+        x_identity_id=x_identity_id,
+        x_user_role=x_user_role,
+        identity_query_param=identity_id,
+    )
     permitted_keys = set(
-        await permission_repo.get_permitted_keys_for_identity(
-            project_id=project_id, identity_id=caller_id
-        )
+        await permissions_use_case.execute(project_id=project_id, identity_id=caller_id)
     )
     is_admin = caller_id.lower() in ["admin", "system"]
     has_wildcard = "*" in permitted_keys or is_admin
@@ -114,7 +121,7 @@ async def stream_project_secrets(
                 else:
                     await asyncio.sleep(0.05)
         except asyncio.CancelledError:
-            logger.debug("SSE stream client disconnected from project {}", project_id)
+            logger.debug(f"SSE stream client disconnected from project {project_id}")
         finally:
             await pubsub.unsubscribe(channel)
             await pubsub.aclose()
