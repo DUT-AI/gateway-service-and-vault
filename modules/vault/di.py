@@ -3,8 +3,15 @@ from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import redis_settings, vault_settings
-from modules.vault.domain.interfaces import ISecretRepository, IVaultBroadcaster
-from modules.vault.repository.secret_repository import SqlSecretRepository
+from modules.vault.domain.interfaces import (
+    IKeyPermissionRepository,
+    ISecretRepository,
+    IVaultBroadcaster,
+)
+from modules.vault.repository import (
+    SqlKeyPermissionRepository,
+    SqlSecretRepository,
+)
 from modules.vault.services.broadcaster import RedisVaultBroadcaster
 from modules.vault.services.encryption import VaultEncryptionService
 from modules.vault.use_cases import (
@@ -37,6 +44,10 @@ class VaultProvider(Provider):
     @provide
     def get_secret_repo(self, session: AsyncSession) -> ISecretRepository:
         return SqlSecretRepository(session)
+
+    @provide
+    def get_permission_repo(self, session: AsyncSession) -> IKeyPermissionRepository:
+        return SqlKeyPermissionRepository(session)
 
     create_secret_uc = provide(CreateSecretUseCase)
     get_secrets_uc = provide(GetSecretsByScopeUseCase)

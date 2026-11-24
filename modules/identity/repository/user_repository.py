@@ -65,8 +65,6 @@ class SqlUserRepository(IUserRepository):
         model.role = user.role
         model.avatar_url = user.avatar_url
         model.status = user.status
-        if user.password_hash:
-            model.password_hash = user.password_hash
 
         await self.session.flush()
         await self.session.refresh(model)

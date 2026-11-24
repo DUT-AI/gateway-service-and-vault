@@ -6,19 +6,21 @@ from modules.gateway.client.apisix_client import ApisixAdminClient
 from modules.gateway.domain.interfaces import (
     IAuditEventRepository,
     IProjectRepository,
+    IQuotaPolicyRepository,
     IQuotaUsageTracker,
     IRegisteredClientRepository,
     IUpstreamServiceRepository,
     IVirtualAccessKeyRepository,
 )
-from modules.gateway.repository.audit_repository import SqlAuditEventRepository
-from modules.gateway.repository.gateway_repository import (
+from modules.gateway.repository import (
+    RedisQuotaUsageTracker,
+    SqlAuditEventRepository,
     SqlProjectRepository,
+    SqlQuotaPolicyRepository,
     SqlRegisteredClientRepository,
     SqlUpstreamServiceRepository,
     SqlVirtualAccessKeyRepository,
 )
-from modules.gateway.repository.redis_quota_tracker import RedisQuotaUsageTracker
 from modules.gateway.use_cases import (
     BindServiceToProjectUseCase,
     CreateUpstreamServiceUseCase,
@@ -73,6 +75,10 @@ class GatewayProvider(Provider):
     @provide
     def get_service_repo(self, session: AsyncSession) -> IUpstreamServiceRepository:
         return SqlUpstreamServiceRepository(session)
+
+    @provide
+    def get_quota_policy_repo(self, session: AsyncSession) -> IQuotaPolicyRepository:
+        return SqlQuotaPolicyRepository(session)
 
     @provide
     def get_audit_repo(self, session: AsyncSession) -> IAuditEventRepository:

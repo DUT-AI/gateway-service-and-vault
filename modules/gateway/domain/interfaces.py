@@ -28,10 +28,22 @@ class IProjectRepository(ABC):
     @abstractmethod
     async def list_all(self) -> list[ProjectEntity]: ...
 
+
+class IQuotaPolicyRepository(ABC):
+    """Repository interface for project-upstream bindings and quota policies."""
+
     @abstractmethod
     async def list_allowed_services(
         self, project_id: str
     ) -> list[tuple[UpstreamServiceEntity, QuotaPolicyEntity | None]]: ...
+
+    @abstractmethod
+    async def get_service_quota(
+        self, project_id: str, service_id: str
+    ) -> QuotaPolicyEntity | None: ...
+
+    @abstractmethod
+    async def is_service_allowed(self, project_id: str, service_id: str) -> bool: ...
 
     @abstractmethod
     async def bind_service(
@@ -45,14 +57,6 @@ class IProjectRepository(ABC):
     async def update_service_quota(
         self, project_id: str, service_id: str, rate_limit_rpm: int, quota_daily: int
     ) -> QuotaPolicyEntity: ...
-
-    @abstractmethod
-    async def get_service_quota(
-        self, project_id: str, service_id: str
-    ) -> QuotaPolicyEntity | None: ...
-
-    @abstractmethod
-    async def is_service_allowed(self, project_id: str, service_id: str) -> bool: ...
 
 
 class IRegisteredClientRepository(ABC):
@@ -105,6 +109,9 @@ class IVirtualAccessKeyRepository(ABC):
 
     @abstractmethod
     async def revoke_active_keys(self, client_id: str, project_id: str) -> int: ...
+
+    @abstractmethod
+    async def revoke_all_by_client(self, client_id: str) -> int: ...
 
     @abstractmethod
     async def list_by_project(

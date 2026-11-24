@@ -10,6 +10,8 @@ from modules.vault.domain.entities import (
 
 
 class ISecretRepository(ABC):
+    """Repository interface strictly managing secrets, scopes, and history."""
+
     @abstractmethod
     async def get_or_create_scope(
         self, project_id: str, scope_name: str, description: str | None = None
@@ -34,6 +36,10 @@ class ISecretRepository(ABC):
         auth_tag: str,
         actor: str = "",
     ) -> SecretItemEntity: ...
+
+
+class IKeyPermissionRepository(ABC):
+    """Repository interface strictly managing key-level permissions for identities."""
 
     @abstractmethod
     async def grant_key_permission(

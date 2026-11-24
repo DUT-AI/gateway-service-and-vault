@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from loguru import logger
 
 from core.config import redis_settings
-from modules.vault.domain.interfaces import ISecretRepository
+from modules.vault.domain.interfaces import IKeyPermissionRepository
 from modules.vault.services.broadcaster import RedisVaultBroadcaster
 
 router = APIRouter()
@@ -22,7 +22,7 @@ router = APIRouter()
 @inject
 async def stream_project_secrets(
     project_id: str,
-    secret_repo: FromDishka[ISecretRepository],
+    permission_repo: FromDishka[IKeyPermissionRepository],
     scope: str | None = Query(default=None),
     identity_id: str | None = Query(default=None),
     max_events: int | None = Query(
@@ -35,7 +35,7 @@ async def stream_project_secrets(
     """Stream real-time secret update events filtered by caller key permissions."""
     caller_id = x_identity_id or identity_id or x_user_role or "anonymous"
     permitted_keys = set(
-        await secret_repo.get_permitted_keys_for_identity(
+        await permission_repo.get_permitted_keys_for_identity(
             project_id=project_id, identity_id=caller_id
         )
     )

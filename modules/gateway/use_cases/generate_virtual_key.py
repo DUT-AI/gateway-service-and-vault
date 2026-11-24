@@ -44,6 +44,9 @@ class GenerateVirtualKeyUseCase:
         key_prefix = raw_token[:12]
         key_hash = PrivateCA.hash_virtual_key(raw_token)
 
+        # Enforce single active key policy
+        await self.key_repo.revoke_active_keys(client_id, project_id)
+
         key_entity = await self.key_repo.create(
             key_hash=key_hash,
             key_prefix=key_prefix,

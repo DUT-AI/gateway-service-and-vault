@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     try:
         from core.database.session import AsyncSessionLocal
         from modules.gateway.client.apisix_client import ApisixAdminClient
-        from modules.gateway.repository.gateway_repository import (
+        from modules.gateway.repository.upstream_service_repository import (
             SqlUpstreamServiceRepository,
         )
 
@@ -63,7 +63,7 @@ async def lifespan(app: FastAPI):
             "Successfully synchronized APISIX routes and mTLS SSL certificate for unified gateway entrypoint."
         )
     except Exception as e:
-        logger.warning("Could not synchronize APISIX routes on startup: %s", e)
+        logger.warning(f"Could not synchronize APISIX routes on startup: {e}")
 
     yield
 

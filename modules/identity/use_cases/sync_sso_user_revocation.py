@@ -7,6 +7,7 @@ from modules.gateway.domain.entities import AuditEventEntity, ClientType
 from modules.gateway.domain.interfaces import (
     IAuditEventRepository,
     IRegisteredClientRepository,
+    IVirtualAccessKeyRepository,
 )
 
 
@@ -16,9 +17,11 @@ class SyncSsoUserRevocationUseCase:
     def __init__(
         self,
         client_repo: IRegisteredClientRepository,
+        key_repo: IVirtualAccessKeyRepository,
         audit_repo: IAuditEventRepository,
     ) -> None:
         self.client_repo = client_repo
+        self.key_repo = key_repo
         self.audit_repo = audit_repo
 
     async def execute(self, user_id: int) -> dict[str, Any]:
@@ -30,6 +33,7 @@ class SyncSsoUserRevocationUseCase:
             if not client.is_revoked:
                 success = await self.client_repo.revoke_client(client.id)
                 if success:
+                    await self.key_repo.revoke_all_by_client(client.id)
                     revoked_count += 1
 
         # Record immutable audit log

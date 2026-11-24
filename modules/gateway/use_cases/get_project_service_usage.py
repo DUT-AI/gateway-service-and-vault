@@ -2,6 +2,7 @@
 
 from modules.gateway.domain.interfaces import (
     IProjectRepository,
+    IQuotaPolicyRepository,
     IQuotaUsageTracker,
 )
 from modules.gateway.dtos.gateway_dtos import QuotaUsageResponse
@@ -15,12 +16,14 @@ class GetProjectServiceUsageUseCase:
         self,
         project_repo: IProjectRepository,
         quota_tracker: IQuotaUsageTracker,
+        quota_repo: IQuotaPolicyRepository,
     ) -> None:
         self.project_repo = project_repo
         self.quota_tracker = quota_tracker
+        self.quota_repo = quota_repo
 
     async def execute(self, project_id: str, service_id: str) -> QuotaUsageResponse:
-        policy = await self.project_repo.get_service_quota(project_id, service_id)
+        policy = await self.quota_repo.get_service_quota(project_id, service_id)
         if not policy:
             raise ServiceNotBoundError(
                 f"Service '{service_id}' is not bound to project '{project_id}'"

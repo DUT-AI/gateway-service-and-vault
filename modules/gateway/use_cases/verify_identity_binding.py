@@ -7,6 +7,7 @@ from modules.gateway.domain.entities import AuditEventEntity, ClientType
 from modules.gateway.domain.interfaces import (
     IAuditEventRepository,
     IProjectRepository,
+    IQuotaPolicyRepository,
     IQuotaUsageTracker,
     IRegisteredClientRepository,
     IUpstreamServiceRepository,
@@ -30,6 +31,7 @@ class VerifyIdentityBindingUseCase:
         service_repo: IUpstreamServiceRepository,
         quota_tracker: IQuotaUsageTracker,
         audit_repo: IAuditEventRepository,
+        quota_repo: IQuotaPolicyRepository,
     ) -> None:
         self.key_repo = key_repo
         self.client_repo = client_repo
@@ -37,6 +39,7 @@ class VerifyIdentityBindingUseCase:
         self.service_repo = service_repo
         self.quota_tracker = quota_tracker
         self.audit_repo = audit_repo
+        self.quota_repo = quota_repo
 
     async def _record_audit(
         self,
@@ -172,7 +175,7 @@ class VerifyIdentityBindingUseCase:
                 )
             target_service_id = service.id
 
-        if target_service_id and not await self.project_repo.is_service_allowed(
+        if target_service_id and not await self.quota_repo.is_service_allowed(
             project_id, target_service_id
         ):
             await self._record_audit(
@@ -193,7 +196,7 @@ class VerifyIdentityBindingUseCase:
 
         # Enforce daily quota ceiling if service is configured
         if target_service_id and self.quota_tracker:
-            policy = await self.project_repo.get_service_quota(
+            policy = await self.quota_repo.get_service_quota(
                 project_id, target_service_id
             )
             if policy and policy.is_active:

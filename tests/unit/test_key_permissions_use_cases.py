@@ -33,7 +33,7 @@ async def test_grant_key_permission_use_case():
     )
     repo.grant_key_permission.return_value = expected
 
-    uc = GrantKeyPermissionUseCase(secret_repo=repo)
+    uc = GrantKeyPermissionUseCase(permission_repo=repo)
     result = await uc.execute(
         project_id="proj_1",
         identity_id="client_worker",
@@ -56,7 +56,7 @@ async def test_revoke_key_permission_use_case():
     repo = AsyncMock()
     repo.revoke_key_permission.return_value = True
 
-    uc = RevokeKeyPermissionUseCase(secret_repo=repo)
+    uc = RevokeKeyPermissionUseCase(permission_repo=repo)
     result = await uc.execute(
         project_id="proj_1",
         identity_id="client_worker",
@@ -75,7 +75,7 @@ async def test_list_identity_permissions_use_case():
     repo = AsyncMock()
     repo.get_permitted_keys_for_identity.return_value = ["KEY_A", "KEY_B"]
 
-    uc = ListIdentityPermissionsUseCase(secret_repo=repo)
+    uc = ListIdentityPermissionsUseCase(permission_repo=repo)
     result = await uc.execute(project_id="proj_1", identity_id="client_worker")
     assert result == ["KEY_A", "KEY_B"]
     repo.get_permitted_keys_for_identity.assert_awaited_once_with(
@@ -89,7 +89,11 @@ async def test_get_secrets_deny_by_default_when_no_permissions():
     repo.get_permitted_keys_for_identity.return_value = []
     enc_service = MagicMock()
 
-    uc = GetSecretsByScopeUseCase(secret_repo=repo, encryption_service=enc_service)
+    uc = GetSecretsByScopeUseCase(
+        secret_repo=repo,
+        encryption_service=enc_service,
+        permission_repo=repo,
+    )
     result = await uc.execute(project_id="proj_1", caller_identity_id="unauthorized_id")
     assert result == {}
 
@@ -100,7 +104,11 @@ async def test_get_secrets_raises_403_on_unauthorized_single_key():
     repo.get_permitted_keys_for_identity.return_value = ["ALLOWED_KEY"]
     enc_service = MagicMock()
 
-    uc = GetSecretsByScopeUseCase(secret_repo=repo, encryption_service=enc_service)
+    uc = GetSecretsByScopeUseCase(
+        secret_repo=repo,
+        encryption_service=enc_service,
+        permission_repo=repo,
+    )
     with pytest.raises(ScopePermissionDeniedError):
         await uc.execute(
             project_id="proj_1",
@@ -146,7 +154,11 @@ async def test_get_secrets_filters_decrypted_secrets_by_permitted_keys():
     enc_service = MagicMock()
     enc_service.decrypt.return_value = "decrypted_key_1"
 
-    uc = GetSecretsByScopeUseCase(secret_repo=repo, encryption_service=enc_service)
+    uc = GetSecretsByScopeUseCase(
+        secret_repo=repo,
+        encryption_service=enc_service,
+        permission_repo=repo,
+    )
     result = await uc.execute(project_id="proj_1", caller_identity_id="dev_user")
     assert result == {"app": {"KEY_1": "decrypted_key_1"}}
     assert "KEY_SECRET" not in result["app"]

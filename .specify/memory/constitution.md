@@ -1,16 +1,10 @@
 <!--
 SYNC IMPACT REPORT
-- Version Change: 1.0.0 → 2.0.0
-- Bump Rationale: MAJOR. Transition from generic boilerplate to the Secure API Gateway & Dynamic Vault platform. Deprecated and eliminated local database credentials/passwords in favor of pure DUT-AI SSO; instituted native integer ID invariant across all identity layers; added Core Principles VI (Dynamic Vault & Granular Key Permissions), VII (Real-Time In-Memory Hot-Reload with SSE Key Filtering), and VIII (Zero-Trust Identity Binding & APISIX Gateway).
+- Version Change: 2.0.0 → 2.1.0
+- Bump Rationale: MINOR. Material expansion of Core Principle I (Clean Architecture, Domain Purity & Repository Isolation) to codify strict Aggregate Root boundaries for persistence layers. Explicitly mandates one repository per Aggregate Root, prohibits monolithic "God Repositories", forbids repositories from importing application use-case exceptions, bans internal session.commit() calls inside repositories to preserve Unit of Work integrity, and mandates dedicated repository abstractions for cross-aggregate policies.
 - Modified Principles:
-  - V. Standardized DUT-AI SSO Integration → V. Standardized DUT-AI SSO & External User Directory (Pure SSO, Zero Local Passwords, Strict Integer IDs)
-- Added Principles:
-  - VI. Dynamic Vault & Granular Key-Level Access Control (Zero .env Files)
-  - VII. Real-Time In-Memory Hot-Reload (< 5s Latency)
-  - VIII. Zero-Trust Identity Binding & Reverse Proxy Gateway
-- Added Sections:
-  - Gateway & Reverse Proxy Stack in Technical Constraints
-  - Client SDKs Stack in Technical Constraints
+  - I. Clean Architecture & Domain Purity → I. Clean Architecture, Domain Purity & Repository Isolation (NON-NEGOTIABLE)
+- Added Sections: None
 - Removed Sections: None
 - Follow-up TODOs: None
 -->
@@ -19,13 +13,18 @@ SYNC IMPACT REPORT
 
 ## Core Principles
 
-### I. Clean Architecture & Domain Purity (NON-NEGOTIABLE)
+### I. Clean Architecture, Domain Purity & Repository Isolation (NON-NEGOTIABLE)
 Entities located in `modules/*/domain/entities.py` MUST be pure Python dataclasses without external framework dependencies.
 Domain models MUST NOT import framework or persistence libraries (such as `pydantic`, `fastapi`, `sqlalchemy`, `httpx`, or ORM components).
 Business rules, domain invariants, and core domain calculations MUST reside exclusively within the domain layer or application services, never inside route handlers, controller scripts, or database ORM models.
-This invariant is enforced by automated test suite gates (`tests/test_clean_architecture_purity.py`).
+Repository implementations in `modules/*/repository/` MUST strictly observe Single Responsibility and Aggregate Root isolation:
+- Each repository file MUST manage a single Aggregate Root or distinct persistence concern; monolithic "God Repositories" combining multiple aggregate roots into one file are strictly forbidden.
+- Repositories MUST NOT import Application layer exceptions (`use_cases/exceptions`) or embed workflow orchestration; failure conditions in persistence must be raised via domain or standard infrastructure errors.
+- Repositories MUST NOT call `session.commit()` internally. Transaction commit lifecycles belong strictly to the Unit of Work / Request-scoped transaction manager.
+- Cross-aggregate relationships and policy bindings (e.g., project-service bindings and quota policies) MUST be abstracted into dedicated repository contracts (`IQuotaPolicyRepository`) rather than overloading individual aggregate repositories.
+This invariant is enforced by automated test suite gates (`tests/test_clean_architecture_purity.py`) and code review checks.
 
-*Rationale*: Keeping business rules completely decoupled from delivery mechanisms and persistence infrastructure guarantees frictionless testability without mocking DB/HTTP layers and shields core domain models from framework churn or breaking deprecations.
+*Rationale*: Keeping business rules completely decoupled from delivery mechanisms and persistence infrastructure guarantees frictionless testability without mocking DB/HTTP layers, shields core domain models from framework churn, and preserves atomic transaction boundaries across distinct aggregates.
 
 ### II. Modular Monolith with Dishka IoC
 The application is structured as a modular monolith where each distinct bounded context resides in its own isolated package under `modules/<context>/` (including `identity`, `vault`, and `gateway`).
@@ -134,4 +133,4 @@ All pull requests and code modifications MUST satisfy the following quality gate
   - **PATCH**: Wording improvements, clarifications, typo corrections, or non-semantic refinements.
 - **Compliance Verification**: All architectural design artifacts (`spec.md`, `plan.md`, `tasks.md`) and code reviews MUST explicitly reference and verify compliance with Core Principles I through VIII.
 
-**Version**: 2.0.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-23
+**Version**: 2.1.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-24

@@ -1,12 +1,12 @@
 from modules.vault.domain.entities import KeyPermissionEntity
-from modules.vault.domain.interfaces import ISecretRepository
+from modules.vault.domain.interfaces import IKeyPermissionRepository
 
 
 class GrantKeyPermissionUseCase:
     """Grants an identity read permission for a secret key."""
 
-    def __init__(self, secret_repo: ISecretRepository) -> None:
-        self.secret_repo = secret_repo
+    def __init__(self, permission_repo: IKeyPermissionRepository) -> None:
+        self.permission_repo = permission_repo
 
     async def execute(
         self,
@@ -16,7 +16,7 @@ class GrantKeyPermissionUseCase:
         identity_type: str = "client",
         granted_by: str = "admin",
     ) -> KeyPermissionEntity:
-        return await self.secret_repo.grant_key_permission(
+        return await self.permission_repo.grant_key_permission(
             project_id=project_id,
             identity_id=identity_id,
             secret_key=secret_key,

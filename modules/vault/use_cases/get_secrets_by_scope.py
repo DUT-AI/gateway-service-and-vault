@@ -1,6 +1,9 @@
 from loguru import logger
 
-from modules.vault.domain.interfaces import ISecretRepository
+from modules.vault.domain.interfaces import (
+    IKeyPermissionRepository,
+    ISecretRepository,
+)
 from modules.vault.services.encryption import VaultEncryptionService
 from modules.vault.use_cases.exceptions import ScopePermissionDeniedError
 
@@ -12,9 +15,11 @@ class GetSecretsByScopeUseCase:
         self,
         secret_repo: ISecretRepository,
         encryption_service: VaultEncryptionService,
+        permission_repo: IKeyPermissionRepository,
     ) -> None:
         self.secret_repo = secret_repo
         self.encryption_service = encryption_service
+        self.permission_repo = permission_repo
 
     async def execute(
         self,
@@ -24,7 +29,7 @@ class GetSecretsByScopeUseCase:
         requested_key: str | None = None,
     ) -> dict[str, dict[str, str]]:
         # Resolve permitted keys for this identity in the project
-        permitted_keys = await self.secret_repo.get_permitted_keys_for_identity(
+        permitted_keys = await self.permission_repo.get_permitted_keys_for_identity(
             project_id=project_id,
             identity_id=caller_identity_id,
         )
