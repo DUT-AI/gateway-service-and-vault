@@ -20,20 +20,22 @@ logger = logging.getLogger("dut_vault_sdk")
 
 def _load_client_signer(
     cert_pair: tuple[str, str] | None,
-) -> tuple[str, rsa.RSAPrivateKey] | None:
-    """Load SHA-256 fingerprint and RSA private key from (client.crt, client.key)."""
+) -> tuple[str, str, rsa.RSAPrivateKey] | None:
+    """Load SHA-256 fingerprint, base64 PEM cert, and RSA private key from (client.crt, client.key)."""
     if not cert_pair:
         return None
     crt_path, key_path = cert_pair
     try:
-        cert = x509.load_pem_x509_certificate(Path(crt_path).read_bytes())
+        crt_bytes = Path(crt_path).read_bytes()
+        cert = x509.load_pem_x509_certificate(crt_bytes)
         fingerprint = cert.fingerprint(hashes.SHA256()).hex()
+        cert_b64 = base64.b64encode(crt_bytes).decode("ascii")
         private_key = serialization.load_pem_private_key(
             Path(key_path).read_bytes(), password=None
         )
         if not isinstance(private_key, rsa.RSAPrivateKey):
             return None
-        return fingerprint, private_key
+        return fingerprint, cert_b64, private_key
     except Exception:
         return None
 
@@ -311,11 +313,12 @@ class VaultClient:
         """Attach Proof-of-Possession signature headers signed by client.key."""
         if not self._signer:
             return
-        fingerprint, private_key = self._signer
+        fingerprint, cert_b64, private_key = self._signer
         ts = str(int(time.time()))
         payload = f"{ts}:{request.method.upper()}:{request.url.path}".encode()
         signature = private_key.sign(payload, padding.PKCS1v15(), hashes.SHA256())
         request.headers["X-Client-Fingerprint"] = fingerprint
+        request.headers["X-Client-Cert"] = cert_b64
         request.headers["X-Client-Timestamp"] = ts
         request.headers["X-Client-Signature"] = base64.b64encode(signature).decode(
             "ascii"
@@ -333,6 +336,8 @@ class VaultClient:
         headers: dict[str, str] = {}
         if self.virtual_key:
             headers["X-Virtual-Key"] = self.virtual_key
+        if self.project_id and self.project_id != "default":
+            headers["X-Project-Id"] = self.project_id
         hook = self._sign_request_async if is_async else self._sign_request_sync
         kwargs: dict[str, Any] = {
             "timeout": timeout,

@@ -1,6 +1,6 @@
 [project]
 name = "dut-vault-sdk"
-version = "0.1.1"
+version = "0.1.2"
 description = "In-memory dynamic configuration SDK, mTLS gateway client, and CLI runner for DUT-AI Vault & Gateway"
 readme = "README.md"
 license = { text = "MIT" }

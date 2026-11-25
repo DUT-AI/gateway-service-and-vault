@@ -1,3 +1,4 @@
+import base64
 import contextlib
 from datetime import UTC, datetime
 
@@ -158,8 +159,21 @@ class VerifyIdentityBindingUseCase:
                 )
 
         if client_signature is not None:
-            sig_ok = PrivateCA.verify_client_signature(
-                cert_pem=client.cert_pem,
+            cert_pem = client_raw_cert or ""
+            if cert_pem and not cert_pem.lstrip().startswith("-----BEGIN"):
+                with contextlib.suppress(Exception):
+                    cert_pem = base64.b64decode(cert_pem).decode("utf-8")
+
+            cert_matches = False
+            if cert_pem:
+                with contextlib.suppress(Exception):
+                    cert_matches = (
+                        PrivateCA.compute_cert_fingerprint(cert_pem).lower()
+                        == client.cert_fingerprint.lower()
+                    )
+
+            sig_ok = cert_matches and PrivateCA.verify_client_signature(
+                cert_pem=cert_pem,
                 signature_b64=client_signature,
                 timestamp=client_timestamp or "",
                 method=request_method or "GET",

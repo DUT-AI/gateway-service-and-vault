@@ -46,10 +46,12 @@ function _M.rewrite(conf, ctx)
         local hdr_fp = core.request.header(ctx, "X-Client-Fingerprint")
         local hdr_ts = core.request.header(ctx, "X-Client-Timestamp")
         local hdr_sig = core.request.header(ctx, "X-Client-Signature")
-        if hdr_fp and hdr_fp ~= "" and hdr_ts and hdr_ts ~= "" and hdr_sig and hdr_sig ~= "" then
+        local hdr_cert = core.request.header(ctx, "X-Client-Cert")
+        if hdr_fp and hdr_fp ~= "" and hdr_ts and hdr_ts ~= "" and hdr_sig and hdr_sig ~= "" and hdr_cert and hdr_cert ~= "" then
             cert_fingerprint = hdr_fp
             client_timestamp = hdr_ts
             client_signature = hdr_sig
+            client_raw_cert = hdr_cert
         else
             core.log.warn("Client did not present a valid mTLS certificate or PoP signature")
             return 403, { error = "MTLS_REQUIRED", message = "Valid client certificate required" }
