@@ -9,11 +9,13 @@ from core.security.roles import UserContext
 from modules.gateway.use_cases import CheckProjectMembershipUseCase
 from modules.vault.dtos.vault_dtos import (
     CreateSecretRequest,
+    CreateSecretsBatchRequest,
     GetSecretsResponse,
     ScopeResponse,
     SecretResponse,
 )
 from modules.vault.use_cases import (
+    CreateSecretsBatchUseCase,
     CreateSecretUseCase,
     GetSecretsByScopeUseCase,
     ListScopesUseCase,
@@ -38,9 +40,11 @@ async def create_secret(
 ) -> SecretResponse:
     """Create or update an encrypted configuration secret and broadcast change."""
     actor = x_actor_id
+    grant_to_identity_id: str | None = None
     if user_ctx:
         await ensure_project_access(project_id, user_ctx, membership_uc)
-        actor = "admin" if user_ctx.is_admin else str(user_ctx.user_id)
+        actor = user_ctx.email or str(user_ctx.user_id)
+        grant_to_identity_id = str(user_ctx.user_id) if user_ctx.is_other else None
 
     secret = await use_case.execute(
         project_id=project_id,
@@ -48,6 +52,7 @@ async def create_secret(
         key=req.key,
         value=req.value,
         actor=actor,
+        grant_to_identity_id=grant_to_identity_id,
     )
     return SecretResponse(
         id=secret.id,
@@ -57,6 +62,49 @@ async def create_secret(
         version=secret.version,
         created_at=secret.created_at,
     )
+
+
+@router.post(
+    "/projects/{project_id}/secrets/batch",
+    response_model=list[SecretResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Batch create or update multiple encrypted secrets in one request",
+)
+@inject
+async def create_secrets_batch(
+    project_id: str,
+    req: CreateSecretsBatchRequest,
+    use_case: FromDishka[CreateSecretsBatchUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[UserContext | None, Depends(get_optional_user_context)] = None,
+    x_actor_id: str = Header(default="admin"),
+) -> list[SecretResponse]:
+    """Create or update multiple encrypted secrets under a scope in one transaction."""
+    actor = x_actor_id
+    grant_to_identity_id: str | None = None
+    if user_ctx:
+        await ensure_project_access(project_id, user_ctx, membership_uc)
+        actor = user_ctx.email or str(user_ctx.user_id)
+        grant_to_identity_id = str(user_ctx.user_id) if user_ctx.is_other else None
+
+    secrets = await use_case.execute(
+        project_id=project_id,
+        scope_name=req.scope_name,
+        items=[(item.key, item.value) for item in req.items],
+        actor=actor,
+        grant_to_identity_id=grant_to_identity_id,
+    )
+    return [
+        SecretResponse(
+            id=s.id,
+            project_id=s.project_id,
+            scope_id=s.scope_id,
+            key=s.key,
+            version=s.version,
+            created_at=s.created_at,
+        )
+        for s in secrets
+    ]
 
 
 @router.get(
@@ -72,7 +120,6 @@ async def get_secrets(
     key: str | None = Query(default=None),
     user_ctx: Annotated[UserContext | None, Depends(get_optional_user_context)] = None,
     x_identity_id: str | None = Header(default=None),
-    x_user_role: str | None = Header(default=None),
 ) -> GetSecretsResponse:
     """Retrieve decrypted configuration secrets filtered by RoleTier, membership, and key ACL."""
     if user_ctx:
@@ -80,7 +127,7 @@ async def get_secrets(
         caller_id = str(user_ctx.user_id)
         bypass_key_acl = user_ctx.is_admin or user_ctx.is_developer
     else:
-        caller_id = x_identity_id or x_user_role or "anonymous"
+        caller_id = x_identity_id or "anonymous"
         bypass_key_acl = False
 
     decrypted_scopes = await use_case.execute(

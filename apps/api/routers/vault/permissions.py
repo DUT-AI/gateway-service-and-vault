@@ -1,9 +1,9 @@
 from typing import Annotated
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Depends, Header, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from core.security.deps import require_role_tier
+from core.security.deps import get_current_user_context, require_role_tier
 from core.security.roles import RoleTier, UserContext
 from modules.vault.dtos.vault_dtos import (
     GrantKeyPermissionRequest,
@@ -30,10 +30,9 @@ async def grant_key_permission(
     req: GrantKeyPermissionRequest,
     use_case: FromDishka[GrantKeyPermissionUseCase],
     admin_ctx: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
-    x_actor_id: str = Header(default="admin"),
 ) -> KeyPermissionResponse:
     """Grant an identity read permission for a secret key (Admin only)."""
-    granted_by = admin_ctx.email or str(admin_ctx.user_id) or x_actor_id
+    granted_by = admin_ctx.email or str(admin_ctx.user_id)
     perm = await use_case.execute(
         project_id=project_id,
         identity_id=req.identity_id,
@@ -63,7 +62,6 @@ async def revoke_key_permission(
     _: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
     identity_id: str = Query(..., min_length=1),
     secret_key: str = Query(..., min_length=1),
-    x_actor_id: str = Header(default="admin"),
 ) -> None:
     """Revoke an identity's read permission for a secret key."""
     await use_case.execute(
@@ -81,9 +79,15 @@ async def revoke_key_permission(
 async def list_identity_permissions(
     project_id: str,
     use_case: FromDishka[ListIdentityPermissionsUseCase],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
     identity_id: str = Query(..., min_length=1),
 ) -> IdentityPermissionsResponse:
     """List all permitted secret keys for an identity in a project."""
+    if not user_ctx.is_admin and str(user_ctx.user_id) != identity_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Chỉ Admin hoặc chính chủ sở hữu mới có quyền xem danh sách quyền key",
+        )
     permitted_keys = await use_case.execute(
         project_id=project_id,
         identity_id=identity_id,

@@ -37,7 +37,6 @@ async def stream_project_secrets(
     ),
     user_ctx: Annotated[UserContext | None, Depends(get_optional_user_context)] = None,
     x_identity_id: str | None = Header(default=None),
-    x_user_role: str | None = Header(default=None),
 ) -> StreamingResponse:
     """Stream real-time secret update events filtered by caller key permissions."""
     if user_ctx:
@@ -45,14 +44,13 @@ async def stream_project_secrets(
         caller_id = str(user_ctx.user_id)
         bypass_key_acl = user_ctx.is_admin or user_ctx.is_developer
     else:
-        caller_id = x_identity_id or identity_id or x_user_role or "anonymous"
+        caller_id = x_identity_id or identity_id or "anonymous"
         bypass_key_acl = False
 
     permitted_keys = set(
         await permissions_use_case.execute(project_id=project_id, identity_id=caller_id)
     )
-    is_admin = bypass_key_acl or caller_id.lower() in ["admin", "system"]
-    has_wildcard = "*" in permitted_keys or is_admin
+    has_wildcard = bypass_key_acl or "*" in permitted_keys
 
     async def event_generator():
         client = redis_settings.get_async_client()

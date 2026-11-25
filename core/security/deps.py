@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Annotated
 
 import jwt
@@ -75,28 +76,31 @@ async def get_current_user_payload(
             "is_sso": True,
         }
 
-    # 2. Offline / pre-signed token payload extraction for test harnesses
-    try:
-        unverified = jwt.decode(token, options={"verify_signature": False})
-        raw_sub = (
-            unverified.get("sub") or unverified.get("user_id") or unverified.get("id")
-        )
-        if raw_sub is not None:
-            user_id = int(raw_sub) if str(raw_sub).isdigit() else 1
-            return {
-                "sub": str(user_id),
-                "user_id": user_id,
-                "name": unverified.get("name"),
-                "email": unverified.get("email", ""),
-                "role": (unverified.get("roles") or ["member"])[0],
-                "role_names": unverified.get("roles", []),
-                "permissions": unverified.get("permissions", []),
-                "avatar_url": unverified.get("avatar"),
-                "status": "ACTIVE",
-                "is_sso": True,
-            }
-    except Exception as exc:
-        logger.debug("Failed to decode SSO JWT payload: %s", exc)
+    # 2. Offline / pre-signed token payload extraction ONLY inside Pytest harness
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        try:
+            unverified = jwt.decode(token, options={"verify_signature": False})
+            raw_sub = (
+                unverified.get("sub")
+                or unverified.get("user_id")
+                or unverified.get("id")
+            )
+            if raw_sub is not None:
+                user_id = int(raw_sub) if str(raw_sub).isdigit() else 1
+                return {
+                    "sub": str(user_id),
+                    "user_id": user_id,
+                    "name": unverified.get("name"),
+                    "email": unverified.get("email", ""),
+                    "role": (unverified.get("roles") or ["member"])[0],
+                    "role_names": unverified.get("roles", []),
+                    "permissions": unverified.get("permissions", []),
+                    "avatar_url": unverified.get("avatar"),
+                    "status": "ACTIVE",
+                    "is_sso": True,
+                }
+        except Exception as exc:
+            logger.debug("Failed to decode test SSO JWT payload: %s", exc)
 
     raise UnauthorizedError(
         "Token xác thực không hợp lệ hoặc đã hết hạn trên SSO Manage"

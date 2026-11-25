@@ -2,7 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { vaultService } from "../services/vault-service";
-import type { CreateSecretPayload, FlatSecretItem } from "../types";
+import type {
+  CreateSecretPayload,
+  CreateSecretsBatchPayload,
+  FlatSecretItem,
+} from "../types";
 
 export const VAULT_KEYS = {
   all: ["vault"] as const,
@@ -61,6 +65,23 @@ export function useSaveSecretMutation(projectId: string) {
   return useMutation({
     mutationFn: (payload: CreateSecretPayload) =>
       vaultService.createSecret(projectId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...VAULT_KEYS.all, "scopes", projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...VAULT_KEYS.all, "secrets", projectId],
+      });
+    },
+  });
+}
+
+export function useSaveSecretsBatchMutation(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateSecretsBatchPayload) =>
+      vaultService.createSecretsBatch(projectId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [...VAULT_KEYS.all, "scopes", projectId],

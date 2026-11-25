@@ -29,6 +29,7 @@ class CreateSecretUseCase:
         key: str,
         value: str,
         actor: str = "",
+        grant_to_identity_id: str | None = None,
     ) -> SecretItemEntity:
         ad = f"{project_id}:{scope_name}:{key}"
         ciphertext, nonce, auth_tag = self.encryption_service.encrypt(
@@ -45,18 +46,14 @@ class CreateSecretUseCase:
             actor=actor,
         )
 
-        # Automatically grant creator read permission if specific actor provided and not system/admin
-        if (
-            self.permission_repo
-            and actor
-            and actor.lower() not in ["admin", "system", "anonymous"]
-        ):
+        # Grant read permission to creator identity only when explicitly requested by RoleTier policy
+        if grant_to_identity_id:
             await self.permission_repo.grant_key_permission(
                 project_id=project_id,
-                identity_id=actor,
+                identity_id=grant_to_identity_id,
                 secret_key=key,
                 identity_type="user",
-                granted_by=actor,
+                granted_by=actor or grant_to_identity_id,
             )
 
         event = ConfigChangeEvent(

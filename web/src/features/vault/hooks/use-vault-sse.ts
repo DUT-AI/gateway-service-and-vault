@@ -74,7 +74,7 @@ export function useVaultSse(
   }, []);
 
   const connect = useCallback(() => {
-    if (!enabled || !projectId || typeof window === "undefined") return;
+    if (!enabled || !projectId || !user || typeof window === "undefined") return;
 
     // Teardown any existing connection
     if (eventSourceRef.current) {
@@ -88,7 +88,7 @@ export function useVaultSse(
 
     const baseUrl =
       process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
-    const callerId = user?.id ? String(user.id) : user?.email || "admin";
+    const callerId = String(user.id);
 
     const params = new URLSearchParams();
     params.set("identity_id", callerId);

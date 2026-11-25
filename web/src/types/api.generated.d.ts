@@ -548,6 +548,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/vault/projects/{project_id}/secrets/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Batch create or update multiple encrypted secrets in one request
+         * @description Create or update multiple encrypted secrets under a scope in one transaction.
+         */
+        post: operations["create_secrets_batch_api_v1_vault_projects__project_id__secrets_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/vault/projects/{project_id}/scopes": {
         parameters: {
             query?: never;
@@ -711,6 +731,13 @@ export interface components {
             key: string;
             /** Value */
             value: string;
+        };
+        /** CreateSecretsBatchRequest */
+        CreateSecretsBatchRequest: {
+            /** Scope Name */
+            scope_name: string;
+            /** Items */
+            items: components["schemas"]["SecretKeyValueItem"][];
         };
         /** GenerateVirtualKeyRequest */
         GenerateVirtualKeyRequest: {
@@ -960,6 +987,13 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** SecretKeyValueItem */
+        SecretKeyValueItem: {
+            /** Key */
+            key: string;
+            /** Value */
+            value: string;
         };
         /** SecretResponse */
         SecretResponse: {
@@ -2285,6 +2319,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SecretResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_secrets_batch_api_v1_vault_projects__project_id__secrets_batch_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-actor-id"?: string;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSecretsBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecretResponse"][];
                 };
             };
             /** @description Validation Error */

@@ -15,6 +15,7 @@ from modules.vault.repository import (
 from modules.vault.services.broadcaster import RedisVaultBroadcaster
 from modules.vault.services.encryption import VaultEncryptionService
 from modules.vault.use_cases import (
+    CreateSecretsBatchUseCase,
     CreateSecretUseCase,
     GetSecretsByScopeUseCase,
     GrantKeyPermissionUseCase,
@@ -50,6 +51,7 @@ class VaultProvider(Provider):
         return SqlKeyPermissionRepository(session)
 
     create_secret_uc = provide(CreateSecretUseCase)
+    create_secrets_batch_uc = provide(CreateSecretsBatchUseCase)
     get_secrets_uc = provide(GetSecretsByScopeUseCase)
     grant_key_permission_uc = provide(GrantKeyPermissionUseCase)
     revoke_key_permission_uc = provide(RevokeKeyPermissionUseCase)

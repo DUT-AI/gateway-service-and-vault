@@ -9,6 +9,16 @@ class CreateSecretRequest(BaseModel):
     value: str = Field(..., min_length=1)
 
 
+class SecretKeyValueItem(BaseModel):
+    key: str = Field(..., min_length=1, max_length=100)
+    value: str = Field(..., min_length=1)
+
+
+class CreateSecretsBatchRequest(BaseModel):
+    scope_name: str = Field(..., min_length=1, max_length=50)
+    items: list[SecretKeyValueItem] = Field(..., min_length=1)
+
+
 class SecretResponse(BaseModel):
     id: str
     project_id: str

@@ -34,8 +34,7 @@ class GetSecretsByScopeUseCase:
             project_id=project_id,
             identity_id=caller_identity_id,
         )
-        is_admin = bypass_key_acl or caller_identity_id.lower() in ["admin", "system"]
-        has_wildcard = "*" in permitted_keys or is_admin
+        has_wildcard = bypass_key_acl or "*" in permitted_keys
 
         # If a specific key is requested, verify permission immediately
         if requested_key and not has_wildcard and requested_key not in permitted_keys:

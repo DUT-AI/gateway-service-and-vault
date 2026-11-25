@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import type {
   CreateSecretPayload,
+  CreateSecretsBatchPayload,
   GetSecretsResponse,
   GrantKeyPermissionPayload,
   IdentityPermissionsResponse,
@@ -39,6 +40,17 @@ export const vaultService = {
   ): Promise<SecretResponse> {
     const { data } = await api.post<SecretResponse>(
       `/vault/projects/${projectId}/secrets`,
+      payload
+    );
+    return data;
+  },
+
+  async createSecretsBatch(
+    projectId: string,
+    payload: CreateSecretsBatchPayload
+  ): Promise<SecretResponse[]> {
+    const { data } = await api.post<SecretResponse[]>(
+      `/vault/projects/${projectId}/secrets/batch`,
       payload
     );
     return data;
