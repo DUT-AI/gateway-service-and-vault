@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ProjectCreateRequest(BaseModel):
@@ -99,8 +99,14 @@ class UpstreamServiceCreateRequest(BaseModel):
     slug: str = Field(..., min_length=2, max_length=100)
     base_url: str = Field(..., min_length=5, max_length=255)
     auth_type: str = Field(default="BEARER_TOKEN")
-    credential: str = Field(..., min_length=1)
+    credential: str = Field(default="")
     timeout_seconds: int = Field(default=30, ge=1, le=120)
+
+    @model_validator(mode="after")
+    def validate_credential_for_auth_type(self) -> "UpstreamServiceCreateRequest":
+        if self.auth_type.upper() != "NO_AUTH" and not self.credential.strip():
+            raise ValueError("credential is required when auth_type is not NO_AUTH")
+        return self
 
 
 class UpstreamServiceResponse(BaseModel):

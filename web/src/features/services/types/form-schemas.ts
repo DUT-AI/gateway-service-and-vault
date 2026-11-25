@@ -30,12 +30,20 @@ export const createServiceSchema = z.object({
   auth_type: z.enum(["BEARER_TOKEN", "API_KEY", "BASIC_AUTH", "NO_AUTH"], {
     message: "Vui lòng chọn phương thức xác thực hợp lệ",
   }),
-  credential: z.string().min(1, "Vui lòng nhập Token hoặc Credential đối tác"),
+  credential: z.string(),
   timeout_seconds: z
     .number()
     .int("Timeout phải là số nguyên")
     .min(1, "Timeout tối thiểu 1 giây")
     .max(300, "Timeout tối đa 300 giây"),
+}).superRefine((data, ctx) => {
+  if (data.auth_type !== "NO_AUTH" && data.credential.trim().length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Vui lòng nhập Token hoặc Credential đối tác",
+      path: ["credential"],
+    });
+  }
 });
 
 export type CreateServiceFormData = z.infer<typeof createServiceSchema>;

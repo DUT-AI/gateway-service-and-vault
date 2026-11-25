@@ -1,7 +1,14 @@
 http:
   routers:
+    web-services-page-router:
+      rule: "Path(`/services`)"
+      entryPoints:
+        - web
+      priority: 110
+      service: web-service
+
     services-router:
-      rule: "PathPrefix(`/services`)"
+      rule: "PathPrefix(`/services/`)"
       entryPoints:
         - web
       priority: 100
