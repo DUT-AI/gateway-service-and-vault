@@ -32,7 +32,10 @@ RUN mkdir -p /app/public
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production
 
-RUN pnpm build
+ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:8020/api/v1
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+
+RUN npm run build
 
 # --- Stage 3: Minimal Production Runner ---
 FROM node:20-alpine AS runner

@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-app_db}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5436}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -85,20 +85,34 @@ services:
     container_name: gateway-api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8020}:8000"
     environment:
       APP_NAME: ${APP_NAME:-DUT Gateway & Vault API}
       APP_ENV: ${APP_ENV:-production}
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:8020}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-app_db}
+      DB_ECHO: ${DB_ECHO:-false}
       REDIS_URL: redis://redis:6379/0
-      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-change-in-prod}
+      VAULT_MASTER_KEY: ${VAULT_MASTER_KEY:-default-master-key-must-be-changed-in-production-32b}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretjwtkeychangemeinproduction32char}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
-      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-1440}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      SSO_DUTAI_BASE_URL: ${SSO_DUTAI_BASE_URL:-https://manage.dutai.io.vn}
+      APISIX_ADMIN_URL: http://apisix:9180
+      APISIX_ADMIN_KEY: ${APISIX_ADMIN_KEY:-edd1c9f034335f136f87ad84b625c8f1}
+      APISIX_GATEWAY_URL: ${APISIX_GATEWAY_URL:-http://localhost:9080}
+      APISIX_GATEWAY_SSL_URL: ${APISIX_GATEWAY_SSL_URL:-https://localhost:9443}
+      APISIX_BACKEND_HOST: api
+      APISIX_BACKEND_PORT: 8000
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      apisix:
+        condition: service_started
     networks:
       - gateway-net
 
@@ -112,7 +126,12 @@ services:
       APP_NAME: ${APP_NAME:-DUT Gateway & Vault Worker}
       APP_ENV: ${APP_ENV:-production}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-app_db}
+      DB_ECHO: ${DB_ECHO:-false}
       REDIS_URL: redis://redis:6379/0
+      VAULT_MASTER_KEY: ${VAULT_MASTER_KEY:-default-master-key-must-be-changed-in-production-32b}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-supersecretjwtkeychangemeinproduction32char}
+      APISIX_ADMIN_URL: http://apisix:9180
+      APISIX_ADMIN_KEY: ${APISIX_ADMIN_KEY:-edd1c9f034335f136f87ad84b625c8f1}
     depends_on:
       postgres:
         condition: service_healthy
@@ -125,16 +144,37 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/v1}
     container_name: gateway-web
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3000}:3000"
     environment:
       PORT: 3000
       HOSTNAME: "0.0.0.0"
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/api/v1}
     depends_on:
       - api
+    networks:
+      - gateway-net
+
+  # ---------------------------------------------------------------------------
+  # Unified Reverse Proxy (Traefik)
+  # ---------------------------------------------------------------------------
+  traefik:
+    image: traefik:v3.3
+    container_name: gateway-traefik
+    restart: unless-stopped
+    ports:
+      - "${TRAEFIK_PORT:-8088}:80"
+    volumes:
+      - ./apps/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./apps/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+    depends_on:
+      - web
+      - api
+      - apisix
     networks:
       - gateway-net
 

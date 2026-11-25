@@ -1,0 +1,38 @@
+http:
+  routers:
+    services-router:
+      rule: "PathPrefix(`/services`)"
+      entryPoints:
+        - web
+      priority: 100
+      service: apisix-service
+
+    api-router:
+      rule: "PathPrefix(`/api`) || PathPrefix(`/health`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`)"
+      entryPoints:
+        - web
+      priority: 90
+      service: api-service
+
+    web-router:
+      rule: "PathPrefix(`/`)"
+      entryPoints:
+        - web
+      priority: 1
+      service: web-service
+
+  services:
+    apisix-service:
+      loadBalancer:
+        servers:
+          - url: "http://apisix:9080"
+
+    api-service:
+      loadBalancer:
+        servers:
+          - url: "http://api:8000"
+
+    web-service:
+      loadBalancer:
+        servers:
+          - url: "http://web:3000"
