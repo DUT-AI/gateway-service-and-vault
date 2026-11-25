@@ -23,3 +23,17 @@ export function downloadFile(
   document.body.removeChild(anchor);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Generates deterministic, sanitized filenames for downloaded client mTLS certificates.
+ */
+export function getClientCertFilenames(deviceName: string): {
+  crtFilename: string;
+  keyFilename: string;
+} {
+  const slug = deviceName.toLowerCase().replace(/[^a-z0-9]/g, "-") || "device";
+  return {
+    crtFilename: `${slug}-client.crt`,
+    keyFilename: `${slug}-client.key`,
+  };
+}

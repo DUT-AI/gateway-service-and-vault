@@ -598,6 +598,18 @@ wheels = [
 ]
 
 [[package]]
+name = "dut-vault-sdk"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/57/36/24653c54f0608712578a1548902d9033bcfc499f505b9e49940d74d4d90a/dut_vault_sdk-0.1.0.tar.gz", hash = "sha256:1806aef775c5efd7deb9a723766d4ce45de68ea743841672cc13addaf9802f14", size = 5985, upload-time = "2026-11-25T15:49:26.715Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/5f/e7dd7142650044d877af51c6c2d874d36ac7e5a872361e12ba129b8d0116/dut_vault_sdk-0.1.0-py3-none-any.whl", hash = "sha256:bcf41ecd141b0cbb9f15c8321c50fa6bc6d475cb1ef778b207eb5914890ad658", size = 7471, upload-time = "2026-11-25T15:49:24.549Z" },
+]
+
+[[package]]
 name = "email-validator"
 version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1293,6 +1305,7 @@ dependencies = [
     { name = "boto3" },
     { name = "cryptography" },
     { name = "dishka" },
+    { name = "dut-vault-sdk" },
     { name = "email-validator" },
     { name = "fastapi" },
     { name = "greenlet" },
@@ -1328,6 +1341,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.35.0" },
     { name = "cryptography", specifier = ">=43.0.0" },
     { name = "dishka", specifier = ">=1.4.0" },
+    { name = "dut-vault-sdk", specifier = ">=0.1.0" },
     { name = "email-validator", specifier = ">=2.0.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "greenlet", specifier = ">=3.0.0" },

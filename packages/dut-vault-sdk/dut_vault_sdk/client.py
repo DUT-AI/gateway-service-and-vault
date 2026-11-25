@@ -1,8 +1,10 @@
 import asyncio
 import logging
+import os
 import threading
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -10,6 +12,23 @@ import httpx
 from dut_vault_sdk.store import InMemoryConfigStore
 
 logger = logging.getLogger("dut_vault_sdk")
+
+
+def resolve_mtls_cert(
+    cert_path: str | None = None, key_path: str | None = None
+) -> tuple[str, str] | None:
+    """Resolve (client.crt, client.key) from explicit args, env vars, or ~/.dut-vault/."""
+    crt = cert_path or os.environ.get("SSL_CERT_FILE")
+    key = key_path or os.environ.get("SSL_KEY_FILE")
+    if crt and key:
+        return (crt, key)
+
+    default_dir = Path.home() / ".dut-vault"
+    default_crt = default_dir / "client.crt"
+    default_key = default_dir / "client.key"
+    if default_crt.is_file() and default_key.is_file():
+        return (str(default_crt), str(default_key))
+    return None
 
 
 class VaultClient:
@@ -25,6 +44,9 @@ class VaultClient:
         inject_environ: bool = True,
         auto_reconnect: bool = True,
         max_events: int | None = None,
+        virtual_key: str | None = None,
+        cert_path: str | None = None,
+        key_path: str | None = None,
         http_client: httpx.Client | httpx.AsyncClient | None = None,
         stream_http_client: httpx.AsyncClient | None = None,
     ) -> None:
@@ -35,7 +57,13 @@ class VaultClient:
         self.scope = scope
         self.auto_reconnect = auto_reconnect
         self.max_events = max_events
+        self.virtual_key = virtual_key or os.environ.get("X_VIRTUAL_KEY")
+        self._cert = resolve_mtls_cert(cert_path, key_path)
         self.store = InMemoryConfigStore(inject_environ=inject_environ)
+
+        default_headers: dict[str, str] = {}
+        if self.virtual_key:
+            default_headers["X-Virtual-Key"] = self.virtual_key
 
         self._custom_http = http_client
         if isinstance(http_client, httpx.AsyncClient):
@@ -45,10 +73,25 @@ class VaultClient:
             self._sync_http = http_client
             self._async_http = None
         else:
-            self._sync_http = httpx.Client(timeout=10.0)
-            self._async_http = httpx.AsyncClient(timeout=10.0)
+            client_kwargs: dict[str, Any] = {
+                "timeout": 10.0,
+                "headers": default_headers,
+            }
+            if self._cert is not None:
+                client_kwargs["cert"] = self._cert
+            self._sync_http = httpx.Client(**client_kwargs)
+            self._async_http = httpx.AsyncClient(**client_kwargs)
 
-        self._stream_http = stream_http_client or httpx.AsyncClient(timeout=60.0)
+        if stream_http_client is not None:
+            self._stream_http = stream_http_client
+        else:
+            stream_kwargs: dict[str, Any] = {
+                "timeout": 60.0,
+                "headers": default_headers,
+            }
+            if self._cert is not None:
+                stream_kwargs["cert"] = self._cert
+            self._stream_http = httpx.AsyncClient(**stream_kwargs)
 
         self._stop_event = threading.Event()
         self._connected_event = threading.Event()
@@ -229,3 +272,28 @@ class VaultClient:
         self, key: str, callback: Callable[[str, str | None, str], Any]
     ) -> None:
         self.store.on_change(key, callback)
+
+    def _build_gateway_kwargs(
+        self, service_slug: str | None = None, timeout: float = 30.0
+    ) -> dict[str, Any]:
+        headers: dict[str, str] = {}
+        if self.virtual_key:
+            headers["X-Virtual-Key"] = self.virtual_key
+        kwargs: dict[str, Any] = {"timeout": timeout, "headers": headers}
+        if service_slug:
+            kwargs["base_url"] = f"{self.base_url}/services/{service_slug}"
+        if self._cert is not None:
+            kwargs["cert"] = self._cert
+        return kwargs
+
+    def gateway_client(
+        self, service_slug: str | None = None, timeout: float = 30.0
+    ) -> httpx.Client:
+        """Create a pre-configured sync httpx.Client with mTLS cert and X-Virtual-Key."""
+        return httpx.Client(**self._build_gateway_kwargs(service_slug, timeout))
+
+    def async_gateway_client(
+        self, service_slug: str | None = None, timeout: float = 30.0
+    ) -> httpx.AsyncClient:
+        """Create a pre-configured async httpx.AsyncClient with mTLS cert and X-Virtual-Key."""
+        return httpx.AsyncClient(**self._build_gateway_kwargs(service_slug, timeout))

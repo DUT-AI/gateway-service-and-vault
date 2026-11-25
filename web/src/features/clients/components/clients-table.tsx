@@ -263,9 +263,11 @@ export function ClientsTable() {
       />
 
       <CertDownloadDialog
+        key={downloadBundle?.id ?? "closed"}
         open={downloadOpen}
         onOpenChange={setDownloadOpen}
         bundle={downloadBundle}
+        onOpenDockerGuide={() => setDockerGuideOpen(true)}
       />
 
       <DockerDeploymentGuideDialog

@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import {
+  BookOpen,
   Lock,
   Plus,
   RefreshCw,
@@ -31,7 +32,7 @@ export interface VaultViewProps {
 }
 
 export function VaultView({ projectId, projectName }: VaultViewProps) {
-  const { isAdmin, isDeveloper } = useAuth();
+  const { isAdmin } = useAuth();
   const [selectedScope, setSelectedScope] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
@@ -152,17 +153,15 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
                 <span className="hidden sm:inline ml-1">Làm mới</span>
               </Button>
 
-              {(isAdmin || isDeveloper) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSdkQuickstartOpen(true)}
-                  className="border-slate-200 text-slate-700 hover:bg-slate-50"
-                >
-                  <Terminal className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
-                  Tích hợp SDK
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSdkQuickstartOpen(true)}
+                className="border-slate-200 text-slate-700 hover:bg-slate-50"
+              >
+                <Terminal className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+                Hướng dẫn dùng Env / SDK
+              </Button>
 
               {isAdmin && (
                 <Button
@@ -192,6 +191,35 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
         </CardHeader>
 
         <CardContent className="space-y-4 pt-4">
+          {/* Quick Inline Guidance Banner */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-blue-100 bg-blue-50/50 px-3.5 py-2.5 text-xs">
+            <div className="flex items-center gap-2 text-slate-700">
+              <BookOpen className="h-4 w-4 text-blue-600 shrink-0" />
+              <span>
+                Nạp các biến này trực tiếp vào RAM (
+                <code className="font-mono bg-white px-1 rounded border border-blue-100">
+                  os.environ
+                </code>
+                ) bằng <strong className="text-slate-900">dut-vault run</strong>{" "}
+                hoặc <strong className="text-slate-900">VaultClient</strong> mà
+                không cần tạo file{" "}
+                <code className="font-mono bg-white px-1 rounded border border-blue-100">
+                  .env
+                </code>
+                .
+              </span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setSdkQuickstartOpen(true)}
+              className="h-7 px-2.5 text-[11px] bg-white border-blue-200 text-blue-700 hover:bg-blue-100 shrink-0"
+            >
+              Xem code mẫu & CLI
+            </Button>
+          </div>
+
           {/* Filter Bar & Scope Switcher */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <ScopeTabs

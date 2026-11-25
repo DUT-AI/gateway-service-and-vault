@@ -11,6 +11,7 @@ import {
   Plus,
   Loader2,
   CheckCircle2,
+  Terminal,
   XCircle,
   Zap,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import type { ProjectAllowedService } from "../types";
 import { EditServiceQuotaDialog } from "./edit-service-quota-dialog";
 import { RevokeServiceBindingDialog } from "./revoke-service-binding-dialog";
+import { ServiceUsageDialog } from "./service-usage-dialog";
 
 export interface AllowedServicesTableProps {
   projectId: string;
@@ -44,6 +46,8 @@ export function AllowedServicesTable({
   const [editingService, setEditingService] =
     useState<ProjectAllowedService | null>(null);
   const [revokingService, setRevokingService] =
+    useState<ProjectAllowedService | null>(null);
+  const [usageService, setUsageService] =
     useState<ProjectAllowedService | null>(null);
 
   const copyToClipboard = async (text: string, label: string) => {
@@ -239,6 +243,16 @@ export function AllowedServicesTable({
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => setUsageService(svc)}
+                    className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                    title="Xem Gateway URL và code mẫu"
+                  >
+                    <Terminal className="h-3.5 w-3.5 mr-1" />
+                    Cách dùng
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setEditingService(svc)}
                     className="h-7 px-2 text-xs text-slate-600 hover:text-blue-700"
                     title="Chỉnh sửa Quota"
@@ -264,7 +278,7 @@ export function AllowedServicesTable({
       </div>
 
       <EditServiceQuotaDialog
-        key={editingService?.service_id ?? "closed"}
+        key={`edit-${editingService?.service_id ?? "closed"}`}
         projectId={projectId}
         service={editingService}
         onClose={() => setEditingService(null)}
@@ -274,6 +288,12 @@ export function AllowedServicesTable({
         projectId={projectId}
         service={revokingService}
         onClose={() => setRevokingService(null)}
+      />
+
+      <ServiceUsageDialog
+        key={`usage-${usageService?.service_id ?? "closed"}`}
+        service={usageService}
+        onClose={() => setUsageService(null)}
       />
     </>
   );
