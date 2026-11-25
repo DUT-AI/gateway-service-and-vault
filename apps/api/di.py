@@ -3,7 +3,6 @@ from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 
 from core.database.session import DatabaseProvider
-from core.storage.di import StorageProvider
 from modules.gateway.di import GatewayProvider
 from modules.identity.di import IdentityProvider
 from modules.vault.di import VaultProvider
@@ -13,7 +12,6 @@ def create_container() -> AsyncContainer:
     """Instantiate and configure Dishka Dependency Injection Container."""
     return make_async_container(
         DatabaseProvider(),
-        StorageProvider(),
         IdentityProvider(),
         GatewayProvider(),
         VaultProvider(),

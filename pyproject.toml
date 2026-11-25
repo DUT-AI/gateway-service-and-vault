@@ -1,7 +1,7 @@
 [project]
-name = "project-boilerplate"
+name = "dut-gateway-vault"
 version = "0.1.0"
-description = "Modular Monolith Backend with Clean Architecture, DDD, Dishka, FastAPI, and Next.js"
+description = "Zero-Trust API Gateway & Dynamic Vault Platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

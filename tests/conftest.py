@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterator
-from typing import BinaryIO
 
 import pytest_asyncio
 from dishka import Provider, Scope, make_async_container, provide
@@ -23,7 +22,6 @@ import modules.vault.models  # noqa: F401
 from apps.api.main import app
 from core.database.base import Base
 from core.database.unit_of_work import SqlAlchemyUnitOfWork
-from core.storage.interface import IStorageProvider
 from core.uow import IUnitOfWork
 from modules.gateway.di import GatewayProvider
 from modules.identity.di import IdentityProvider
@@ -49,30 +47,6 @@ TestSessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
 )
-
-
-class MockStorageProvider(IStorageProvider):
-    """Mock storage provider for testing without MinIO."""
-
-    def __init__(self) -> None:
-        self.storage: dict[str, bytes] = {}
-
-    async def upload(
-        self, bucket: str, key: str, data: BinaryIO, content_type: str | None = None
-    ) -> str:
-        self.storage[f"{bucket}/{key}"] = data.read()
-        return f"/{bucket}/{key}"
-
-    async def get_presigned_url(
-        self, bucket: str, key: str, *, expires: int = 3600
-    ) -> str:
-        return f"http://test-storage.local/{bucket}/{key}?exp={expires}"
-
-    async def delete(self, bucket: str, key: str) -> None:
-        self.storage.pop(f"{bucket}/{key}", None)
-
-    async def exists(self, bucket: str, key: str) -> bool:
-        return f"{bucket}/{key}" in self.storage
 
 
 class TestDatabaseProvider(Provider):
@@ -101,16 +75,6 @@ class TestDatabaseProvider(Provider):
                 raise
 
 
-class TestStorageProvider(Provider):
-    """Dishka provider for mock storage in tests."""
-
-    scope = Scope.APP
-
-    @provide
-    def get_storage_provider(self) -> IStorageProvider:
-        return MockStorageProvider()
-
-
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def init_test_db():
     """Create all schema tables in in-memory test database and wire test DI container."""
@@ -119,7 +83,6 @@ async def init_test_db():
 
     container = make_async_container(
         TestDatabaseProvider(),
-        TestStorageProvider(),
         IdentityProvider(),
         GatewayProvider(),
         VaultProvider(),

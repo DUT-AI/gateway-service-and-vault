@@ -1,4 +1,4 @@
-name: project-boilerplate
+name: dut-gateway-vault
 
 services:
   # ---------------------------------------------------------------------------
@@ -6,7 +6,7 @@ services:
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
-    container_name: boilerplate-postgres
+    container_name: gateway-postgres
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -17,7 +17,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - boilerplate-net
+      - gateway-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-app_db}"]
       interval: 5s
@@ -26,37 +26,16 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: boilerplate-redis
+    container_name: gateway-redis
     restart: always
     ports:
       - "${REDIS_PORT:-6380}:6379"
     volumes:
       - redis_data:/data
     networks:
-      - boilerplate-net
+      - gateway-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  minio:
-    image: elestio/minio:latest
-    container_name: boilerplate-minio
-    restart: always
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    networks:
-      - boilerplate-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -66,7 +45,7 @@ services:
   # ---------------------------------------------------------------------------
   etcd:
     image: bitnamilegacy/etcd:3.5.11
-    container_name: boilerplate-etcd
+    container_name: gateway-etcd
     restart: always
     environment:
       - ETCD_ENABLE_V2=true
@@ -78,11 +57,11 @@ services:
     volumes:
       - etcd_data:/bitnami/etcd
     networks:
-      - boilerplate-net
+      - gateway-net
 
   apisix:
     image: apache/apisix:3.9.0-debian
-    container_name: boilerplate-apisix
+    container_name: gateway-apisix
     restart: always
     volumes:
       - ./apps/apisix/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
@@ -94,7 +73,7 @@ services:
       - "9443:9443" # APISIX HTTPS proxy
       - "9180:9180" # APISIX Admin API
     networks:
-      - boilerplate-net
+      - gateway-net
 
   # ---------------------------------------------------------------------------
   # Application Services (Modular Monolith Processes)
@@ -103,20 +82,15 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: boilerplate-api
+    container_name: gateway-api
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
-      APP_NAME: ${APP_NAME:-Boilerplate API}
+      APP_NAME: ${APP_NAME:-DUT Gateway & Vault API}
       APP_ENV: ${APP_ENV:-production}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-app_db}
       REDIS_URL: redis://redis:6379/0
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-app-uploads}
-      MINIO_SECURE: ${MINIO_SECURE:-false}
       JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-token-change-in-prod}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-1440}
@@ -125,38 +99,33 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      minio:
-        condition: service_healthy
     networks:
-      - boilerplate-net
+      - gateway-net
 
   worker:
     build:
       context: .
       dockerfile: apps/worker/Dockerfile
-    container_name: boilerplate-worker
+    container_name: gateway-worker
     restart: unless-stopped
     environment:
-      APP_NAME: ${APP_NAME:-Boilerplate Worker}
+      APP_NAME: ${APP_NAME:-DUT Gateway & Vault Worker}
       APP_ENV: ${APP_ENV:-production}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-app_db}
       REDIS_URL: redis://redis:6379/0
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - boilerplate-net
+      - gateway-net
 
   web:
     build:
       context: ./web
       dockerfile: Dockerfile
-    container_name: boilerplate-web
+    container_name: gateway-web
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -167,14 +136,13 @@ services:
     depends_on:
       - api
     networks:
-      - boilerplate-net
+      - gateway-net
 
 networks:
-  boilerplate-net:
+  gateway-net:
     driver: bridge
 
 volumes:
   postgres_data:
   redis_data:
-  minio_data:
   etcd_data:

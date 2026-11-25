@@ -14,7 +14,7 @@ def main() -> None:
     if cmd == "ping":
         logger.info("Pong!")
     elif cmd == "info":
-        logger.info("Modular Monolith Boilerplate Manager CLI")
+        logger.info("DUT Gateway & Vault Manager CLI")
     else:
         logger.error(f"Unknown command: {cmd}")
         sys.exit(1)
