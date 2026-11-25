@@ -1,6 +1,10 @@
-from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Header, Query, status
+from typing import Annotated
 
+from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Depends, Header, Query, status
+
+from core.security.deps import require_role_tier
+from core.security.roles import RoleTier, UserContext
 from modules.vault.dtos.vault_dtos import (
     GrantKeyPermissionRequest,
     IdentityPermissionsResponse,
@@ -25,15 +29,17 @@ async def grant_key_permission(
     project_id: str,
     req: GrantKeyPermissionRequest,
     use_case: FromDishka[GrantKeyPermissionUseCase],
+    admin_ctx: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
     x_actor_id: str = Header(default="admin"),
 ) -> KeyPermissionResponse:
-    """Grant an identity read permission for a secret key."""
+    """Grant an identity read permission for a secret key (Admin only)."""
+    granted_by = admin_ctx.email or str(admin_ctx.user_id) or x_actor_id
     perm = await use_case.execute(
         project_id=project_id,
         identity_id=req.identity_id,
         secret_key=req.secret_key,
         identity_type=req.identity_type,
-        granted_by=x_actor_id,
+        granted_by=granted_by,
     )
     return KeyPermissionResponse(
         id=perm.id,
@@ -54,6 +60,7 @@ async def grant_key_permission(
 async def revoke_key_permission(
     project_id: str,
     use_case: FromDishka[RevokeKeyPermissionUseCase],
+    _: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
     identity_id: str = Query(..., min_length=1),
     secret_key: str = Query(..., min_length=1),
     x_actor_id: str = Header(default="admin"),

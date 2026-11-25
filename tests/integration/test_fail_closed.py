@@ -3,10 +3,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
+async def test_gateway_fail_closed_on_invalid_bindings(admin_client: AsyncClient):
     """Verify that Gateway strictly fails closed (HTTP 403) for any unverified request."""
     # 1. Missing / Non-existent Virtual Key
-    res_unknown_key = await client.post(
+    res_unknown_key = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": "vkey_nonexistent_1234567890abcdef",
@@ -20,7 +20,7 @@ async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
     assert res_unknown_key.json()["code"] == "IdentityMismatchError"
 
     # 2. Setup legitimate client, project, service, and key
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Fail Closed Test Project",
@@ -31,7 +31,7 @@ async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
     assert proj_res.status_code == 201
     proj_id = proj_res.json()["id"]
 
-    client_res = await client.post(
+    client_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Legitimate Client",
@@ -44,7 +44,7 @@ async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
     client_id = client_data["id"]
     valid_fp = client_data["cert_fingerprint"]
 
-    svc_res = await client.post(
+    svc_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "Fail-Closed Target Service",
@@ -57,12 +57,12 @@ async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
     assert svc_res.status_code == 201
     svc_id = svc_res.json()["id"]
 
-    await client.post(
+    await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={"service_id": svc_id, "rate_limit_rpm": 60, "quota_daily": 100},
     )
 
-    vk_res = await client.post(
+    vk_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"client_id": client_id, "project_id": proj_id},
     )
@@ -70,7 +70,7 @@ async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
     raw_vk = vk_res.json()["virtual_key"]
 
     # 3. Valid key with mismatched certificate fingerprint -> 403 IDENTITY_MISMATCH
-    res_mismatched_cert = await client.post(
+    res_mismatched_cert = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -84,7 +84,7 @@ async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
     assert res_mismatched_cert.json()["code"] == "IdentityMismatchError"
 
     # 4. Valid key with unbound service -> 403 SERVICE_NOT_ALLOWED
-    res_unbound_service = await client.post(
+    res_unbound_service = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -98,10 +98,12 @@ async def test_gateway_fail_closed_on_invalid_bindings(client: AsyncClient):
     assert res_unbound_service.json()["code"] == "ServiceNotPermittedError"
 
     # 5. Revoked client -> 403 CLIENT_REVOKED
-    revoke_client_res = await client.post(f"/api/v1/gateway/clients/{client_id}/revoke")
+    revoke_client_res = await admin_client.post(
+        f"/api/v1/gateway/clients/{client_id}/revoke"
+    )
     assert revoke_client_res.status_code == 200
 
-    res_revoked = await client.post(
+    res_revoked = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,

@@ -7,6 +7,7 @@ from dut_vault_sdk.client import VaultClient
 from httpx import ASGITransport, AsyncClient
 
 from apps.api.main import app
+from tests.conftest import make_auth_headers
 
 
 @pytest.mark.asyncio
@@ -16,7 +17,9 @@ async def test_sdk_in_memory_hot_reload_under_5_seconds():
     project_slug = f"hotreload-{int(time.time())}"
 
     # 1. Create Project and Initial Secret via API
-    async with AsyncClient(transport=transport, base_url="http://test") as api_client:
+    async with AsyncClient(
+        transport=transport, base_url="http://test", headers=make_auth_headers()
+    ) as api_client:
         p_res = await api_client.post(
             "/api/v1/gateway/projects",
             json={"name": "Hot Reload Project", "slug": project_slug},

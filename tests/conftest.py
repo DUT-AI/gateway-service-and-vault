@@ -143,7 +143,43 @@ async def db_session() -> AsyncIterator[AsyncSession]:
 
 @pytest_asyncio.fixture
 async def client() -> AsyncIterator[AsyncClient]:
-    """Async HTTP client for testing FastAPI endpoints."""
+    """Async HTTP client for testing FastAPI endpoints (unauthenticated by default)."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+
+def make_auth_headers(
+    user_id: int = 1,
+    roles: list[str] | None = None,
+    email: str = "test@dutai.io.vn",
+    permissions: list[str] | None = None,
+) -> dict[str, str]:
+    """Generate an offline test JWT Authorization header."""
+    import jwt
+
+    token = jwt.encode(
+        {
+            "sub": str(user_id),
+            "user_id": user_id,
+            "email": email,
+            "name": f"Test User {user_id}",
+            "roles": roles if roles is not None else ["admin"],
+            "permissions": permissions if permissions is not None else [],
+        },
+        "test-secret-key-at-least-32-bytes-long",
+        algorithm="HS256",
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture
+async def admin_client() -> AsyncIterator[AsyncClient]:
+    """Async HTTP client pre-authenticated as an SSO Admin user."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        headers=make_auth_headers(user_id=1, roles=["admin"]),
+    ) as ac:
         yield ac

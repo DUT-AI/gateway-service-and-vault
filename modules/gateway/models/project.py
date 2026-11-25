@@ -49,3 +49,8 @@ class ProjectModel(Base, ULIDPrimaryKeyMixin, TimestampMixin):
         back_populates="project",
         cascade="all, delete-orphan",
     )
+    members = relationship(
+        "ProjectMemberModel",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )

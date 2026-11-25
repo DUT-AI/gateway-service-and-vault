@@ -1,6 +1,10 @@
-from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
 
+from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from core.security.deps import require_role_tier
+from core.security.roles import RoleTier, UserContext
 from modules.gateway.domain.entities import ClientType
 from modules.gateway.dtos.gateway_dtos import (
     ClientSummaryResponse,
@@ -25,6 +29,10 @@ router = APIRouter()
 @inject
 async def list_clients(
     use_case: FromDishka[ListRegisteredClientsUseCase],
+    _: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
 ) -> list[ClientSummaryResponse]:
     """Retrieve all registered device and machine client identities."""
     clients = await use_case.execute()
@@ -54,6 +62,10 @@ async def list_clients(
 async def register_client(
     req: RegisterClientRequest,
     use_case: FromDishka[RegisterClientUseCase],
+    _: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
 ) -> RegisterClientResponse:
     """Issue a private mTLS client certificate and register the client identity."""
     client_type = ClientType(req.client_type.upper())
@@ -85,6 +97,10 @@ async def register_client(
 async def revoke_client(
     client_id: str,
     use_case: FromDishka[RevokeClientUseCase],
+    _: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
 ) -> RevokeClientResponse:
     """Revoke a registered client and all active virtual keys bound to it."""
     success = await use_case.execute(client_id)

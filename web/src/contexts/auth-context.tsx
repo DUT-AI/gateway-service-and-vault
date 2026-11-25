@@ -5,6 +5,7 @@ import {
   type AuthContextValue,
   type LoginInput,
   type RegisterInput,
+  type RoleTier,
   useLoginMutation,
   useLogoutMutation,
   useRegisterMutation,
@@ -40,11 +41,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user]
   );
 
+  const roleTier = useMemo<RoleTier>(() => {
+    if (!user) return "OTHER";
+    const roles = new Set<string>();
+    if (user.role) roles.add(user.role.trim().toLowerCase());
+    if (Array.isArray(user.role_names)) {
+      user.role_names.forEach((r) => {
+        if (r) roles.add(r.trim().toLowerCase());
+      });
+    }
+    const perms = new Set<string>(user.permissions ?? []);
+
+    if (
+      roles.has("admin") ||
+      roles.has("system") ||
+      roles.has("superuser") ||
+      perms.has("*")
+    ) {
+      return "ADMIN";
+    }
+    if (roles.has("project developer") || roles.has("project_developer")) {
+      return "PROJECT_DEVELOPER";
+    }
+    return "OTHER";
+  }, [user]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user: user ?? null,
       isLoading,
       error: (error as Error) ?? null,
+      roleTier,
+      isAdmin: roleTier === "ADMIN",
+      isDeveloper: roleTier === "PROJECT_DEVELOPER",
+      isOtherRole: roleTier === "OTHER",
       hasRole,
       hasPermission,
       login: async (data: LoginInput) => {
@@ -67,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       isLoading,
       error,
+      roleTier,
       hasRole,
       hasPermission,
       loginMutation,

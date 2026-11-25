@@ -6,12 +6,15 @@ import {
   Lock,
   Server,
   Settings,
+  Users,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/auth-context";
 import { VaultView } from "@/features/vault";
 import { VirtualKeysView } from "@/features/keys";
 import { ProjectAllowedServicesView } from "./project-allowed-services-view";
+import { ProjectMembersView } from "./project-members-view";
 import type { Project } from "../types";
 
 export interface ProjectWorkspaceTabsProps {
@@ -19,6 +22,9 @@ export interface ProjectWorkspaceTabsProps {
 }
 
 export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
+  const { isAdmin, isDeveloper } = useAuth();
+  const canManageKeys = isAdmin || isDeveloper;
+
   return (
     <Tabs defaultValue="vault" className="space-y-6">
       <TabsList className="bg-slate-100 p-1 rounded-xl border border-slate-200">
@@ -29,13 +35,15 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
           <Lock className="h-4 w-4 mr-2 text-slate-500" />
           Biến môi trường (Vault)
         </TabsTrigger>
-        <TabsTrigger
-          value="keys"
-          className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
-        >
-          <Key className="h-4 w-4 mr-2 text-slate-500" />
-          Virtual Keys
-        </TabsTrigger>
+        {canManageKeys && (
+          <TabsTrigger
+            value="keys"
+            className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+          >
+            <Key className="h-4 w-4 mr-2 text-slate-500" />
+            Virtual Keys
+          </TabsTrigger>
+        )}
         <TabsTrigger
           value="services"
           className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
@@ -43,6 +51,15 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
           <Server className="h-4 w-4 mr-2 text-slate-500" />
           Dịch vụ liên kết
         </TabsTrigger>
+        {isAdmin && (
+          <TabsTrigger
+            value="members"
+            className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+          >
+            <Users className="h-4 w-4 mr-2 text-slate-500" />
+            Quản lý thành viên
+          </TabsTrigger>
+        )}
         <TabsTrigger
           value="settings"
           className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
@@ -58,18 +75,27 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
       </TabsContent>
 
       {/* Virtual Keys Tab (Phase 4 Zero-Trust Gatekeeper) */}
-      <TabsContent value="keys" className="space-y-4">
-        <VirtualKeysView projectId={project.id} />
-      </TabsContent>
+      {canManageKeys && (
+        <TabsContent value="keys" className="space-y-4">
+          <VirtualKeysView projectId={project.id} />
+        </TabsContent>
+      )}
 
       {/* Allowed Services & Quotas Tab (Feature 012) */}
       <TabsContent value="services" className="space-y-4">
         <ProjectAllowedServicesView projectId={project.id} />
       </TabsContent>
 
+      {/* Project Members Tab (Feature 019 - Admin only) */}
+      {isAdmin && (
+        <TabsContent value="members" className="space-y-4">
+          <ProjectMembersView projectId={project.id} projectName={project.name} />
+        </TabsContent>
+      )}
+
       {/* Settings Tab */}
       <TabsContent value="settings" className="space-y-4">
-        <Card className="border-slate-200 bg-white">
+        <Card className="min-h-[600px] border-slate-200 bg-white">
           <CardHeader>
             <CardTitle className="text-base font-semibold text-slate-900">
               Thông tin cấu hình dự án

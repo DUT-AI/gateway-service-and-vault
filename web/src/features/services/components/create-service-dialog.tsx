@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useCreateServiceMutation } from "../hooks/use-services-queries";
 import {
   createServiceSchema,
@@ -216,16 +217,12 @@ export function CreateServiceDialog({
               >
                 Phương thức xác thực
               </Label>
-              <select
-                id="service-auth"
-                className="w-full h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                {...register("auth_type")}
-              >
+              <NativeSelect id="service-auth" {...register("auth_type")}>
                 <option value="BEARER_TOKEN">Bearer Token (Header)</option>
                 <option value="API_KEY">API Key (X-API-Key)</option>
                 <option value="BASIC_AUTH">Basic Authentication</option>
                 <option value="NO_AUTH">Không cần xác thực (No Auth)</option>
-              </select>
+              </NativeSelect>
               {errors.auth_type && (
                 <p className="text-[11px] text-rose-600 font-medium">
                   {errors.auth_type.message}
@@ -241,9 +238,8 @@ export function CreateServiceDialog({
               >
                 Thời gian chờ (Timeout)
               </Label>
-              <select
+              <NativeSelect
                 id="service-timeout"
-                className="w-full h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 {...register("timeout_seconds", { valueAsNumber: true })}
               >
                 <option value={5}>5 giây (Phản hồi nhanh)</option>
@@ -251,7 +247,7 @@ export function CreateServiceDialog({
                 <option value={30}>30 giây (Mặc định)</option>
                 <option value={60}>60 giây (Mô hình AI / LLM)</option>
                 <option value={120}>120 giây (Tác vụ dài)</option>
-              </select>
+              </NativeSelect>
               {errors.timeout_seconds && (
                 <p className="text-[11px] text-rose-600 font-medium">
                   {errors.timeout_seconds.message}

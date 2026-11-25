@@ -25,6 +25,16 @@ class ProjectEntity:
 
 
 @dataclass
+class ProjectMemberEntity:
+    id: str
+    project_id: str
+    user_id: int
+    added_by: int
+    created_at: datetime = field(default_factory=datetime.utcnow)
+    updated_at: datetime = field(default_factory=datetime.utcnow)
+
+
+@dataclass
 class UpstreamServiceEntity:
     id: str
     name: str

@@ -148,3 +148,17 @@ class BindServiceToProjectRequest(BaseModel):
 class UpdateServiceQuotaRequest(BaseModel):
     rate_limit_rpm: int = Field(default=60, ge=1, le=100000)
     quota_daily: int = Field(default=10000, ge=1, le=10000000)
+
+
+class ProjectMemberCreateRequest(BaseModel):
+    user_ids: list[int] = Field(
+        ..., min_length=1, description="List of SSO user integer IDs to assign"
+    )
+
+
+class ProjectMemberResponse(BaseModel):
+    id: str
+    project_id: str
+    user_id: int
+    added_by: int
+    created_at: datetime

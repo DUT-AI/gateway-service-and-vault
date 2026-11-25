@@ -3,10 +3,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
+async def test_service_scoping_enforcement_by_slug(admin_client: AsyncClient):
     """Test verifying identity binding with dynamic service_slug scoping."""
     # 1. Create a Project
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Scoping Project",
@@ -18,7 +18,7 @@ async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
     proj_id = proj_res.json()["id"]
 
     # 2. Register Client
-    client_res = await client.post(
+    client_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Dev Workstation",
@@ -32,7 +32,7 @@ async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
     cert_fp = c_data["cert_fingerprint"]
 
     # 3. Create two Upstream Services: 'allowed-svc' and 'restricted-svc'
-    svc1_res = await client.post(
+    svc1_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "Allowed Service",
@@ -45,7 +45,7 @@ async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
     assert svc1_res.status_code == 201
     svc1_id = svc1_res.json()["id"]
 
-    svc2_res = await client.post(
+    svc2_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "Restricted Service",
@@ -58,14 +58,14 @@ async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
     assert svc2_res.status_code == 201
 
     # 4. Bind ONLY svc1 to the Project
-    bind_res = await client.post(
+    bind_res = await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={"service_id": svc1_id, "rate_limit_rpm": 60, "quota_daily": 1000},
     )
     assert bind_res.status_code == 201
 
     # 5. Generate Virtual Key for this Client and Project
-    key_res = await client.post(
+    key_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"client_id": client_id, "project_id": proj_id},
     )
@@ -73,7 +73,7 @@ async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
     raw_key = key_res.json()["virtual_key"]
 
     # 6. Verify binding with allowed service_slug -> MUST SUCCEED (200 OK)
-    ok_res = await client.post(
+    ok_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_key,
@@ -86,7 +86,7 @@ async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
     assert ok_res.json()["valid"] is True
 
     # 7. Verify binding with unallowed service_slug -> MUST FAIL (403 Forbidden)
-    fail_res = await client.post(
+    fail_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_key,
@@ -102,10 +102,10 @@ async def test_service_scoping_enforcement_by_slug(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_client_device_revocation_lifecycle(client: AsyncClient):
+async def test_client_device_revocation_lifecycle(admin_client: AsyncClient):
     """Test revoking a client device and verifying all keys are atomically invalidated."""
     # 1. Create Project and Register Client
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Revocation Test Project",
@@ -115,7 +115,7 @@ async def test_client_device_revocation_lifecycle(client: AsyncClient):
     assert proj_res.status_code == 201
     proj_id = proj_res.json()["id"]
 
-    client_res = await client.post(
+    client_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Compromised Laptop",
@@ -129,7 +129,7 @@ async def test_client_device_revocation_lifecycle(client: AsyncClient):
     cert_fp = c_data["cert_fingerprint"]
 
     # 2. Generate Virtual Key
-    key_res = await client.post(
+    key_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"client_id": client_id, "project_id": proj_id},
     )
@@ -137,7 +137,7 @@ async def test_client_device_revocation_lifecycle(client: AsyncClient):
     raw_key = key_res.json()["virtual_key"]
 
     # 3. Before revocation: verify binding works
-    pre_res = await client.post(
+    pre_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_key,
@@ -148,14 +148,14 @@ async def test_client_device_revocation_lifecycle(client: AsyncClient):
     assert pre_res.status_code == 200
 
     # 4. Revoke the Client Device via POST /clients/{client_id}/revoke
-    revoke_res = await client.post(f"/api/v1/gateway/clients/{client_id}/revoke")
+    revoke_res = await admin_client.post(f"/api/v1/gateway/clients/{client_id}/revoke")
     assert revoke_res.status_code == 200
     rev_data = revoke_res.json()
     assert rev_data["is_revoked"] is True
     assert rev_data["client_id"] == client_id
 
     # 5. After revocation: verify binding MUST FAIL (403 Forbidden)
-    post_res = await client.post(
+    post_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_key,
@@ -169,14 +169,14 @@ async def test_client_device_revocation_lifecycle(client: AsyncClient):
     assert "inactive" in post_msg.lower() or "revoked" in post_msg.lower()
 
     # 6. Verify client listing shows is_revoked = True
-    list_res = await client.get("/api/v1/gateway/clients")
+    list_res = await admin_client.get("/api/v1/gateway/clients")
     assert list_res.status_code == 200
     clients = list_res.json()
     target_client = next(c for c in clients if c["id"] == client_id)
     assert target_client["is_revoked"] is True
 
     # 7. Revoke non-existent client -> 404
-    not_found_res = await client.post(
+    not_found_res = await admin_client.post(
         "/api/v1/gateway/clients/01JNONEXISTENT00000000000000/revoke"
     )
     assert not_found_res.status_code == 404

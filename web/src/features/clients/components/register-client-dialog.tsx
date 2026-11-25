@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useAuth } from "@/contexts/auth-context";
 import { useRegisterClientMutation } from "../hooks/use-clients-queries";
 import {
@@ -192,15 +193,14 @@ export function RegisterClientDialog({
             <Label htmlFor="validity-days" className="text-xs font-semibold text-slate-700">
               Thời hạn chứng chỉ
             </Label>
-            <select
+            <NativeSelect
               id="validity-days"
-              className="w-full h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
               {...register("validity_days", { valueAsNumber: true })}
             >
               <option value={30}>30 ngày (Tiêu chuẩn bảo mật cao)</option>
               <option value={90}>90 ngày (1 Quý làm việc)</option>
               <option value={365}>365 ngày (1 Năm - Máy chủ dài hạn)</option>
-            </select>
+            </NativeSelect>
             {errors.validity_days && (
               <p className="text-[11px] text-rose-600 font-medium">
                 {errors.validity_days.message}

@@ -5,6 +5,7 @@ from core.security.ca import PrivateCA
 from modules.gateway.client.apisix_client import ApisixAdminClient
 from modules.gateway.domain.interfaces import (
     IAuditEventRepository,
+    IProjectMemberRepository,
     IProjectRepository,
     IQuotaPolicyRepository,
     IQuotaUsageTracker,
@@ -15,6 +16,7 @@ from modules.gateway.domain.interfaces import (
 from modules.gateway.repository import (
     RedisQuotaUsageTracker,
     SqlAuditEventRepository,
+    SqlProjectMemberRepository,
     SqlProjectRepository,
     SqlQuotaPolicyRepository,
     SqlRegisteredClientRepository,
@@ -22,7 +24,9 @@ from modules.gateway.repository import (
     SqlVirtualAccessKeyRepository,
 )
 from modules.gateway.use_cases import (
+    AddProjectMemberUseCase,
     BindServiceToProjectUseCase,
+    CheckProjectMembershipUseCase,
     CreateProjectUseCase,
     CreateUpstreamServiceUseCase,
     GenerateVirtualKeyUseCase,
@@ -31,11 +35,13 @@ from modules.gateway.use_cases import (
     GetSecurityAlertsUseCase,
     ListAuditEventsUseCase,
     ListProjectAllowedServicesUseCase,
+    ListProjectMembersUseCase,
     ListProjectsUseCase,
     ListRegisteredClientsUseCase,
     ListUpstreamServicesUseCase,
     ListVirtualKeysUseCase,
     RegisterClientUseCase,
+    RemoveProjectMemberUseCase,
     RevokeClientUseCase,
     RevokeVirtualKeyUseCase,
     UnbindServiceFromProjectUseCase,
@@ -64,6 +70,12 @@ class GatewayProvider(Provider):
     @provide
     def get_project_repo(self, session: AsyncSession) -> IProjectRepository:
         return SqlProjectRepository(session)
+
+    @provide
+    def get_project_member_repo(
+        self, session: AsyncSession
+    ) -> IProjectMemberRepository:
+        return SqlProjectMemberRepository(session)
 
     @provide
     def get_client_repo(self, session: AsyncSession) -> IRegisteredClientRepository:
@@ -104,3 +116,7 @@ class GatewayProvider(Provider):
     get_service_usage_uc = provide(GetProjectServiceUsageUseCase)
     list_audit_events_uc = provide(ListAuditEventsUseCase)
     get_security_alerts_uc = provide(GetSecurityAlertsUseCase)
+    add_project_member_uc = provide(AddProjectMemberUseCase)
+    remove_project_member_uc = provide(RemoveProjectMemberUseCase)
+    list_project_members_uc = provide(ListProjectMembersUseCase)
+    check_project_membership_uc = provide(CheckProjectMembershipUseCase)

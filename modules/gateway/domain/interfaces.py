@@ -5,6 +5,7 @@ from modules.gateway.domain.entities import (
     AuditEventEntity,
     ClientType,
     ProjectEntity,
+    ProjectMemberEntity,
     QuotaPolicyEntity,
     RegisteredClientEntity,
     SecurityAlertEntity,
@@ -27,6 +28,27 @@ class IProjectRepository(ABC):
 
     @abstractmethod
     async def list_all(self) -> list[ProjectEntity]: ...
+
+    @abstractmethod
+    async def list_by_user_id(self, user_id: int) -> list[ProjectEntity]: ...
+
+
+class IProjectMemberRepository(ABC):
+    """Repository interface for ProjectMember aggregate root."""
+
+    @abstractmethod
+    async def add_member(
+        self, project_id: str, user_id: int, added_by: int
+    ) -> ProjectMemberEntity: ...
+
+    @abstractmethod
+    async def remove_member(self, project_id: str, user_id: int) -> bool: ...
+
+    @abstractmethod
+    async def list_members(self, project_id: str) -> list[ProjectMemberEntity]: ...
+
+    @abstractmethod
+    async def is_member(self, project_id: str, user_id: int) -> bool: ...
 
 
 class IQuotaPolicyRepository(ABC):

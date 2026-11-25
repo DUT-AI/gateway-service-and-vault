@@ -4,6 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from apps.api.main import app
+from tests.conftest import make_auth_headers
 
 
 @pytest.mark.asyncio
@@ -12,7 +13,9 @@ async def test_sse_stream_receives_connected_and_secret_update():
     transport2 = ASGITransport(app=app)
 
     # 1. Create a Project first to satisfy foreign key constraint
-    async with AsyncClient(transport=transport2, base_url="http://test") as client_post:
+    async with AsyncClient(
+        transport=transport2, base_url="http://test", headers=make_auth_headers()
+    ) as client_post:
         proj_res = await client_post.post(
             "/api/v1/gateway/projects",
             json={"name": "Streaming App", "slug": "streaming-app"},

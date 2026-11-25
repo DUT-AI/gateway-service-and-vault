@@ -8,11 +8,11 @@ from modules.gateway.models.audit import AuditEventModel
 
 @pytest.mark.asyncio
 async def test_audit_event_recording_on_gateway_verification(
-    client: AsyncClient, db_session: AsyncSession
+    admin_client: AsyncClient, db_session: AsyncSession
 ):
     """Verify that VerifyIdentityBindingUseCase persists immutable audit logs for ALLOW and DENY decisions."""
     # 1. Create a Project
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Audit Test Project",
@@ -24,7 +24,7 @@ async def test_audit_event_recording_on_gateway_verification(
     proj_id = proj_res.json()["id"]
 
     # 2. Register Client
-    client_res = await client.post(
+    client_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Audit Test Client",
@@ -38,7 +38,7 @@ async def test_audit_event_recording_on_gateway_verification(
     cert_fingerprint = c_data["cert_fingerprint"]
 
     # 3. Create Upstream Service & Bind to Project with quota_daily = 2
-    svc_res = await client.post(
+    svc_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "Audit Upstream Service",
@@ -51,7 +51,7 @@ async def test_audit_event_recording_on_gateway_verification(
     assert svc_res.status_code == 201
     svc_id = svc_res.json()["id"]
 
-    bind_res = await client.post(
+    bind_res = await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={
             "service_id": svc_id,
@@ -62,7 +62,7 @@ async def test_audit_event_recording_on_gateway_verification(
     assert bind_res.status_code == 201
 
     # 4. Generate Virtual Key
-    vk_res = await client.post(
+    vk_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"client_id": client_id, "project_id": proj_id},
     )
@@ -70,7 +70,7 @@ async def test_audit_event_recording_on_gateway_verification(
     raw_vk = vk_res.json()["virtual_key"]
 
     # 5. Call verify-binding with VALID credentials -> ALLOW
-    allow_res = await client.post(
+    allow_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -84,7 +84,7 @@ async def test_audit_event_recording_on_gateway_verification(
     assert allow_res.status_code == 200
 
     # 6. Call verify-binding with WRONG fingerprint -> DENY (IDENTITY_MISMATCH)
-    mismatch_res = await client.post(
+    mismatch_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -98,7 +98,7 @@ async def test_audit_event_recording_on_gateway_verification(
     assert mismatch_res.status_code == 403
 
     # 7. Consume remaining quota call
-    allow_res_2 = await client.post(
+    allow_res_2 = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -112,7 +112,7 @@ async def test_audit_event_recording_on_gateway_verification(
     assert allow_res_2.status_code == 200
 
     # 8. Call 3rd time -> Exceed quota -> DENY (DAILY_QUOTA_EXCEEDED)
-    quota_exceeded_res = await client.post(
+    quota_exceeded_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,

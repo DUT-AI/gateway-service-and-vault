@@ -29,10 +29,16 @@ export type RegisterPayload = {
 };
 export type TokenResponse = Schema<"TokenResponse">;
 
+export type RoleTier = "ADMIN" | "PROJECT_DEVELOPER" | "OTHER";
+
 export type AuthContextValue = {
   user: User | null;
   isLoading: boolean;
   error: Error | null;
+  roleTier: RoleTier;
+  isAdmin: boolean;
+  isDeveloper: boolean;
+  isOtherRole: boolean;
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
   login: (data: LoginInput) => Promise<void>;

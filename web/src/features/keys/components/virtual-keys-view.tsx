@@ -17,7 +17,7 @@ export function VirtualKeysView({ projectId }: VirtualKeysViewProps) {
   return (
     <div className="space-y-4">
       {/* Container Card */}
-      <Card className="border-slate-200 bg-white shadow-xs">
+      <Card className="min-h-[600px] border-slate-200 bg-white shadow-xs">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4">
           <div className="space-y-1">
             <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">

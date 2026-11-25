@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/auth-context";
 import { useScopesQuery, useSecretsQuery } from "../hooks/use-vault-queries";
 import { useVaultSse } from "../hooks/use-vault-sse";
 import { ScopeTabs } from "./scope-tabs";
@@ -30,6 +31,7 @@ export interface VaultViewProps {
 }
 
 export function VaultView({ projectId, projectName }: VaultViewProps) {
+  const { isAdmin, isDeveloper } = useAuth();
   const [selectedScope, setSelectedScope] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
@@ -106,7 +108,7 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
 
   return (
     <div className="space-y-5">
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="min-h-[600px] border-slate-200 bg-white shadow-2xs">
         <CardHeader className="border-b border-slate-100 pb-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -150,25 +152,29 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
                 <span className="hidden sm:inline ml-1">Làm mới</span>
               </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSdkQuickstartOpen(true)}
-                className="border-slate-200 text-slate-700 hover:bg-slate-50"
-              >
-                <Terminal className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
-                Tích hợp SDK
-              </Button>
+              {(isAdmin || isDeveloper) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSdkQuickstartOpen(true)}
+                  className="border-slate-200 text-slate-700 hover:bg-slate-50"
+                >
+                  <Terminal className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+                  Tích hợp SDK
+                </Button>
+              )}
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPermissionsModalOpen(true)}
-                className="border-slate-200 text-slate-700 hover:bg-slate-50"
-              >
-                <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                Phân quyền truy cập
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPermissionsModalOpen(true)}
+                  className="border-slate-200 text-slate-700 hover:bg-slate-50"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                  Phân quyền truy cập
+                </Button>
+              )}
 
               <Button
                 size="sm"

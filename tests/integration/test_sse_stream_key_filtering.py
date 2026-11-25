@@ -4,6 +4,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from apps.api.main import app
+from tests.conftest import make_auth_headers
 
 
 @pytest.mark.asyncio
@@ -17,7 +18,7 @@ async def test_sse_stream_filters_events_by_identity_permissions():
 
     # 1. Create a project
     async with AsyncClient(
-        transport=transport_post, base_url="http://test"
+        transport=transport_post, base_url="http://test", headers=make_auth_headers()
     ) as client_post:
         proj_res = await client_post.post(
             "/api/v1/gateway/projects",

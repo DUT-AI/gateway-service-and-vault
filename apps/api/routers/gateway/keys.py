@@ -1,6 +1,11 @@
-from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, HTTPException, Request, status
+from typing import Annotated
 
+from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+
+from apps.api.routers.gateway.access_helpers import ensure_project_access
+from core.security.deps import require_role_tier
+from core.security.roles import RoleTier, UserContext
 from modules.gateway.dtos.gateway_dtos import (
     GenerateVirtualKeyRequest,
     GenerateVirtualKeyResponse,
@@ -9,6 +14,7 @@ from modules.gateway.dtos.gateway_dtos import (
     VirtualKeySummaryResponse,
 )
 from modules.gateway.use_cases import (
+    CheckProjectMembershipUseCase,
     GenerateVirtualKeyUseCase,
     ListVirtualKeysUseCase,
     RevokeVirtualKeyUseCase,
@@ -27,8 +33,14 @@ router = APIRouter()
 async def list_virtual_keys(
     project_id: str,
     use_case: FromDishka[ListVirtualKeysUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
 ) -> list[VirtualKeySummaryResponse]:
     """Retrieve all virtual access keys bound to a project."""
+    await ensure_project_access(project_id, user_ctx, membership_uc)
     keys = await use_case.execute(project_id)
     return [
         VirtualKeySummaryResponse(
@@ -54,8 +66,14 @@ async def list_virtual_keys(
 async def generate_virtual_key(
     req: GenerateVirtualKeyRequest,
     use_case: FromDishka[GenerateVirtualKeyUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
 ) -> GenerateVirtualKeyResponse:
     """Generate a Virtual Access Key bound to a registered client and project."""
+    await ensure_project_access(req.project_id, user_ctx, membership_uc)
     key_entity, raw_token = await use_case.execute(
         client_id=req.client_id,
         project_id=req.project_id,
@@ -80,6 +98,10 @@ async def generate_virtual_key(
 async def revoke_virtual_key(
     key_id: str,
     use_case: FromDishka[RevokeVirtualKeyUseCase],
+    _: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
 ) -> dict[str, str]:
     """Revoke a compromised or obsolete virtual access key."""
     success = await use_case.execute(key_id)

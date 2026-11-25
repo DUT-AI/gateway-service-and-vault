@@ -9,9 +9,11 @@ from fastapi import APIRouter, Depends, Header, Query
 from fastapi.responses import StreamingResponse
 from loguru import logger
 
-from apps.api.routers.vault.auth_helpers import resolve_caller_identity
+from apps.api.routers.gateway.access_helpers import ensure_project_access
 from core.config import redis_settings
-from core.security.deps import get_optional_user_payload
+from core.security.deps import get_optional_user_context
+from core.security.roles import UserContext
+from modules.gateway.use_cases import CheckProjectMembershipUseCase
 from modules.vault.services.broadcaster import RedisVaultBroadcaster
 from modules.vault.use_cases import ListIdentityPermissionsUseCase
 
@@ -26,27 +28,30 @@ router = APIRouter()
 async def stream_project_secrets(
     project_id: str,
     permissions_use_case: FromDishka[ListIdentityPermissionsUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
     scope: str | None = Query(default=None),
     identity_id: str | None = Query(default=None),
     max_events: int | None = Query(
         default=None,
         description="Max events to yield before closing stream (useful for testing)",
     ),
-    user_payload: Annotated[dict | None, Depends(get_optional_user_payload)] = None,
+    user_ctx: Annotated[UserContext | None, Depends(get_optional_user_context)] = None,
     x_identity_id: str | None = Header(default=None),
     x_user_role: str | None = Header(default=None),
 ) -> StreamingResponse:
     """Stream real-time secret update events filtered by caller key permissions."""
-    caller_id = resolve_caller_identity(
-        user_payload,
-        x_identity_id=x_identity_id,
-        x_user_role=x_user_role,
-        identity_query_param=identity_id,
-    )
+    if user_ctx:
+        await ensure_project_access(project_id, user_ctx, membership_uc)
+        caller_id = str(user_ctx.user_id)
+        bypass_key_acl = user_ctx.is_admin or user_ctx.is_developer
+    else:
+        caller_id = x_identity_id or identity_id or x_user_role or "anonymous"
+        bypass_key_acl = False
+
     permitted_keys = set(
         await permissions_use_case.execute(project_id=project_id, identity_id=caller_id)
     )
-    is_admin = caller_id.lower() in ["admin", "system"]
+    is_admin = bypass_key_acl or caller_id.lower() in ["admin", "system"]
     has_wildcard = "*" in permitted_keys or is_admin
 
     async def event_generator():

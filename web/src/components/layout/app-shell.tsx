@@ -61,8 +61,14 @@ const NAV_ITEMS: NavItemConfig[] = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isOtherRole } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const visibleNavItems = isOtherRole
+    ? NAV_ITEMS.filter(
+        (item) => item.href === "/dashboard" || item.href === "/projects"
+      )
+    : NAV_ITEMS;
 
   const getPageHeaderTitle = () => {
     if (pathname === "/dashboard") return "Dashboard";
@@ -102,7 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           Không gian làm việc
         </p>
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = item.match(pathname);
           const Icon = item.icon;
           return (

@@ -75,7 +75,7 @@ export interface paths {
         put?: never;
         /**
          * Clear SSO authentication session
-         * @description Clear SSO authentication cookies on both .dutai.io.vn and local domain.
+         * @description Clear SSO authentication cookies.
          */
         post: operations["logout_api_v1_auth_logout_post"];
         delete?: never;
@@ -104,20 +104,20 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/users": {
+    "/api/v1/identity/users/{user_id}/sync-revocation": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Retrieve paginated list of users
-         * @description Retrieve paginated list of registered users.
-         */
-        get: operations["list_users_api_v1_auth_users_get"];
+        get?: never;
         put?: never;
-        post?: never;
+        /**
+         * Cascade revoke all clients and virtual keys of deactivated SSO user
+         * @description Cascade revoke all registered clients and active virtual keys owned by an SSO user.
+         */
+        post: operations["sync_sso_user_revocation_api_v1_identity_users__user_id__sync_revocation_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -172,13 +172,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List all registered projects
-         * @description Retrieve all business projects.
+         * List registered projects accessible to the current user
+         * @description Retrieve all projects (Admin) or assigned projects (Developer / Other).
          */
         get: operations["list_projects_api_v1_gateway_projects_get"];
         put?: never;
         /**
-         * Create a new business project
+         * Create a new business project (Admin only)
          * @description Create a new business project.
          */
         post: operations["create_project_api_v1_gateway_projects_post"];
@@ -197,12 +197,56 @@ export interface paths {
         };
         /**
          * Get single project by ID
-         * @description Retrieve single project by ID.
+         * @description Retrieve single project by ID after verifying membership.
          */
         get: operations["get_project_api_v1_gateway_projects__project_id__get"];
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/projects/{project_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all members assigned to a project (Admin only)
+         * @description Retrieve all SSO user memberships for a project.
+         */
+        get: operations["list_project_members_api_v1_gateway_projects__project_id__members_get"];
+        put?: never;
+        /**
+         * Assign one or more SSO users to a project (Admin only)
+         * @description Assign multiple SSO users as members of the project in a single request.
+         */
+        post: operations["add_project_member_api_v1_gateway_projects__project_id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gateway/projects/{project_id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove an SSO user from a project (Admin only)
+         * @description Remove an SSO user's membership from the project.
+         */
+        delete: operations["remove_project_member_api_v1_gateway_projects__project_id__members__user_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -489,7 +533,7 @@ export interface paths {
         };
         /**
          * Get Secrets
-         * @description Retrieve decrypted configuration secrets filtered by identity permissions.
+         * @description Retrieve decrypted configuration secrets filtered by RoleTier, membership, and key ACL.
          */
         get: operations["get_secrets_api_v1_vault_projects__project_id__secrets_get"];
         put?: never;
@@ -539,7 +583,7 @@ export interface paths {
         put?: never;
         /**
          * Grant Key Permission
-         * @description Grant an identity read permission for a secret key.
+         * @description Grant an identity read permission for a secret key (Admin only).
          */
         post: operations["grant_key_permission_api_v1_vault_projects__project_id__permissions_post"];
         /**
@@ -752,19 +796,6 @@ export interface components {
              */
             created_at: string;
         };
-        /** PaginatedResponse[UserResponse] */
-        PaginatedResponse_UserResponse_: {
-            /** Items */
-            items: components["schemas"]["UserResponse"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Page Size */
-            page_size: number;
-            /** Total Pages */
-            total_pages: number;
-        };
         /** ProjectAllowedServiceResponse */
         ProjectAllowedServiceResponse: {
             /** Service Id */
@@ -806,6 +837,30 @@ export interface components {
             slug: string;
             /** Description */
             description?: string | null;
+        };
+        /** ProjectMemberCreateRequest */
+        ProjectMemberCreateRequest: {
+            /**
+             * User Ids
+             * @description List of SSO user integer IDs to assign
+             */
+            user_ids: number[];
+        };
+        /** ProjectMemberResponse */
+        ProjectMemberResponse: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** User Id */
+            user_id: number;
+            /** Added By */
+            added_by: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** ProjectResponse */
         ProjectResponse: {
@@ -1315,15 +1370,14 @@ export interface operations {
             };
         };
     };
-    list_users_api_v1_auth_users_get: {
+    sync_sso_user_revocation_api_v1_identity_users__user_id__sync_revocation_post: {
         parameters: {
-            query?: {
-                page?: number;
-                page_size?: number;
-                search?: string | null;
-            };
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Strict user integer identifier */
+                user_id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1334,7 +1388,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedResponse_UserResponse_"];
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */
@@ -1418,7 +1474,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1431,6 +1489,15 @@ export interface operations {
                     "application/json": components["schemas"]["ProjectResponse"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     create_project_api_v1_gateway_projects_post: {
@@ -1438,7 +1505,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1473,7 +1542,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1497,12 +1568,116 @@ export interface operations {
             };
         };
     };
+    list_project_members_api_v1_gateway_projects__project_id__members_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectMemberResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_project_member_api_v1_gateway_projects__project_id__members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectMemberCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectMemberResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_project_member_api_v1_gateway_projects__project_id__members__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+                user_id: number;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_clients_api_v1_gateway_clients_get: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1515,6 +1690,15 @@ export interface operations {
                     "application/json": components["schemas"]["ClientSummaryResponse"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     register_client_api_v1_gateway_clients_post: {
@@ -1522,7 +1706,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1557,7 +1743,9 @@ export interface operations {
             path: {
                 client_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1588,7 +1776,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1617,7 +1807,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1652,7 +1844,9 @@ export interface operations {
             path: {
                 key_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1716,7 +1910,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1729,6 +1925,15 @@ export interface operations {
                     "application/json": components["schemas"]["UpstreamServiceResponse"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     create_upstream_service_api_v1_gateway_services_post: {
@@ -1736,7 +1941,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1771,7 +1978,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1802,7 +2011,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1838,7 +2049,9 @@ export interface operations {
                 project_id: string;
                 service_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1870,7 +2083,9 @@ export interface operations {
                 project_id: string;
                 service_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -1906,7 +2121,9 @@ export interface operations {
                 project_id: string;
                 service_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1943,7 +2160,9 @@ export interface operations {
             };
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -1975,7 +2194,9 @@ export interface operations {
             };
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2012,7 +2233,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2045,7 +2268,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -2080,7 +2305,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2146,7 +2373,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -2186,7 +2415,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2223,7 +2454,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {

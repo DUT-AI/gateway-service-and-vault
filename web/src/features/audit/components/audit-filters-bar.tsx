@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Filter, RefreshCw, X } from "lucide-react";
+import { NativeSelect } from "@/components/ui/native-select";
 import type { AuditFilterParams } from "../types";
 
 interface AuditFiltersBarProps {
@@ -32,45 +33,48 @@ export function AuditFiltersBar({
         </div>
 
         {/* Filter by Decision */}
-        <select
+        <NativeSelect
+          wrapperClassName="w-auto"
           value={filters.decision || ""}
           onChange={(e) =>
             onFilterChange({ decision: e.target.value || undefined, offset: 0 })
           }
-          className="rounded-lg border border-slate-200 bg-slate-50/50 px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-hidden hover:bg-slate-100 focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+          className="h-8 bg-slate-50/50 font-medium text-slate-700 hover:bg-slate-100 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
         >
           <option value="">Tất cả kết quả (ALLOW / DENY)</option>
           <option value="ALLOW">Chỉ xem: Cho phép (ALLOW)</option>
           <option value="DENY">Chỉ xem: Bị từ chối (DENY)</option>
-        </select>
+        </NativeSelect>
 
         {/* Filter by Client Type */}
-        <select
+        <NativeSelect
+          wrapperClassName="w-auto"
           value={filters.client_type || ""}
           onChange={(e) =>
             onFilterChange({ client_type: e.target.value || undefined, offset: 0 })
           }
-          className="rounded-lg border border-slate-200 bg-slate-50/50 px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-hidden hover:bg-slate-100 focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+          className="h-8 bg-slate-50/50 font-medium text-slate-700 hover:bg-slate-100 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
         >
           <option value="">Tất cả thiết bị (Actor)</option>
           <option value="USER_DEVICE">Thiết bị cá nhân (User Device)</option>
           <option value="APP_SERVER">Máy chủ ứng dụng (App Server)</option>
-        </select>
+        </NativeSelect>
 
         {/* Filter by Error Code */}
-        <select
+        <NativeSelect
+          wrapperClassName="w-auto"
           value={filters.error_code || ""}
           onChange={(e) =>
             onFilterChange({ error_code: e.target.value || undefined, offset: 0 })
           }
-          className="rounded-lg border border-slate-200 bg-slate-50/50 px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-hidden hover:bg-slate-100 focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+          className="h-8 bg-slate-50/50 font-medium text-slate-700 hover:bg-slate-100 focus:bg-white dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
         >
           <option value="">Tất cả loại lỗi vi phạm</option>
           <option value="IDENTITY_MISMATCH">Sai lệch định danh (IDENTITY_MISMATCH)</option>
           <option value="DAILY_QUOTA_EXCEEDED">Hết hạn mức ngày (DAILY_QUOTA_EXCEEDED)</option>
           <option value="CLIENT_REVOKED">Thiết bị đã thu hồi (CLIENT_REVOKED)</option>
           <option value="SERVICE_NOT_ALLOWED">Dịch vụ chưa cấp quyền (SERVICE_NOT_ALLOWED)</option>
-        </select>
+        </NativeSelect>
 
         {hasActiveFilters && (
           <button

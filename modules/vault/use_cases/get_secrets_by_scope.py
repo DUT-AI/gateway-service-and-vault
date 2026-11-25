@@ -27,13 +27,14 @@ class GetSecretsByScopeUseCase:
         caller_identity_id: str,
         requested_scope: str | None = None,
         requested_key: str | None = None,
+        bypass_key_acl: bool = False,
     ) -> dict[str, dict[str, str]]:
         # Resolve permitted keys for this identity in the project
         permitted_keys = await self.permission_repo.get_permitted_keys_for_identity(
             project_id=project_id,
             identity_id=caller_identity_id,
         )
-        is_admin = caller_identity_id.lower() in ["admin", "system"]
+        is_admin = bypass_key_acl or caller_identity_id.lower() in ["admin", "system"]
         has_wildcard = "*" in permitted_keys or is_admin
 
         # If a specific key is requested, verify permission immediately

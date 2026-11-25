@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from modules.gateway.domain.entities import ProjectEntity
 from modules.gateway.domain.interfaces import IProjectRepository
+from modules.gateway.models.member import ProjectMemberModel
 from modules.gateway.models.project import ProjectModel
 
 
@@ -45,6 +46,17 @@ class SqlProjectRepository(IProjectRepository):
 
     async def list_all(self) -> list[ProjectEntity]:
         stmt = select(ProjectModel).order_by(ProjectModel.created_at.desc())
+        result = await self.session.execute(stmt)
+        models = result.scalars().all()
+        return [self._to_entity(m) for m in models]
+
+    async def list_by_user_id(self, user_id: int) -> list[ProjectEntity]:
+        stmt = (
+            select(ProjectModel)
+            .join(ProjectMemberModel, ProjectMemberModel.project_id == ProjectModel.id)
+            .where(ProjectMemberModel.user_id == user_id)
+            .order_by(ProjectModel.created_at.desc())
+        )
         result = await self.session.execute(stmt)
         models = result.scalars().all()
         return [self._to_entity(m) for m in models]

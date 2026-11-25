@@ -38,6 +38,12 @@ from modules.gateway.use_cases.list_upstream_services import (
     ListUpstreamServicesUseCase,
 )
 from modules.gateway.use_cases.list_virtual_keys import ListVirtualKeysUseCase
+from modules.gateway.use_cases.member_use_cases import (
+    AddProjectMemberUseCase,
+    CheckProjectMembershipUseCase,
+    ListProjectMembersUseCase,
+    RemoveProjectMemberUseCase,
+)
 from modules.gateway.use_cases.register_client import RegisterClientUseCase
 from modules.gateway.use_cases.revoke_client import RevokeClientUseCase
 from modules.gateway.use_cases.revoke_virtual_key import RevokeVirtualKeyUseCase
@@ -52,8 +58,10 @@ from modules.gateway.use_cases.verify_identity_binding import (
 )
 
 __all__ = [
+    "AddProjectMemberUseCase",
     "AllowedServiceUsageDTO",
     "BindServiceToProjectUseCase",
+    "CheckProjectMembershipUseCase",
     "ClientNotFoundError",
     "CreateProjectUseCase",
     "CreateUpstreamServiceUseCase",
@@ -65,12 +73,14 @@ __all__ = [
     "IdentityMismatchError",
     "ListAuditEventsUseCase",
     "ListProjectAllowedServicesUseCase",
+    "ListProjectMembersUseCase",
     "ListProjectsUseCase",
     "ListRegisteredClientsUseCase",
     "ListUpstreamServicesUseCase",
     "ListVirtualKeysUseCase",
     "ProjectNotFoundError",
     "RegisterClientUseCase",
+    "RemoveProjectMemberUseCase",
     "RevokeClientUseCase",
     "RevokeVirtualKeyUseCase",
     "ServiceAlreadyBoundError",

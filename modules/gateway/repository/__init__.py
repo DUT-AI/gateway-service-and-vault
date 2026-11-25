@@ -1,4 +1,7 @@
 from modules.gateway.repository.audit_repository import SqlAuditEventRepository
+from modules.gateway.repository.project_member_repository import (
+    SqlProjectMemberRepository,
+)
 from modules.gateway.repository.project_repository import SqlProjectRepository
 from modules.gateway.repository.quota_policy_repository import SqlQuotaPolicyRepository
 from modules.gateway.repository.redis_quota_tracker import RedisQuotaUsageTracker
@@ -15,6 +18,7 @@ from modules.gateway.repository.virtual_access_key_repository import (
 __all__ = [
     "RedisQuotaUsageTracker",
     "SqlAuditEventRepository",
+    "SqlProjectMemberRepository",
     "SqlProjectRepository",
     "SqlQuotaPolicyRepository",
     "SqlRegisteredClientRepository",

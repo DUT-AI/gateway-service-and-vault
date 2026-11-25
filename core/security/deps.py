@@ -2,10 +2,11 @@ import logging
 from typing import Annotated
 
 import jwt
-from fastapi import Cookie, Depends
+from fastapi import Cookie, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from core.exceptions import UnauthorizedError
+from core.security.roles import RoleTier, UserContext, build_user_context
 from modules.identity.services.sso_service import sso_dutai_service
 
 logger = logging.getLogger(__name__)
@@ -113,3 +114,36 @@ async def get_current_user_id(
     if sub is None:
         raise UnauthorizedError("Token payload does not contain subject ID")
     return int(sub)
+
+
+async def get_current_user_context(
+    payload: Annotated[dict, Depends(get_current_user_payload)],
+) -> UserContext:
+    """Resolve authenticated UserContext with 3-tier RoleTier from SSO payload."""
+    return build_user_context(payload)
+
+
+async def get_optional_user_context(
+    payload: Annotated[dict | None, Depends(get_optional_user_payload)],
+) -> UserContext | None:
+    """Resolve optional UserContext if an SSO token is present, else None."""
+    if not payload:
+        return None
+    return build_user_context(payload)
+
+
+def require_role_tier(*allowed_tiers: RoleTier):
+    """FastAPI dependency enforcing that the caller holds one of the allowed RoleTiers."""
+
+    async def _dependency(
+        user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
+    ) -> UserContext:
+        if user_ctx.role_tier not in allowed_tiers:
+            allowed_names = ", ".join(t.value for t in allowed_tiers)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Bạn không có quyền thực hiện thao tác này (yêu cầu quyền: {allowed_names})",
+            )
+        return user_ctx
+
+    return _dependency

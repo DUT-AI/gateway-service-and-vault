@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Badge } from "@/components/ui/badge";
 import { useClientsQuery } from "@/features/clients";
 import { useGenerateKeyMutation } from "../hooks/use-keys-queries";
@@ -191,11 +192,10 @@ export function GenerateKeyModal({
                     </Link>
                   </div>
                 ) : (
-                  <select
+                  <NativeSelect
                     id="client-device"
                     value={selectedClientId}
                     onChange={(e) => setSelectedClientId(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                   >
                     <option value="">-- Chọn thiết bị mTLS của bạn --</option>
                     {activeClients.map((client) => {
@@ -209,7 +209,7 @@ export function GenerateKeyModal({
                         </option>
                       );
                     })}
-                  </select>
+                  </NativeSelect>
                 )}
 
                 <p className="text-[11px] text-slate-500 leading-relaxed">

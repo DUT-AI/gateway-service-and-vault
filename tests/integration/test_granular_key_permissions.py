@@ -3,13 +3,15 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_granular_key_permissions_retrieval(client: AsyncClient):
+async def test_granular_key_permissions_retrieval(
+    client: AsyncClient, admin_client: AsyncClient
+):
     """Verify that an identity only receives granted keys, ungranted keys are omitted,
 
     and direct unauthorized key requests return 403 Forbidden.
     """
     # 1. Create a project
-    p_res = await client.post(
+    p_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={"name": "Fintech Platform", "slug": "fintech-platform"},
     )
@@ -17,7 +19,7 @@ async def test_granular_key_permissions_retrieval(client: AsyncClient):
     proj_id = p_res.json()["id"]
 
     # 2. Add two secrets under different scopes
-    s1_res = await client.post(
+    s1_res = await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/secrets",
         json={
             "scope_name": "common",
@@ -28,7 +30,7 @@ async def test_granular_key_permissions_retrieval(client: AsyncClient):
     )
     assert s1_res.status_code == 201
 
-    s2_res = await client.post(
+    s2_res = await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/secrets",
         json={
             "scope_name": "payment",
@@ -40,7 +42,7 @@ async def test_granular_key_permissions_retrieval(client: AsyncClient):
     assert s2_res.status_code == 201
 
     # 3. Grant dev_alice access ONLY to DATABASE_URL
-    grant_res = await client.post(
+    grant_res = await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/permissions",
         json={
             "identity_id": "dev_alice",

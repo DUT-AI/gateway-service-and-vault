@@ -23,10 +23,10 @@ class InMemoryQuotaTracker(IQuotaUsageTracker):
 
 
 @pytest.mark.asyncio
-async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
+async def test_daily_quota_enforcement_and_usage_api(admin_client: AsyncClient):
     """Verify daily quota limit rejection (429) and real-time usage querying."""
     # 1. Create a Project
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Quota Test Project",
@@ -38,7 +38,7 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     proj_id = proj_res.json()["id"]
 
     # 2. Register Client
-    client_res = await client.post(
+    client_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Quota Client",
@@ -52,7 +52,7 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     cert_fp = c_data["cert_fingerprint"]
 
     # 3. Create an Upstream Service
-    svc_res = await client.post(
+    svc_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "LLM Quota Service",
@@ -66,14 +66,14 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     svc_id = svc_res.json()["id"]
 
     # 4. Bind Service to Project with daily quota = 2
-    bind_res = await client.post(
+    bind_res = await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={"service_id": svc_id, "rate_limit_rpm": 60, "quota_daily": 2},
     )
     assert bind_res.status_code == 201
 
     # 5. Generate Virtual Key
-    key_res = await client.post(
+    key_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"client_id": client_id, "project_id": proj_id},
     )
@@ -81,7 +81,7 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     raw_vk = key_res.json()["virtual_key"]
 
     # 6. First Call -> 200 OK (usage = 1/2)
-    verify1 = await client.post(
+    verify1 = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -93,7 +93,7 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     assert verify1.status_code == 200
 
     # 7. Check usage API
-    usage_res1 = await client.get(
+    usage_res1 = await admin_client.get(
         f"/api/v1/gateway/projects/{proj_id}/services/{svc_id}/usage"
     )
     assert usage_res1.status_code == 200
@@ -103,7 +103,7 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     assert u1["is_exhausted"] is False
 
     # 8. Check enriched allowed services list
-    list_res = await client.get(f"/api/v1/gateway/projects/{proj_id}/services")
+    list_res = await admin_client.get(f"/api/v1/gateway/projects/{proj_id}/services")
     assert list_res.status_code == 200
     services = list_res.json()
     assert len(services) == 1
@@ -111,7 +111,7 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     assert "usage_percentage" in services[0]
 
     # 9. Second Call -> 200 OK (usage = 2/2)
-    verify2 = await client.post(
+    verify2 = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -123,7 +123,7 @@ async def test_daily_quota_enforcement_and_usage_api(client: AsyncClient):
     assert verify2.status_code == 200
 
     # 10. Third Call -> MUST be rejected with 429 DailyQuotaExceededError
-    verify3 = await client.post(
+    verify3 = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,

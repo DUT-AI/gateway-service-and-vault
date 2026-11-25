@@ -1,6 +1,11 @@
-from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
 
+from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from apps.api.routers.gateway.access_helpers import ensure_project_access
+from core.security.deps import get_current_user_context, require_role_tier
+from core.security.roles import RoleTier, UserContext
 from modules.gateway.dtos.gateway_dtos import (
     BindServiceToProjectRequest,
     ProjectAllowedServiceResponse,
@@ -11,6 +16,7 @@ from modules.gateway.dtos.gateway_dtos import (
 )
 from modules.gateway.use_cases import (
     BindServiceToProjectUseCase,
+    CheckProjectMembershipUseCase,
     CreateUpstreamServiceUseCase,
     GetProjectServiceUsageUseCase,
     ListProjectAllowedServicesUseCase,
@@ -34,6 +40,10 @@ router = APIRouter()
 @inject
 async def list_upstream_services(
     use_case: FromDishka[ListUpstreamServicesUseCase],
+    _: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
 ) -> list[UpstreamServiceResponse]:
     """Retrieve all registered upstream API services."""
     services = await use_case.execute()
@@ -62,6 +72,7 @@ async def list_upstream_services(
 async def create_upstream_service(
     req: UpstreamServiceCreateRequest,
     use_case: FromDishka[CreateUpstreamServiceUseCase],
+    _: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
 ) -> UpstreamServiceResponse:
     """Register an upstream API service destination."""
     service = await use_case.execute(
@@ -93,9 +104,12 @@ async def create_upstream_service(
 async def list_project_allowed_services(
     project_id: str,
     use_case: FromDishka[ListProjectAllowedServicesUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
 ) -> list[ProjectAllowedServiceResponse]:
     """Retrieve all upstream services bound to this project with their quota policies and usage."""
     try:
+        await ensure_project_access(project_id, user_ctx, membership_uc)
         items = await use_case.execute(project_id)
         return [
             ProjectAllowedServiceResponse(
@@ -131,8 +145,11 @@ async def get_project_service_usage(
     project_id: str,
     service_id: str,
     use_case: FromDishka[GetProjectServiceUsageUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
 ) -> QuotaUsageResponse:
     """Retrieve today's request usage count and quota consumption percentage."""
+    await ensure_project_access(project_id, user_ctx, membership_uc)
     return await use_case.execute(project_id, service_id)
 
 
@@ -147,6 +164,7 @@ async def bind_service_to_project(
     project_id: str,
     req: BindServiceToProjectRequest,
     use_case: FromDishka[BindServiceToProjectUseCase],
+    _: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
 ) -> ProjectAllowedServiceResponse:
     """Authorize an upstream service for a project with defined rate limit and daily quota."""
     try:
@@ -187,6 +205,7 @@ async def update_project_service_quota(
     service_id: str,
     req: UpdateServiceQuotaRequest,
     use_case: FromDishka[UpdateProjectServiceQuotaUseCase],
+    _: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
 ) -> ProjectAllowedServiceResponse:
     """Update rate limit RPM or daily quota for a project-service binding."""
     try:
@@ -224,6 +243,7 @@ async def unbind_service_from_project(
     project_id: str,
     service_id: str,
     use_case: FromDishka[UnbindServiceFromProjectUseCase],
+    _: Annotated[UserContext, Depends(require_role_tier(RoleTier.ADMIN))],
 ) -> None:
     """Revoke a project's access to an upstream service and delete its quota policy."""
     try:

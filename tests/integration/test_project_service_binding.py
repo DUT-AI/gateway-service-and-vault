@@ -3,10 +3,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
+async def test_project_service_binding_and_quota_lifecycle(admin_client: AsyncClient):
     """Test binding an upstream service to a project, updating quota, listing, and unbinding."""
     # 1. Create a project
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Finance Core Platform",
@@ -18,7 +18,7 @@ async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
     proj_id = proj_res.json()["id"]
 
     # 2. Register an upstream service
-    svc_res = await client.post(
+    svc_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "VNPay Sandbox Gateway",
@@ -33,12 +33,14 @@ async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
     svc_id = svc_res.json()["id"]
 
     # 3. Initially, no services are bound to the project
-    list_initial = await client.get(f"/api/v1/gateway/projects/{proj_id}/services")
+    list_initial = await admin_client.get(
+        f"/api/v1/gateway/projects/{proj_id}/services"
+    )
     assert list_initial.status_code == 200
     assert list_initial.json() == []
 
     # 4. Bind the service to the project with quota
-    bind_res = await client.post(
+    bind_res = await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={
             "service_id": svc_id,
@@ -55,7 +57,7 @@ async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
     assert bound_data["is_quota_active"] is True
 
     # 5. List allowed services for project
-    list_res = await client.get(f"/api/v1/gateway/projects/{proj_id}/services")
+    list_res = await admin_client.get(f"/api/v1/gateway/projects/{proj_id}/services")
     assert list_res.status_code == 200
     items = list_res.json()
     assert len(items) == 1
@@ -63,7 +65,7 @@ async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
     assert items[0]["rate_limit_rpm"] == 120
 
     # 6. Duplicate binding attempt must return 409 Conflict
-    dup_res = await client.post(
+    dup_res = await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={
             "service_id": svc_id,
@@ -75,7 +77,7 @@ async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
     assert "already bound" in dup_res.json()["detail"].lower()
 
     # 7. Update quota policy for the binding
-    update_res = await client.put(
+    update_res = await admin_client.put(
         f"/api/v1/gateway/projects/{proj_id}/services/{svc_id}/quota",
         json={
             "rate_limit_rpm": 300,
@@ -88,18 +90,18 @@ async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
     assert updated_data["quota_daily"] == 100000
 
     # 8. Unbind service from project
-    unbind_res = await client.delete(
+    unbind_res = await admin_client.delete(
         f"/api/v1/gateway/projects/{proj_id}/services/{svc_id}"
     )
     assert unbind_res.status_code == 204
 
     # 9. List services again -> now empty
-    list_after = await client.get(f"/api/v1/gateway/projects/{proj_id}/services")
+    list_after = await admin_client.get(f"/api/v1/gateway/projects/{proj_id}/services")
     assert list_after.status_code == 200
     assert list_after.json() == []
 
     # 10. Unbinding an already unbound service returns 404
-    unbind_404 = await client.delete(
+    unbind_404 = await admin_client.delete(
         f"/api/v1/gateway/projects/{proj_id}/services/{svc_id}"
     )
     assert unbind_404.status_code == 404
@@ -107,11 +109,11 @@ async def test_project_service_binding_and_quota_lifecycle(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_zero_trust_gateway_enforces_project_service_allowlist(
-    client: AsyncClient,
+    admin_client: AsyncClient,
 ):
     """Verify that a project's virtual key can only access allowed upstream services."""
     # 1. Create Project Alpha
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Project Alpha Security",
@@ -122,7 +124,7 @@ async def test_zero_trust_gateway_enforces_project_service_allowlist(
     proj_id = proj_res.json()["id"]
 
     # 2. Register Upstream S1 (OpenAI) and Upstream S2 (Secret Banking)
-    s1_res = await client.post(
+    s1_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "OpenAI Public Models",
@@ -135,7 +137,7 @@ async def test_zero_trust_gateway_enforces_project_service_allowlist(
     )
     s1_id = s1_res.json()["id"]
 
-    s2_res = await client.post(
+    s2_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "Secret Core Banking API",
@@ -149,7 +151,7 @@ async def test_zero_trust_gateway_enforces_project_service_allowlist(
     s2_id = s2_res.json()["id"]
 
     # 3. Bind ONLY S1 (OpenAI) to Project Alpha
-    bind_res = await client.post(
+    bind_res = await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={
             "service_id": s1_id,
@@ -160,7 +162,7 @@ async def test_zero_trust_gateway_enforces_project_service_allowlist(
     assert bind_res.status_code == 201
 
     # 4. Register mTLS client and issue Virtual Key for Project Alpha
-    client_res = await client.post(
+    client_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Secure-Edge-Worker",
@@ -174,7 +176,7 @@ async def test_zero_trust_gateway_enforces_project_service_allowlist(
     client_id = client_data["id"]
     cert_fingerprint = client_data["cert_fingerprint"]
 
-    key_res = await client.post(
+    key_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={
             "client_id": client_id,
@@ -185,7 +187,7 @@ async def test_zero_trust_gateway_enforces_project_service_allowlist(
     virtual_key = key_res.json()["virtual_key"]
 
     # 5. Gateway Check 1: Target S1 (bound service) -> MUST be allowed
-    check_s1 = await client.post(
+    check_s1 = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": virtual_key,
@@ -198,7 +200,7 @@ async def test_zero_trust_gateway_enforces_project_service_allowlist(
     assert check_s1.json()["valid"] is True
 
     # 6. Gateway Check 2: Target S2 (unbound service) -> MUST return 403 Forbidden
-    check_s2 = await client.post(
+    check_s2 = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": virtual_key,

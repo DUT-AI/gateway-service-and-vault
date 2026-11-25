@@ -3,10 +3,12 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
+async def test_vault_granular_permissions_and_encryption(
+    client: AsyncClient, admin_client: AsyncClient
+):
     """Test identity-based key permissions access, in-memory decryption, and zero plaintext storage."""
     # 1. Create a Project
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={"name": "Billing Platform", "slug": "billing-platform"},
     )
@@ -14,7 +16,7 @@ async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
     proj_id = proj_res.json()["id"]
 
     # 2. Add Secrets: Common Scope
-    res1 = await client.post(
+    res1 = await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/secrets",
         json={
             "scope_name": "Common",
@@ -27,7 +29,7 @@ async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
     assert res1.json()["key"] == "DATABASE_URL"
 
     # 3. Add Secrets: Financial Scope
-    res2 = await client.post(
+    res2 = await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/secrets",
         json={
             "scope_name": "Financial",
@@ -40,7 +42,7 @@ async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
     assert res2.json()["key"] == "STRIPE_SECRET_KEY"
 
     # Grant permissions: financial_dev gets both keys
-    await client.post(
+    await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/permissions",
         json={
             "identity_id": "financial_dev",
@@ -48,7 +50,7 @@ async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
             "secret_key": "DATABASE_URL",
         },
     )
-    await client.post(
+    await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/permissions",
         json={
             "identity_id": "financial_dev",
@@ -58,7 +60,7 @@ async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
     )
 
     # Grant permissions: general_dev gets only DATABASE_URL
-    await client.post(
+    await admin_client.post(
         f"/api/v1/vault/projects/{proj_id}/permissions",
         json={
             "identity_id": "general_dev",
@@ -101,12 +103,14 @@ async def test_vault_granular_permissions_and_encryption(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_vault_jwt_sso_bearer_token_access(client: AsyncClient):
+async def test_vault_jwt_sso_bearer_token_access(
+    client: AsyncClient, admin_client: AsyncClient
+):
     """Test that authenticated SSO admin Bearer tokens automatically resolve permissions without manual headers."""
     import jwt
 
     # 1. Create a Project
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={"name": "SSO Vault Project", "slug": "sso-vault-proj"},
     )

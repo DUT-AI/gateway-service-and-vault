@@ -6,6 +6,8 @@ import tempfile
 import httpx
 import pytest
 
+from tests.conftest import make_auth_headers
+
 APISIX_HTTP_URL = os.getenv("APISIX_HTTP_URL", "http://localhost:9080")
 APISIX_HTTPS_URL = os.getenv("APISIX_HTTPS_URL", "https://localhost:9443")
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://localhost:8000")
@@ -32,7 +34,7 @@ async def test_live_gateway_scenario_1_missing_virtual_key_rejected():
         pytest.skip("Live APISIX gateway or FastAPI backend is not running")
 
     # 1. Register a test client to obtain mTLS cert and key
-    async with httpx.AsyncClient(timeout=5.0) as client:
+    async with httpx.AsyncClient(timeout=5.0, headers=make_auth_headers()) as client:
         reg_res = await client.post(
             f"{BACKEND_API_URL}/api/v1/gateway/clients",
             json={
@@ -92,7 +94,7 @@ async def test_live_gateway_scenario_3_and_4_valid_call_and_revocation_lifecycle
     if not await is_live_environment_ready():
         pytest.skip("Live APISIX gateway or FastAPI backend is not running")
 
-    async with httpx.AsyncClient(timeout=5.0) as client:
+    async with httpx.AsyncClient(timeout=5.0, headers=make_auth_headers()) as client:
         # 1. Register Client
         client_res = await client.post(
             f"{BACKEND_API_URL}/api/v1/gateway/clients",
@@ -175,7 +177,9 @@ async def test_live_gateway_scenario_3_and_4_valid_call_and_revocation_lifecycle
                 )
 
                 # Scenario 4: Revoke Client Device
-                async with httpx.AsyncClient(timeout=5.0) as admin_client:
+                async with httpx.AsyncClient(
+                    timeout=5.0, headers=make_auth_headers()
+                ) as admin_client:
                     rev_res = await admin_client.post(
                         f"{BACKEND_API_URL}/api/v1/gateway/clients/{client_id}/revoke"
                     )
@@ -204,7 +208,7 @@ async def test_live_gateway_scenario_5_daily_quota_exhaustion_returns_429():
     if not await is_live_environment_ready():
         pytest.skip("Live APISIX gateway or FastAPI backend is not running")
 
-    async with httpx.AsyncClient(timeout=5.0) as client:
+    async with httpx.AsyncClient(timeout=5.0, headers=make_auth_headers()) as client:
         # 1. Register Client
         client_res = await client.post(
             f"{BACKEND_API_URL}/api/v1/gateway/clients",

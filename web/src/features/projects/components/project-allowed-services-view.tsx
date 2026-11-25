@@ -24,7 +24,7 @@ export function ProjectAllowedServicesView({
   return (
     <div className="space-y-6">
       {/* Top Banner / Actions Card */}
-      <Card className="border-slate-200 bg-white shadow-xs">
+      <Card className="min-h-[600px] border-slate-200 bg-white shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">

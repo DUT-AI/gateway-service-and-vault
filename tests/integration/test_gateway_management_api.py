@@ -3,10 +3,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_gateway_projects_crud(client: AsyncClient):
+async def test_gateway_projects_crud(admin_client: AsyncClient):
     """Test listing and retrieving projects."""
     # 1. Create a project
-    create_res = await client.post(
+    create_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "E-Commerce Gateway",
@@ -19,27 +19,27 @@ async def test_gateway_projects_crud(client: AsyncClient):
     project_id = project_data["id"]
 
     # 2. List projects
-    list_res = await client.get("/api/v1/gateway/projects")
+    list_res = await admin_client.get("/api/v1/gateway/projects")
     assert list_res.status_code == 200
     projects = list_res.json()
     assert isinstance(projects, list)
     assert any(p["id"] == project_id for p in projects)
 
     # 3. Get single project
-    get_res = await client.get(f"/api/v1/gateway/projects/{project_id}")
+    get_res = await admin_client.get(f"/api/v1/gateway/projects/{project_id}")
     assert get_res.status_code == 200
     assert get_res.json()["name"] == "E-Commerce Gateway"
 
     # 4. Get non-existent project returns 404
-    non_existent = await client.get("/api/v1/gateway/projects/non_existent_999")
+    non_existent = await admin_client.get("/api/v1/gateway/projects/non_existent_999")
     assert non_existent.status_code == 404
 
 
 @pytest.mark.asyncio
-async def test_gateway_clients_listing(client: AsyncClient):
+async def test_gateway_clients_listing(admin_client: AsyncClient):
     """Test listing registered mTLS clients."""
     # 1. Register a client
-    reg_res = await client.post(
+    reg_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Dev Laptop MacBook Pro",
@@ -52,7 +52,7 @@ async def test_gateway_clients_listing(client: AsyncClient):
     client_id = reg_res.json()["id"]
 
     # 2. List clients
-    list_res = await client.get("/api/v1/gateway/clients")
+    list_res = await admin_client.get("/api/v1/gateway/clients")
     assert list_res.status_code == 200
     clients = list_res.json()
     assert isinstance(clients, list)
@@ -60,16 +60,16 @@ async def test_gateway_clients_listing(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_gateway_virtual_keys_and_revoke(client: AsyncClient):
+async def test_gateway_virtual_keys_and_revoke(admin_client: AsyncClient):
     """Test generating, listing, and revoking virtual access keys."""
     # Create project & client
-    p_res = await client.post(
+    p_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={"name": "Billing Service", "slug": "billing-srv"},
     )
     project_id = p_res.json()["id"]
 
-    c_res = await client.post(
+    c_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Billing Worker",
@@ -80,7 +80,7 @@ async def test_gateway_virtual_keys_and_revoke(client: AsyncClient):
     client_id = c_res.json()["id"]
 
     # Generate key
-    key_res = await client.post(
+    key_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"project_id": project_id, "client_id": client_id},
     )
@@ -88,7 +88,7 @@ async def test_gateway_virtual_keys_and_revoke(client: AsyncClient):
     key_id = key_res.json()["id"]
 
     # List keys for project
-    list_res = await client.get(f"/api/v1/gateway/projects/{project_id}/keys")
+    list_res = await admin_client.get(f"/api/v1/gateway/projects/{project_id}/keys")
     assert list_res.status_code == 200
     keys = list_res.json()
     assert len(keys) == 1
@@ -96,19 +96,19 @@ async def test_gateway_virtual_keys_and_revoke(client: AsyncClient):
     assert keys[0]["status"] == "ACTIVE"
 
     # Revoke key
-    revoke_res = await client.post(f"/api/v1/gateway/keys/{key_id}/revoke")
+    revoke_res = await admin_client.post(f"/api/v1/gateway/keys/{key_id}/revoke")
     assert revoke_res.status_code == 200
 
     # Verify status changed to REVOKED
-    list_res2 = await client.get(f"/api/v1/gateway/projects/{project_id}/keys")
+    list_res2 = await admin_client.get(f"/api/v1/gateway/projects/{project_id}/keys")
     assert list_res2.json()[0]["status"] == "REVOKED"
 
 
 @pytest.mark.asyncio
-async def test_upstream_services_crud(client: AsyncClient):
+async def test_upstream_services_crud(admin_client: AsyncClient):
     """Test creating and listing upstream services."""
     # 1. Create upstream service
-    create_res = await client.post(
+    create_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "OpenAI LLM Gateway",
@@ -123,24 +123,24 @@ async def test_upstream_services_crud(client: AsyncClient):
     svc_id = create_res.json()["id"]
 
     # 2. List services
-    list_res = await client.get("/api/v1/gateway/services")
+    list_res = await admin_client.get("/api/v1/gateway/services")
     assert list_res.status_code == 200
     services = list_res.json()
     assert any(s["id"] == svc_id for s in services)
 
 
 @pytest.mark.asyncio
-async def test_vault_list_scopes(client: AsyncClient):
+async def test_vault_list_scopes(admin_client: AsyncClient):
     """Test listing secret scopes in a project."""
     # 1. Create project
-    p_res = await client.post(
+    p_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={"name": "Scope Test Project", "slug": "scope-test-proj"},
     )
     project_id = p_res.json()["id"]
 
     # 2. Add secret into a scope
-    await client.post(
+    await admin_client.post(
         f"/api/v1/vault/projects/{project_id}/secrets",
         json={
             "scope_name": "Database",
@@ -148,13 +148,13 @@ async def test_vault_list_scopes(client: AsyncClient):
             "value": "postgres://localhost/db",
         },
     )
-    await client.post(
+    await admin_client.post(
         f"/api/v1/vault/projects/{project_id}/secrets",
         json={"scope_name": "Payment", "key": "STRIPE_KEY", "value": "sk_test_123"},
     )
 
     # 3. List scopes
-    scopes_res = await client.get(f"/api/v1/vault/projects/{project_id}/scopes")
+    scopes_res = await admin_client.get(f"/api/v1/vault/projects/{project_id}/scopes")
     assert scopes_res.status_code == 200
     scopes = scopes_res.json()
     scope_names = {s["name"] for s in scopes}

@@ -3,10 +3,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_identity_binding_full_lifecycle(client: AsyncClient):
+async def test_identity_binding_full_lifecycle(admin_client: AsyncClient):
     """Test registering clients, generating virtual keys, and verifying identity binding."""
     # 1. Create two projects: Project A and Project B
-    proj_a_res = await client.post(
+    proj_a_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Project Alpha",
@@ -18,7 +18,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     proj_a = proj_a_res.json()
     proj_a_id = proj_a["id"]
 
-    proj_b_res = await client.post(
+    proj_b_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Project Beta",
@@ -31,7 +31,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     proj_b_id = proj_b["id"]
 
     # 2. Register Client A (Developer Workstation) and Client B (Docker Workload)
-    client_a_res = await client.post(
+    client_a_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "MacBook-Pro-Dev1",
@@ -44,7 +44,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     assert "cert_fingerprint" in client_a
     assert "cert_pem" in client_a
 
-    client_b_res = await client.post(
+    client_b_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Docker-App-Service",
@@ -56,7 +56,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     client_b = client_b_res.json()
 
     # 3. Generate Virtual Access Key for Client A on Project A
-    key_a_res = await client.post(
+    key_a_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"client_id": client_a["id"], "project_id": proj_a_id},
     )
@@ -66,7 +66,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     assert virtual_key_a.startswith("vk_live_")
 
     # 4. Valid Verification: Client A calls Project A with Client A certificate
-    verify_valid = await client.post(
+    verify_valid = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": virtual_key_a,
@@ -78,7 +78,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     assert verify_valid.json()["valid"] is True
 
     # 5. Attack Scenario 1: Key Replay on another machine (Client B uses Key A)
-    verify_stolen_machine = await client.post(
+    verify_stolen_machine = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": virtual_key_a,
@@ -91,7 +91,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     assert "IdentityMismatchError" in err_json.get("code", "")
 
     # 6. Attack Scenario 2: Cross-project key use (Key A used to access Project B)
-    verify_cross_project = await client.post(
+    verify_cross_project = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": virtual_key_a,
@@ -104,7 +104,7 @@ async def test_identity_binding_full_lifecycle(client: AsyncClient):
     assert "IdentityMismatchError" in err_json.get("code", "")
 
     # 7. Attack Scenario 3: Forged / Non-existent Key
-    verify_forged_key = await client.post(
+    verify_forged_key = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": "vk_live_forged_key_1234567890",

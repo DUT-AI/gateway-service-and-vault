@@ -1,8 +1,12 @@
 from datetime import datetime
+from typing import Annotated
 
 from dishka.integrations.fastapi import FromDishka, inject
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from apps.api.routers.gateway.access_helpers import ensure_project_access
+from core.security.deps import require_role_tier
+from core.security.roles import RoleTier, UserContext
 from modules.gateway.dtos.audit_dtos import (
     AuditEventListResponse,
     AuditEventResponse,
@@ -10,6 +14,7 @@ from modules.gateway.dtos.audit_dtos import (
     SecurityAlertsResponse,
 )
 from modules.gateway.use_cases import (
+    CheckProjectMembershipUseCase,
     GetSecurityAlertsUseCase,
     ListAuditEventsUseCase,
 )
@@ -25,6 +30,11 @@ router = APIRouter()
 @inject
 async def list_audit_events(
     use_case: FromDishka[ListAuditEventsUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
     project_id: str | None = None,
     client_type: str | None = None,
     decision: str | None = None,
@@ -36,6 +46,8 @@ async def list_audit_events(
     offset: int = Query(default=0, ge=0),
 ) -> AuditEventListResponse:
     """Query immutable security audit logs with filtering and pagination."""
+    if project_id:
+        await ensure_project_access(project_id, user_ctx, membership_uc)
     events, total = await use_case.execute(
         project_id=project_id,
         client_type=client_type,
@@ -82,6 +94,10 @@ async def list_audit_events(
 @inject
 async def get_security_alerts(
     use_case: FromDishka[GetSecurityAlertsUseCase],
+    _: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
     window_minutes: int = Query(default=5, ge=1, le=60),
     threshold: int = Query(default=3, ge=1, le=100),
 ) -> SecurityAlertsResponse:

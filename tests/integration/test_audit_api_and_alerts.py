@@ -3,10 +3,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
+async def test_audit_api_filtering_and_security_alerts(admin_client: AsyncClient):
     """Verify GET /audit-events filtering and GET /security-alerts anomaly detection."""
     # 1. Create a Project
-    proj_res = await client.post(
+    proj_res = await admin_client.post(
         "/api/v1/gateway/projects",
         json={
             "name": "Audit API Test Project",
@@ -18,7 +18,7 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
     proj_id = proj_res.json()["id"]
 
     # 2. Register Client
-    client_res = await client.post(
+    client_res = await admin_client.post(
         "/api/v1/gateway/clients",
         json={
             "name": "Audit API Client",
@@ -32,7 +32,7 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
     cert_fingerprint = c_data["cert_fingerprint"]
 
     # 3. Create Upstream Service & Bind
-    svc_res = await client.post(
+    svc_res = await admin_client.post(
         "/api/v1/gateway/services",
         json={
             "name": "Alert Upstream Service",
@@ -45,13 +45,13 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
     assert svc_res.status_code == 201
     svc_id = svc_res.json()["id"]
 
-    await client.post(
+    await admin_client.post(
         f"/api/v1/gateway/projects/{proj_id}/services",
         json={"service_id": svc_id, "rate_limit_rpm": 60, "quota_daily": 100},
     )
 
     # 4. Generate Virtual Key
-    vk_res = await client.post(
+    vk_res = await admin_client.post(
         "/api/v1/gateway/keys",
         json={"client_id": client_id, "project_id": proj_id},
     )
@@ -59,7 +59,7 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
     raw_vk = vk_res.json()["virtual_key"]
 
     # 5. Send 1 Valid Request (ALLOW)
-    allow_res = await client.post(
+    allow_res = await admin_client.post(
         "/api/v1/gateway/verify-binding",
         json={
             "raw_virtual_key": raw_vk,
@@ -75,7 +75,7 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
     # 6. Send 3 Mismatched Requests (Triggering Security Alert threshold)
     wrong_fp = "aa:bb:cc:dd:ee:ff:11:22:33:44:55:66:77:88:99:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00"
     for i in range(3):
-        mismatch_res = await client.post(
+        mismatch_res = await admin_client.post(
             "/api/v1/gateway/verify-binding",
             json={
                 "raw_virtual_key": raw_vk,
@@ -89,14 +89,16 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
         assert mismatch_res.status_code == 403
 
     # 7. Test GET /api/v1/gateway/audit-events with project_id filter
-    events_res = await client.get(f"/api/v1/gateway/audit-events?project_id={proj_id}")
+    events_res = await admin_client.get(
+        f"/api/v1/gateway/audit-events?project_id={proj_id}"
+    )
     assert events_res.status_code == 200
     events_data = events_res.json()
     assert events_data["total"] >= 4
     assert len(events_data["items"]) >= 4
 
     # Test filtering by decision=ALLOW
-    allow_events_res = await client.get(
+    allow_events_res = await admin_client.get(
         f"/api/v1/gateway/audit-events?project_id={proj_id}&decision=ALLOW"
     )
     assert allow_events_res.status_code == 200
@@ -106,7 +108,7 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
     assert allow_data["items"][0]["client_type"] == "APP_SERVER"
 
     # Test filtering by decision=DENY and error_code=IDENTITY_MISMATCH
-    deny_events_res = await client.get(
+    deny_events_res = await admin_client.get(
         f"/api/v1/gateway/audit-events?project_id={proj_id}&decision=DENY&error_code=IDENTITY_MISMATCH"
     )
     assert deny_events_res.status_code == 200
@@ -118,7 +120,7 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
         assert item["client_ip"] == "10.0.0.99"
 
     # Test pagination
-    paged_res = await client.get(
+    paged_res = await admin_client.get(
         f"/api/v1/gateway/audit-events?project_id={proj_id}&limit=2&offset=0"
     )
     assert paged_res.status_code == 200
@@ -128,7 +130,7 @@ async def test_audit_api_filtering_and_security_alerts(client: AsyncClient):
     assert paged_data["offset"] == 0
 
     # 8. Test GET /api/v1/gateway/security-alerts
-    alerts_res = await client.get(
+    alerts_res = await admin_client.get(
         "/api/v1/gateway/security-alerts?window_minutes=5&threshold=3"
     )
     assert alerts_res.status_code == 200

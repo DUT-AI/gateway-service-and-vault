@@ -3,11 +3,13 @@
 import React, { useState } from "react";
 import { Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
 import { useProjectsQuery } from "@/features/projects/hooks/use-projects-queries";
 import { ProjectList } from "@/features/projects/components/project-list";
 import { CreateProjectDialog } from "@/features/projects/components/create-project-dialog";
 
 export default function ProjectsPage() {
+  const { isAdmin } = useAuth();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const {
     data: projects,
@@ -45,14 +47,16 @@ export default function ProjectsPage() {
             />
             Làm mới
           </Button>
-          <Button
-            size="sm"
-            onClick={() => setCreateDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs"
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            Tạo dự án mới
-          </Button>
+          {isAdmin && (
+            <Button
+              size="sm"
+              onClick={() => setCreateDialogOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs"
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              Tạo dự án mới
+            </Button>
+          )}
         </div>
       </div>
 
@@ -61,13 +65,15 @@ export default function ProjectsPage() {
         isLoading={isLoading}
         error={error}
         onRetry={() => refetch()}
-        onCreateProject={() => setCreateDialogOpen(true)}
+        onCreateProject={isAdmin ? () => setCreateDialogOpen(true) : undefined}
       />
 
-      <CreateProjectDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-      />
+      {isAdmin && (
+        <CreateProjectDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+        />
+      )}
     </div>
   );
 }
