@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowRight,
   Check,
   Copy,
   Download,
@@ -238,6 +240,26 @@ export function CertDownloadDialog({
             <Download className="h-4 w-4 mr-2" />
             Tải cả hai tệp (client.crt & client.key)
           </Button>
+
+          {/* Next Step Guidance */}
+          <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3 flex items-center justify-between gap-3">
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              <span className="font-semibold text-blue-800">Bước tiếp theo:</span>{" "}
+              Vào tab <span className="font-semibold">Virtual Keys</span> trong trang chi tiết Dự án để cấp API Key cho thiết bị này.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              asChild
+              className="shrink-0 text-xs border-blue-200 text-blue-700 hover:bg-blue-100"
+            >
+              <Link href="/projects" onClick={handleFinish}>
+                Tới Dự án
+                <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <DialogFooter className="pt-2 border-t border-slate-100">

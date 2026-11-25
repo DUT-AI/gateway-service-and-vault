@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Key, Plus, Shield, Sparkles } from "lucide-react";
+import { Eye, Key, Plus, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/auth-context";
 import { VirtualKeysTable } from "./virtual-keys-table";
 import { GenerateKeyModal } from "./generate-key-modal";
 
@@ -12,6 +13,7 @@ export interface VirtualKeysViewProps {
 }
 
 export function VirtualKeysView({ projectId }: VirtualKeysViewProps) {
+  const { isOtherRole } = useAuth();
   const [generateOpen, setGenerateOpen] = useState(false);
 
   return (
@@ -27,38 +29,49 @@ export function VirtualKeysView({ projectId }: VirtualKeysViewProps) {
                 <Shield className="h-2.5 w-2.5" />
                 Principle VIII
               </span>
+              {isOtherRole && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 border border-slate-200">
+                  <Eye className="h-2.5 w-2.5" />
+                  Chỉ xem (Read-only)
+                </span>
+              )}
             </CardTitle>
             <p className="text-xs text-slate-500">
-              Phát hành khóa ảo (Virtual Keys) cho phép ứng dụng truy xuất tài nguyên
-              Gateway an toàn dưới cơ chế ràng buộc phần cứng 1:1.
+              {isOtherRole
+                ? "Danh sách Virtual Keys được Project Developer cấp cho các thiết bị cá nhân của bạn trong dự án này."
+                : "Phát hành khóa ảo (Virtual Keys) cho phép ứng dụng truy xuất tài nguyên Gateway an toàn dưới cơ chế ràng buộc phần cứng 1:1."}
             </p>
           </div>
 
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setGenerateOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-9 px-3 shrink-0 shadow-xs"
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Cấp Virtual Key mới
-          </Button>
+          {!isOtherRole && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setGenerateOpen(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs h-9 px-3 shrink-0 shadow-xs"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Cấp Virtual Key mới
+            </Button>
+          )}
         </CardHeader>
 
         <CardContent className="pt-4">
           <VirtualKeysTable
             projectId={projectId}
-            onGenerateClick={() => setGenerateOpen(true)}
+            onGenerateClick={isOtherRole ? undefined : () => setGenerateOpen(true)}
           />
         </CardContent>
       </Card>
 
       {/* Generate Key Modal */}
-      <GenerateKeyModal
-        open={generateOpen}
-        onOpenChange={setGenerateOpen}
-        projectId={projectId}
-      />
+      {!isOtherRole && (
+        <GenerateKeyModal
+          open={generateOpen}
+          onOpenChange={setGenerateOpen}
+          projectId={projectId}
+        />
+      )}
     </div>
   );
 }

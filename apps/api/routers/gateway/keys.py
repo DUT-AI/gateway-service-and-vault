@@ -4,9 +4,10 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from apps.api.routers.gateway.access_helpers import ensure_project_access
-from core.security.deps import require_role_tier
+from core.security.deps import get_current_user_context, require_role_tier
 from core.security.roles import RoleTier, UserContext
 from modules.gateway.dtos.gateway_dtos import (
+    ClientSummaryResponse,
     GenerateVirtualKeyRequest,
     GenerateVirtualKeyResponse,
     VerifyBindingRequest,
@@ -16,12 +17,51 @@ from modules.gateway.dtos.gateway_dtos import (
 from modules.gateway.use_cases import (
     CheckProjectMembershipUseCase,
     GenerateVirtualKeyUseCase,
+    ListProjectAvailableClientsUseCase,
     ListVirtualKeysUseCase,
     RevokeVirtualKeyUseCase,
     VerifyIdentityBindingUseCase,
 )
 
 router = APIRouter()
+
+
+@router.get(
+    "/projects/{project_id}/available-clients",
+    response_model=list[ClientSummaryResponse],
+    summary="List active mTLS clients of project members eligible for Virtual Key binding",
+)
+@inject
+async def list_project_available_clients(
+    project_id: str,
+    use_case: FromDishka[ListProjectAvailableClientsUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[
+        UserContext,
+        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
+    ],
+) -> list[ClientSummaryResponse]:
+    """Retrieve active mTLS clients belonging to members of the project (or all for Admin)."""
+    await ensure_project_access(project_id, user_ctx, membership_uc)
+    clients = await use_case.execute(
+        project_id=project_id,
+        caller_owner_id=str(user_ctx.user_id),
+        is_admin=user_ctx.is_admin,
+    )
+    return [
+        ClientSummaryResponse(
+            id=c.id,
+            name=c.name,
+            client_type=c.client_type.value,
+            owner_id=c.owner_id,
+            cert_fingerprint=c.cert_fingerprint,
+            cert_serial=c.cert_serial,
+            expires_at=c.expires_at,
+            is_revoked=c.is_revoked,
+            created_at=c.created_at,
+        )
+        for c in clients
+    ]
 
 
 @router.get(
@@ -34,14 +74,12 @@ async def list_virtual_keys(
     project_id: str,
     use_case: FromDishka[ListVirtualKeysUseCase],
     membership_uc: FromDishka[CheckProjectMembershipUseCase],
-    user_ctx: Annotated[
-        UserContext,
-        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
-    ],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
 ) -> list[VirtualKeySummaryResponse]:
-    """Retrieve all virtual access keys bound to a project."""
+    """Retrieve virtual access keys bound to a project (read-only own-device keys for Tier 3)."""
     await ensure_project_access(project_id, user_ctx, membership_uc)
-    keys = await use_case.execute(project_id)
+    owner_filter = str(user_ctx.user_id) if user_ctx.is_other else None
+    keys = await use_case.execute(project_id, owner_id_filter=owner_filter)
     return [
         VirtualKeySummaryResponse(
             id=k.id,

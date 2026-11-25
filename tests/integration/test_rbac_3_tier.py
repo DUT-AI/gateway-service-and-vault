@@ -186,11 +186,22 @@ async def test_standardized_3_tier_rbac_and_project_membership(
     assert trainer_sec_granted["Common"]["ADMIN_SECRET"] == "top_secret_admin_val"
     assert trainer_sec_granted["Common"]["TRAINER_KEY"] == "trainer_own_val"
 
-    # Trainer cannot create clients, keys, or grant permissions -> 403 Forbidden
+    # Trainer can register USER_DEVICE (201) but cannot register APP_SERVER, create keys, or grant permissions -> 403 Forbidden
     assert (
         await client.post(
             "/api/v1/gateway/clients",
-            json={"name": "Nope", "client_type": "USER_DEVICE", "owner_id": "20"},
+            json={
+                "name": "Trainer Device",
+                "client_type": "USER_DEVICE",
+                "owner_id": "20",
+            },
+            headers=trainer_headers,
+        )
+    ).status_code == 201
+    assert (
+        await client.post(
+            "/api/v1/gateway/clients",
+            json={"name": "Nope", "client_type": "APP_SERVER", "owner_id": "20"},
             headers=trainer_headers,
         )
     ).status_code == 403

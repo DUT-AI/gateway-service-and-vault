@@ -35,15 +35,13 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
           <Lock className="h-4 w-4 mr-2 text-slate-500" />
           Biến môi trường (Vault)
         </TabsTrigger>
-        {canManageKeys && (
-          <TabsTrigger
-            value="keys"
-            className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
-          >
-            <Key className="h-4 w-4 mr-2 text-slate-500" />
-            Virtual Keys
-          </TabsTrigger>
-        )}
+        <TabsTrigger
+          value="keys"
+          className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+        >
+          <Key className="h-4 w-4 mr-2 text-slate-500" />
+          Virtual Keys
+        </TabsTrigger>
         <TabsTrigger
           value="services"
           className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
@@ -75,11 +73,9 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
       </TabsContent>
 
       {/* Virtual Keys Tab (Phase 4 Zero-Trust Gatekeeper) */}
-      {canManageKeys && (
-        <TabsContent value="keys" className="space-y-4">
-          <VirtualKeysView projectId={project.id} />
-        </TabsContent>
-      )}
+      <TabsContent value="keys" className="space-y-4">
+        <VirtualKeysView projectId={project.id} />
+      </TabsContent>
 
       {/* Allowed Services & Quotas Tab (Feature 012) */}
       <TabsContent value="services" className="space-y-4">

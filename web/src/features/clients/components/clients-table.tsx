@@ -36,6 +36,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/auth-context";
+import { useUserOptionsQuery } from "@/features/vault/hooks/use-user-options-query";
 import { useClientsQuery, useRevokeClientMutation } from "../hooks/use-clients-queries";
 import { RegisterClientDialog } from "./register-client-dialog";
 import { CertDownloadDialog } from "./cert-download-dialog";
@@ -43,9 +45,12 @@ import { DockerDeploymentGuideDialog } from "./docker-deployment-guide-dialog";
 import type { Client, ClientType, RegisterClientResult } from "../types";
 
 export function ClientsTable() {
+  const { user, isAdmin } = useAuth();
   const { data: clients, isLoading, error, refetch, isRefetching } =
     useClientsQuery();
+  const { data: userOptions = [] } = useUserOptionsQuery();
 
+  const [scopeTab, setScopeTab] = useState<"ALL" | "MINE">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"ALL" | ClientType>("ALL");
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -89,23 +94,40 @@ export function ClientsTable() {
     setDownloadOpen(true);
   };
 
+  const ownerMap = useMemo(() => {
+    const map = new Map<string, (typeof userOptions)[number]>();
+    userOptions.forEach((u) => map.set(String(u.id), u));
+    return map;
+  }, [userOptions]);
+
   // Filtering
   const filteredClients = useMemo(() => {
     if (!clients) return [];
     return clients.filter((client) => {
+      // Admin scope filter
+      if (isAdmin && scopeTab === "MINE" && user?.id) {
+        if (client.owner_id !== String(user.id)) {
+          return false;
+        }
+      }
+
       // Type filter
       if (typeFilter !== "ALL" && client.client_type !== typeFilter) {
         return false;
       }
 
-      // Search filter (name or fingerprint)
+      // Search filter (name, fingerprint, or owner name/email)
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
+      const owner = ownerMap.get(client.owner_id);
       const matchName = client.name.toLowerCase().includes(q);
       const matchFingerprint = client.cert_fingerprint.toLowerCase().includes(q);
-      return matchName || matchFingerprint;
+      const matchOwner =
+        owner?.name.toLowerCase().includes(q) ||
+        owner?.email.toLowerCase().includes(q);
+      return matchName || matchFingerprint || Boolean(matchOwner);
     });
-  }, [clients, typeFilter, searchQuery]);
+  }, [clients, isAdmin, scopeTab, user?.id, typeFilter, searchQuery, ownerMap]);
 
   const getClientStatus = (client: Client) => {
     if (client.is_revoked) {
@@ -134,6 +156,36 @@ export function ClientsTable() {
 
   return (
     <div className="space-y-4">
+      {/* Admin Scope Tabs */}
+      {isAdmin && (
+        <div className="inline-flex items-center rounded-xl border border-slate-200 bg-slate-100 p-1">
+          <button
+            type="button"
+            onClick={() => setScopeTab("ALL")}
+            className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              scopeTab === "ALL"
+                ? "bg-white text-blue-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Tất cả hệ thống ({clients?.length ?? 0})
+          </button>
+          <button
+            type="button"
+            onClick={() => setScopeTab("MINE")}
+            className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
+              scopeTab === "MINE"
+                ? "bg-white text-blue-700 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Thiết bị của tôi (
+            {clients?.filter((c) => c.owner_id === String(user?.id)).length ?? 0}
+            )
+          </button>
+        </div>
+      )}
+
       {/* Top Filter and Actions Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search input */}
@@ -241,6 +293,7 @@ export function ClientsTable() {
               <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold">
                 <tr>
                   <th className="py-3 px-4">Tên thiết bị</th>
+                  <th className="py-3 px-4">Chủ sở hữu</th>
                   <th className="py-3 px-4">Loại Client</th>
                   <th className="py-3 px-4">Fingerprint SHA-256</th>
                   <th className="py-3 px-4">Hạn chứng chỉ</th>
@@ -282,7 +335,7 @@ export function ClientsTable() {
                 ) : error ? (
                   // Error State
                   <tr>
-                    <td colSpan={6} className="py-8 text-center">
+                    <td colSpan={7} className="py-8 text-center">
                       <div className="inline-flex flex-col items-center justify-center text-rose-600 gap-2">
                         <AlertCircle className="h-6 w-6" />
                         <span className="font-semibold">
@@ -306,7 +359,7 @@ export function ClientsTable() {
                 ) : filteredClients.length === 0 ? (
                   // Empty State
                   <tr>
-                    <td colSpan={6} className="py-12 text-center">
+                    <td colSpan={7} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-center space-y-3">
                         <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                           <HardDrive className="h-6 w-6" />
@@ -355,6 +408,7 @@ export function ClientsTable() {
                   filteredClients.map((client) => {
                     const status = getClientStatus(client);
                     const isDeveloper = client.client_type === "USER_DEVICE";
+                    const owner = ownerMap.get(client.owner_id);
 
                     return (
                       <tr
@@ -384,6 +438,33 @@ export function ClientsTable() {
                               <div className="text-[10px] text-slate-400 font-mono">
                                 SN: {client.cert_serial.slice(0, 12)}...
                               </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Owner */}
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {owner?.avatar_url ? (
+                              <img
+                                src={owner.avatar_url}
+                                alt={owner.name}
+                                className="h-6 w-6 rounded-full object-cover border border-slate-200 shrink-0"
+                              />
+                            ) : (
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600">
+                                {(owner?.name || client.owner_id || "U")[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div className="min-w-0 max-w-[160px]">
+                              <div className="font-medium text-slate-800 truncate">
+                                {owner?.name || `User #${client.owner_id}`}
+                              </div>
+                              {owner?.email && (
+                                <div className="text-[10px] text-slate-400 truncate">
+                                  {owner.email}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>

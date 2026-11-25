@@ -1,10 +1,11 @@
 <!--
 SYNC IMPACT REPORT
-- Version Change: 2.2.0 → 2.3.0
-- Bump Rationale: MINOR. Formally codifies Presentation Layer Purity (Thin Controllers & Zero Repository Injections in Routers) under Principle I, and Gateway Edge CORS Preflight & Proxy Buffer Standards (minimum 64k for enterprise JWT tokens) under Principle VIII.
+- Version Change: 2.3.0 → 2.4.0
+- Bump Rationale: MINOR. Formally codifies 3-Tier SSO RBAC, Project Membership isolation, strict Production SSO verification (zero unverified JWT fallback), explicit Vault creator ACL granting, Self-Issued mTLS Client Ownership, and Batch Mutation standards under Principles V, VI, and VIII.
 - Modified Principles:
-  - I. Clean Architecture, Domain Purity & Repository Isolation (NON-NEGOTIABLE) → I. Clean Architecture, Domain Purity, Repository Isolation & Thin Presentation Layer (NON-NEGOTIABLE)
-  - VIII. Zero-Trust Identity Binding & Reverse Proxy Gateway → VIII. Zero-Trust Identity Binding, Gateway Edge CORS & Proxy Buffer Governance
+  - V. Standardized DUT-AI SSO, External User Directory & Redis Caching (Pure SSO) (NON-NEGOTIABLE)
+  - VI. Dynamic Vault & Granular Key-Level Access Control (Zero .env Files)
+  - VIII. Zero-Trust Identity Binding, Gateway Edge CORS & Proxy Buffer Governance
 - Added Sections: None
 - Removed Sections: None
 - Follow-up TODOs: None
@@ -62,7 +63,12 @@ Developers MUST NOT manually author parallel TypeScript interfaces for backend A
 ### V. Standardized DUT-AI SSO, External User Directory & Redis Caching (Pure SSO) (NON-NEGOTIABLE)
 External single sign-on authentication MUST interface exclusively with the central DUT-AI Identity Provider (`https://manage.dutai.io.vn`).
 The platform MUST NOT store user passwords, password hashes, or manage independent local user accounts in its database. Local database tables, ORM models, and repositories for user persistence are strictly forbidden; the `identity` bounded context MUST operate with zero local database persistence tables.
-User identity context MUST be extracted directly from validated SSO tokens (`Authorization: Bearer` or `access_token` cookie).
+User identity context MUST be extracted directly from validated SSO tokens (`Authorization: Bearer` or `access_token` cookie). Unverified offline JWT decoding (`verify_signature=False`) is strictly forbidden outside automated Pytest harnesses (`PYTEST_CURRENT_TEST`); production and runtime environments MUST verify every token against the central SSO IdP.
+Authorization MUST follow the standardized **3-Tier Role-Based Access Control (RBAC)** hierarchy resolved from verified SSO claims (`role_names`, `permissions`):
+1. `ADMIN` (`admin`, `system`, `superuser`, or `*` permission): Full platform and project governance.
+2. `PROJECT_DEVELOPER` (`Project Developer`): Project-membership scoped access (`project_members`), full secret read/write and key/client management within assigned projects.
+3. `OTHER` (`Trainer`, `Content`, and unmapped roles): Project-membership scoped read-only project access with key-filtered Vault access.
+Client-supplied headers (`X-Identity-Id`, `X-User-Role`) MUST NEVER override authenticated SSO user context.
 User directory lookups (options listing and profile inspection) MUST delegate directly to the external user directory service via `IExternalUserDirectoryService` (`GET /api/v1/users/options` and `GET /api/v1/users/{id}`).
 To optimize query latency and protect central IdP availability, the service layer MUST cache external user directory responses in Redis (e.g. `identity:users:options` and `identity:users:detail:{user_id}`) with:
 - Configurable TTL (default 300 seconds).
@@ -75,7 +81,10 @@ User identifiers MUST be strictly represented and processed as native integers (
 ### VI. Dynamic Vault & Granular Key-Level Access Control (Zero .env Files)
 Secrets and environment configurations MUST NOT be stored in plaintext `.env` files on developer machines, production hosts, or committed to version control.
 Secrets at rest MUST be encrypted with authenticated `AES-256-GCM` using environment-specific master keys and cryptographic versioning.
-Access to secrets MUST be governed by granular, key-level permissions (`key_permissions` table) associating user identity IDs directly with allowed secret keys (`READ`/`WRITE`), rather than broad role-based assumptions.
+Access to secrets MUST be governed by **Project Membership (`project_members`)** and granular **key-level permissions (`key_permissions`)**:
+- `ADMIN` users have unrestricted secret access across all projects; `PROJECT_DEVELOPER` users have full-project secret read/write access within their assigned projects.
+- `OTHER` roles (`Trainer`, `Content`, etc.) and machine clients/SDKs (`X-Identity-Id`) MUST be strictly filtered by `key_permissions` (`READ`/`WRITE`). When an `OTHER` user creates a secret, permission MUST be granted explicitly via `grant_to_identity_id` driven by `RoleTier`, never via hardcoded `"admin"` or `"system"` actor string checks.
+- Multi-item creations (batch secrets, batch project member assignments) MUST use single-transaction batch endpoints rather than N sequential client API calls.
 Client SDKs (`dut-vault-sdk`) MUST inject secrets directly into process memory (`os.environ`) at runtime, maintaining a zero-disk invariant.
 
 *Rationale*: Eliminates secret leakage vectors via filesystem snapshots or chat channels while ensuring least-privilege access where team members only access secrets necessary for their explicit responsibilities.
@@ -93,6 +102,10 @@ All external traffic to backend services MUST route through Apache APISIX operat
 Clients MUST present both a valid Virtual Access Key (`X-Virtual-Key`) and a cryptographic client certificate (mTLS for Device Identity or Machine Identity issued by the internal CA).
 The gateway MUST enforce Identity Binding via high-performance custom Lua filter (`identity-binding-filter`), verifying the certificate fingerprint against Redis mappings in under 2ms. If a key is copied to an uncertified machine or mismatched project, the gateway MUST fail closed and return `HTTP 403 Forbidden`.
 The gateway MUST inject real upstream credentials into forwarded requests, shielding underlying service credentials from downstream clients.
+
+**Self-Issued mTLS Client Ownership**:
+- All mTLS client registrations (`POST /api/v1/gateway/clients`) MUST unconditionally lock `owner_id` to the authenticated SSO `user_id` (`ADMIN` and `PROJECT_DEVELOPER`), prohibiting creating certificates on behalf of other users or spoofing `owner_id`.
+- `PROJECT_DEVELOPER` users MUST only list and revoke their own mTLS clients (`owner_id == str(user_id)`); cross-user revocation MUST fail with `HTTP 403 Forbidden`. `ADMIN` retains system-wide visibility and revocation governance.
 
 **Edge CORS & Proxy Buffer Governance**:
 - The API Gateway MUST terminate and approve cross-origin preflight `OPTIONS` requests at the edge via the native `cors` plugin across all unified routes (`/api/*`), guaranteeing uniform header exchange and eliminating browser `405 Method Not Allowed` or `Network Error` blocks.
@@ -153,4 +166,4 @@ All pull requests and code modifications MUST satisfy the following quality gate
   - **PATCH**: Wording improvements, clarifications, typo corrections, or non-semantic refinements.
 - **Compliance Verification**: All architectural design artifacts (`spec.md`, `plan.md`, `tasks.md`) and code reviews MUST explicitly reference and verify compliance with Core Principles I through VIII.
 
-**Version**: 2.3.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-25
+**Version**: 2.4.0 | **Ratified**: 2026-11-22 | **Last Amended**: 2026-11-25

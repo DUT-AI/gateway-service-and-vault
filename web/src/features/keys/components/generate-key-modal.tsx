@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -29,8 +29,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Badge } from "@/components/ui/badge";
-import { useClientsQuery } from "@/features/clients";
-import { useGenerateKeyMutation } from "../hooks/use-keys-queries";
+import { useUserOptionsQuery } from "@/features/vault/hooks/use-user-options-query";
+import {
+  useGenerateKeyMutation,
+  useProjectAvailableClientsQuery,
+} from "../hooks/use-keys-queries";
 import type { GenerateKeyResult } from "../types";
 
 export interface GenerateKeyModalProps {
@@ -44,8 +47,20 @@ export function GenerateKeyModal({
   onOpenChange,
   projectId,
 }: GenerateKeyModalProps) {
-  const { data: clients, isLoading: clientsLoading } = useClientsQuery();
+  const { data: clients, isLoading: clientsLoading } =
+    useProjectAvailableClientsQuery(projectId, open);
+  const { data: userOptions } = useUserOptionsQuery();
   const generateMutation = useGenerateKeyMutation(projectId);
+
+  const usersMap = useMemo(() => {
+    const map = new Map<string, { name: string; email: string }>();
+    if (userOptions) {
+      for (const u of userOptions) {
+        map.set(String(u.id), { name: u.name, email: u.email });
+      }
+    }
+    return map;
+  }, [userOptions]);
 
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [step, setStep] = useState<"FORM" | "RESULT">("FORM");
@@ -176,8 +191,9 @@ export function GenerateKeyModal({
                       Chưa có thiết bị mTLS hợp lệ
                     </p>
                     <p className="text-[11px] text-amber-800 leading-relaxed">
-                      Bạn cần đăng ký ít nhất một thiết bị mTLS đang hoạt động trước
-                      khi có thể cấp phát Virtual Key.
+                      Thành viên dự án cần tự đăng ký ít nhất một thiết bị mTLS đang
+                      hoạt động tại mục Thiết bị & Client trước khi có thể cấp phát
+                      Virtual Key.
                     </p>
                     <Link href="/clients">
                       <Button
@@ -197,13 +213,17 @@ export function GenerateKeyModal({
                     value={selectedClientId}
                     onChange={(e) => setSelectedClientId(e.target.value)}
                   >
-                    <option value="">-- Chọn thiết bị mTLS của bạn --</option>
+                    <option value="">-- Chọn thiết bị mTLS của thành viên --</option>
                     {activeClients.map((client) => {
                       const isDev = client.client_type === "USER_DEVICE";
                       const fpSnippet = client.cert_fingerprint.slice(0, 14);
+                      const owner = usersMap.get(String(client.owner_id));
+                      const ownerLabel = owner
+                        ? `${owner.name} (${owner.email})`
+                        : `User #${client.owner_id}`;
                       return (
                         <option key={client.id} value={client.id}>
-                          {isDev ? "💻" : "🖥️"} {client.name} (
+                          {isDev ? "💻" : "🖥️"} {client.name} — {ownerLabel} (
                           {isDev ? "Dev PC" : "Workload Server"} - FP: {fpSnippet}
                           ...)
                         </option>

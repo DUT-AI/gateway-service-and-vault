@@ -11,6 +11,13 @@ class ClientNotFoundError(EntityNotFoundError):
         super().__init__(message=message)
 
 
+class ClientOwnershipDeniedError(ForbiddenError):
+    def __init__(
+        self, message: str = "You do not have permission to manage this client"
+    ) -> None:
+        super().__init__(message=message)
+
+
 class ProjectNotFoundError(EntityNotFoundError):
     def __init__(self, message: str = "Project not found") -> None:
         super().__init__(message=message)

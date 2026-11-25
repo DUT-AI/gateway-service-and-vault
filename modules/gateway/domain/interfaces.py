@@ -108,6 +108,11 @@ class IRegisteredClientRepository(ABC):
     async def list_by_owner_id(self, owner_id: str) -> list[RegisteredClientEntity]: ...
 
     @abstractmethod
+    async def list_by_owner_ids(
+        self, owner_ids: list[str]
+    ) -> list[RegisteredClientEntity]: ...
+
+    @abstractmethod
     async def revoke_client(self, client_id: str) -> bool: ...
 
 

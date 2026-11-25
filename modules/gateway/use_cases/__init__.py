@@ -7,6 +7,7 @@ from modules.gateway.use_cases.create_upstream_service import (
 )
 from modules.gateway.use_cases.exceptions import (
     ClientNotFoundError,
+    ClientOwnershipDeniedError,
     DailyQuotaExceededError,
     IdentityMismatchError,
     ProjectNotFoundError,
@@ -29,6 +30,9 @@ from modules.gateway.use_cases.list_audit_events import (
 from modules.gateway.use_cases.list_project_allowed_services import (
     AllowedServiceUsageDTO,
     ListProjectAllowedServicesUseCase,
+)
+from modules.gateway.use_cases.list_project_available_clients import (
+    ListProjectAvailableClientsUseCase,
 )
 from modules.gateway.use_cases.list_projects import ListProjectsUseCase
 from modules.gateway.use_cases.list_registered_clients import (
@@ -63,6 +67,7 @@ __all__ = [
     "BindServiceToProjectUseCase",
     "CheckProjectMembershipUseCase",
     "ClientNotFoundError",
+    "ClientOwnershipDeniedError",
     "CreateProjectUseCase",
     "CreateUpstreamServiceUseCase",
     "DailyQuotaExceededError",
@@ -73,6 +78,7 @@ __all__ = [
     "IdentityMismatchError",
     "ListAuditEventsUseCase",
     "ListProjectAllowedServicesUseCase",
+    "ListProjectAvailableClientsUseCase",
     "ListProjectMembersUseCase",
     "ListProjectsUseCase",
     "ListRegisteredClientsUseCase",

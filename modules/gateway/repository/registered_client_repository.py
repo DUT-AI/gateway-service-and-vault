@@ -88,6 +88,20 @@ class SqlRegisteredClientRepository(IRegisteredClientRepository):
         models = result.scalars().all()
         return [self._to_entity(m) for m in models]
 
+    async def list_by_owner_ids(
+        self, owner_ids: list[str]
+    ) -> list[RegisteredClientEntity]:
+        if not owner_ids:
+            return []
+        stmt = (
+            select(RegisteredClientModel)
+            .where(RegisteredClientModel.owner_id.in_(owner_ids))
+            .order_by(RegisteredClientModel.created_at.desc())
+        )
+        result = await self.session.execute(stmt)
+        models = result.scalars().all()
+        return [self._to_entity(m) for m in models]
+
     async def revoke_client(self, client_id: str) -> bool:
         stmt_client = (
             update(RegisteredClientModel)

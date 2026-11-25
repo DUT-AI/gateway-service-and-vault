@@ -30,8 +30,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/auth-context";
 import { useClientsQuery, type Client } from "@/features/clients";
 import {
+  useProjectAvailableClientsQuery,
   useProjectKeysQuery,
   useRevokeKeyMutation,
 } from "../hooks/use-keys-queries";
@@ -46,6 +48,7 @@ export function VirtualKeysTable({
   projectId,
   onGenerateClick,
 }: VirtualKeysTableProps) {
+  const { isOtherRole } = useAuth();
   const {
     data: keys,
     isLoading: keysLoading,
@@ -54,19 +57,28 @@ export function VirtualKeysTable({
     isRefetching,
   } = useProjectKeysQuery(projectId);
 
-  const { data: clients } = useClientsQuery();
+  const { data: ownClients } = useClientsQuery();
+  const { data: projectClients } = useProjectAvailableClientsQuery(
+    projectId,
+    !isOtherRole
+  );
   const revokeMutation = useRevokeKeyMutation(projectId);
 
   // Client lookup map for instant device info display
   const clientsMap = useMemo(() => {
     const map = new Map<string, Client>();
-    if (clients) {
-      for (const client of clients) {
+    if (ownClients) {
+      for (const client of ownClients) {
+        map.set(client.id, client);
+      }
+    }
+    if (projectClients) {
+      for (const client of projectClients) {
         map.set(client.id, client);
       }
     }
     return map;
-  }, [clients]);
+  }, [ownClients, projectClients]);
 
   // Revocation Confirmation State
   const [keyToRevoke, setKeyToRevoke] = useState<VirtualKey | null>(null);
@@ -102,7 +114,9 @@ export function VirtualKeysTable({
                   <th className="py-3 px-4">Thiết bị ràng buộc (Client)</th>
                   <th className="py-3 px-4">Thời điểm cấp</th>
                   <th className="py-3 px-4 text-center">Trạng thái</th>
-                  <th className="py-3 px-4 text-right">Thao tác</th>
+                  {!isOtherRole && (
+                    <th className="py-3 px-4 text-right">Thao tác</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -125,15 +139,17 @@ export function VirtualKeysTable({
                       <td className="py-3.5 px-4 text-center">
                         <Skeleton className="h-5 w-20 rounded-full mx-auto" />
                       </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Skeleton className="h-7 w-16 rounded-md ml-auto" />
-                      </td>
+                      {!isOtherRole && (
+                        <td className="py-3.5 px-4 text-right">
+                          <Skeleton className="h-7 w-16 rounded-md ml-auto" />
+                        </td>
+                      )}
                     </tr>
                   ))
                 ) : keysError ? (
                   // Error State
                   <tr>
-                    <td colSpan={5} className="py-8 text-center">
+                    <td colSpan={isOtherRole ? 4 : 5} className="py-8 text-center">
                       <div className="inline-flex flex-col items-center justify-center text-rose-600 gap-2">
                         <AlertCircle className="h-6 w-6" />
                         <span className="font-semibold">
@@ -157,7 +173,7 @@ export function VirtualKeysTable({
                 ) : !keys || keys.length === 0 ? (
                   // Empty State
                   <tr>
-                    <td colSpan={5} className="py-12 text-center">
+                    <td colSpan={isOtherRole ? 4 : 5} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-center space-y-3">
                         <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                           <Key className="h-6 w-6" />
@@ -264,24 +280,26 @@ export function VirtualKeysTable({
                         </td>
 
                         {/* Action: Revoke */}
-                        <td className="py-3 px-4 text-right">
-                          {isRevoked ? (
-                            <span className="text-[11px] text-slate-400 italic">
-                              Đã thu hồi
-                            </span>
-                          ) : (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setKeyToRevoke(key)}
-                              className="h-7 px-2.5 text-xs text-rose-700 border-rose-200 hover:bg-rose-50 hover:text-rose-800"
-                            >
-                              <Ban className="h-3 w-3 mr-1" />
-                              Thu hồi
-                            </Button>
-                          )}
-                        </td>
+                        {!isOtherRole && (
+                          <td className="py-3 px-4 text-right">
+                            {isRevoked ? (
+                              <span className="text-[11px] text-slate-400 italic">
+                                Đã thu hồi
+                              </span>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setKeyToRevoke(key)}
+                                className="h-7 px-2.5 text-xs text-rose-700 border-rose-200 hover:bg-rose-50 hover:text-rose-800"
+                              >
+                                <Ban className="h-3 w-3 mr-1" />
+                                Thu hồi
+                              </Button>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     );
                   })

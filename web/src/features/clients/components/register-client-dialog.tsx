@@ -36,7 +36,7 @@ export function RegisterClientDialog({
   onOpenChange,
   onSuccess,
 }: RegisterClientDialogProps) {
-  const { user } = useAuth();
+  const { user, isOtherRole } = useAuth();
   const registerMutation = useRegisterClientMutation();
 
   const {
@@ -136,7 +136,7 @@ export function RegisterClientDialog({
             <Label htmlFor="client-type" className="text-xs font-semibold text-slate-700">
               Loại Client
             </Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className={`grid gap-2 ${isOtherRole ? "grid-cols-1" : "grid-cols-2"}`}>
               <label
                 className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
                   selectedType === "USER_DEVICE"
@@ -159,28 +159,35 @@ export function RegisterClientDialog({
                 </div>
               </label>
 
-              <label
-                className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
-                  selectedType === "APP_SERVER"
-                    ? "border-purple-600 bg-purple-50/50 text-purple-900 font-semibold"
-                    : "border-slate-200 hover:bg-slate-50 text-slate-700"
-                }`}
-              >
-                <input
-                  type="radio"
-                  value="APP_SERVER"
-                  className="sr-only"
-                  {...register("client_type")}
-                />
-                <Server className="h-4 w-4 text-purple-600 shrink-0" />
-                <div>
-                  <div>Workload Server</div>
-                  <div className="text-[10px] font-normal text-slate-500">
-                    Máy chủ / Docker
+              {!isOtherRole && (
+                <label
+                  className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
+                    selectedType === "APP_SERVER"
+                      ? "border-purple-600 bg-purple-50/50 text-purple-900 font-semibold"
+                      : "border-slate-200 hover:bg-slate-50 text-slate-700"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    value="APP_SERVER"
+                    className="sr-only"
+                    {...register("client_type")}
+                  />
+                  <Server className="h-4 w-4 text-purple-600 shrink-0" />
+                  <div>
+                    <div>Workload Server</div>
+                    <div className="text-[10px] font-normal text-slate-500">
+                      Máy chủ / Docker
+                    </div>
                   </div>
-                </div>
-              </label>
+                </label>
+              )}
             </div>
+            {isOtherRole && (
+              <p className="text-[11px] text-slate-500">
+                Tài khoản thành viên chỉ được phép tự đăng ký thiết bị cá nhân (Developer PC).
+              </p>
+            )}
             {errors.client_type && (
               <p className="text-[11px] text-rose-600 font-medium">
                 {errors.client_type.message}

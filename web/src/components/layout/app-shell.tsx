@@ -66,7 +66,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const visibleNavItems = isOtherRole
     ? NAV_ITEMS.filter(
-        (item) => item.href === "/dashboard" || item.href === "/projects"
+        (item) =>
+          item.href === "/dashboard" ||
+          item.href === "/projects" ||
+          item.href === "/clients"
       )
     : NAV_ITEMS;
 

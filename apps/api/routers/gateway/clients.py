@@ -3,8 +3,8 @@ from typing import Annotated
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from core.security.deps import require_role_tier
-from core.security.roles import RoleTier, UserContext
+from core.security.deps import get_current_user_context
+from core.security.roles import UserContext
 from modules.gateway.domain.entities import ClientType
 from modules.gateway.dtos.gateway_dtos import (
     ClientSummaryResponse,
@@ -13,6 +13,7 @@ from modules.gateway.dtos.gateway_dtos import (
     RevokeClientResponse,
 )
 from modules.gateway.use_cases import (
+    ClientOwnershipDeniedError,
     ListRegisteredClientsUseCase,
     RegisterClientUseCase,
     RevokeClientUseCase,
@@ -29,13 +30,13 @@ router = APIRouter()
 @inject
 async def list_clients(
     use_case: FromDishka[ListRegisteredClientsUseCase],
-    _: Annotated[
-        UserContext,
-        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
-    ],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
 ) -> list[ClientSummaryResponse]:
-    """Retrieve all registered device and machine client identities."""
-    clients = await use_case.execute()
+    """Retrieve registered device and machine client identities (all for Admin, own for others)."""
+    clients = await use_case.execute(
+        owner_id=str(user_ctx.user_id),
+        is_admin=user_ctx.is_admin,
+    )
     return [
         ClientSummaryResponse(
             id=c.id,
@@ -62,17 +63,19 @@ async def list_clients(
 async def register_client(
     req: RegisterClientRequest,
     use_case: FromDishka[RegisterClientUseCase],
-    _: Annotated[
-        UserContext,
-        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
-    ],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
 ) -> RegisterClientResponse:
-    """Issue a private mTLS client certificate and register the client identity."""
+    """Issue a self-owned mTLS client certificate and register the client identity."""
     client_type = ClientType(req.client_type.upper())
+    if user_ctx.is_other and client_type != ClientType.USER_DEVICE:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tài khoản của bạn chỉ được phép đăng ký thiết bị cá nhân (USER_DEVICE)",
+        )
     client, cert = await use_case.execute(
         name=req.name,
         client_type=client_type,
-        owner_id=req.owner_id,
+        owner_id=str(user_ctx.user_id),
         validity_days=req.validity_days,
     )
     return RegisterClientResponse(
@@ -97,13 +100,20 @@ async def register_client(
 async def revoke_client(
     client_id: str,
     use_case: FromDishka[RevokeClientUseCase],
-    _: Annotated[
-        UserContext,
-        Depends(require_role_tier(RoleTier.ADMIN, RoleTier.PROJECT_DEVELOPER)),
-    ],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
 ) -> RevokeClientResponse:
     """Revoke a registered client and all active virtual keys bound to it."""
-    success = await use_case.execute(client_id)
+    try:
+        success = await use_case.execute(
+            client_id=client_id,
+            caller_owner_id=str(user_ctx.user_id),
+            is_admin=user_ctx.is_admin,
+        )
+    except ClientOwnershipDeniedError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=str(exc),
+        ) from exc
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

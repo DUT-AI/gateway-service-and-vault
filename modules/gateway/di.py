@@ -35,6 +35,7 @@ from modules.gateway.use_cases import (
     GetSecurityAlertsUseCase,
     ListAuditEventsUseCase,
     ListProjectAllowedServicesUseCase,
+    ListProjectAvailableClientsUseCase,
     ListProjectMembersUseCase,
     ListProjectsUseCase,
     ListRegisteredClientsUseCase,
@@ -110,6 +111,7 @@ class GatewayProvider(Provider):
     list_services_uc = provide(ListUpstreamServicesUseCase)
     create_service_uc = provide(CreateUpstreamServiceUseCase)
     list_allowed_services_uc = provide(ListProjectAllowedServicesUseCase)
+    list_project_available_clients_uc = provide(ListProjectAvailableClientsUseCase)
     bind_service_uc = provide(BindServiceToProjectUseCase)
     unbind_service_uc = provide(UnbindServiceFromProjectUseCase)
     update_quota_uc = provide(UpdateProjectServiceQuotaUseCase)

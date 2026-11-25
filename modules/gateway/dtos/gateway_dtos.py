@@ -20,7 +20,7 @@ class ProjectResponse(BaseModel):
 class RegisterClientRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     client_type: str = Field(default="USER_DEVICE")  # USER_DEVICE or APP_SERVER
-    owner_id: str = Field(..., min_length=1, max_length=100)
+    owner_id: str | None = Field(default=None, max_length=100)
     validity_days: int = Field(default=30, ge=1, le=365)
 
 

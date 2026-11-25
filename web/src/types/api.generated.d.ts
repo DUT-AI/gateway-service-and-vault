@@ -261,13 +261,13 @@ export interface paths {
         };
         /**
          * List all registered client identities
-         * @description Retrieve all registered device and machine client identities.
+         * @description Retrieve registered device and machine client identities (all for Admin, own for others).
          */
         get: operations["list_clients_api_v1_gateway_clients_get"];
         put?: never;
         /**
          * Register a client and issue mTLS certificate
-         * @description Issue a private mTLS client certificate and register the client identity.
+         * @description Issue a self-owned mTLS client certificate and register the client identity.
          */
         post: operations["register_client_api_v1_gateway_clients_post"];
         delete?: never;
@@ -296,6 +296,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gateway/projects/{project_id}/available-clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List active mTLS clients of project members eligible for Virtual Key binding
+         * @description Retrieve active mTLS clients belonging to members of the project (or all for Admin).
+         */
+        get: operations["list_project_available_clients_api_v1_gateway_projects__project_id__available_clients_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gateway/projects/{project_id}/keys": {
         parameters: {
             query?: never;
@@ -305,7 +325,7 @@ export interface paths {
         };
         /**
          * List virtual keys for a project
-         * @description Retrieve all virtual access keys bound to a project.
+         * @description Retrieve virtual access keys bound to a project (read-only own-device keys for Tier 3).
          */
         get: operations["list_virtual_keys_api_v1_gateway_projects__project_id__keys_get"];
         put?: never;
@@ -932,7 +952,7 @@ export interface components {
              */
             client_type?: string;
             /** Owner Id */
-            owner_id: string;
+            owner_id?: string | null;
             /**
              * Validity Days
              * @default 30
@@ -1803,6 +1823,39 @@ export interface operations {
             };
         };
     };
+    list_project_available_clients_api_v1_gateway_projects__project_id__available_clients_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientSummaryResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_virtual_keys_api_v1_gateway_projects__project_id__keys_get: {
         parameters: {
             query?: never;
@@ -2262,7 +2315,6 @@ export interface operations {
             };
             header?: {
                 "x-identity-id"?: string | null;
-                "x-user-role"?: string | null;
             };
             path: {
                 project_id: string;
@@ -2413,7 +2465,9 @@ export interface operations {
             path: {
                 project_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2440,9 +2494,7 @@ export interface operations {
     grant_key_permission_api_v1_vault_projects__project_id__permissions_post: {
         parameters: {
             query?: never;
-            header?: {
-                "x-actor-id"?: string;
-            };
+            header?: never;
             path: {
                 project_id: string;
             };
@@ -2482,9 +2534,7 @@ export interface operations {
                 identity_id: string;
                 secret_key: string;
             };
-            header?: {
-                "x-actor-id"?: string;
-            };
+            header?: never;
             path: {
                 project_id: string;
             };
@@ -2522,7 +2572,6 @@ export interface operations {
             };
             header?: {
                 "x-identity-id"?: string | null;
-                "x-user-role"?: string | null;
             };
             path: {
                 project_id: string;

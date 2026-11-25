@@ -756,7 +756,7 @@
           "Gateway"
         ],
         "summary": "List all registered client identities",
-        "description": "Retrieve all registered device and machine client identities.",
+        "description": "Retrieve registered device and machine client identities (all for Admin, own for others).",
         "operationId": "list_clients_api_v1_gateway_clients_get",
         "security": [
           {
@@ -813,7 +813,7 @@
           "Gateway"
         ],
         "summary": "Register a client and issue mTLS certificate",
-        "description": "Issue a private mTLS client certificate and register the client identity.",
+        "description": "Issue a self-owned mTLS client certificate and register the client identity.",
         "operationId": "register_client_api_v1_gateway_clients_post",
         "security": [
           {
@@ -936,13 +936,81 @@
         }
       }
     },
+    "/api/v1/gateway/projects/{project_id}/available-clients": {
+      "get": {
+        "tags": [
+          "Gateway"
+        ],
+        "summary": "List active mTLS clients of project members eligible for Virtual Key binding",
+        "description": "Retrieve active mTLS clients belonging to members of the project (or all for Admin).",
+        "operationId": "list_project_available_clients_api_v1_gateway_projects__project_id__available_clients_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClientSummaryResponse"
+                  },
+                  "title": "Response List Project Available Clients Api V1 Gateway Projects  Project Id  Available Clients Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/gateway/projects/{project_id}/keys": {
       "get": {
         "tags": [
           "Gateway"
         ],
         "summary": "List virtual keys for a project",
-        "description": "Retrieve all virtual access keys bound to a project.",
+        "description": "Retrieve virtual access keys bound to a project (read-only own-device keys for Tier 3).",
         "operationId": "list_virtual_keys_api_v1_gateway_projects__project_id__keys_get",
         "security": [
           {
@@ -2088,22 +2156,6 @@
             }
           },
           {
-            "name": "x-user-role",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Role"
-            }
-          },
-          {
             "name": "access_token",
             "in": "cookie",
             "required": false,
@@ -2324,16 +2376,6 @@
             }
           },
           {
-            "name": "x-actor-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "admin",
-              "title": "X-Actor-Id"
-            }
-          },
-          {
             "name": "access_token",
             "in": "cookie",
             "required": false,
@@ -2426,16 +2468,6 @@
             }
           },
           {
-            "name": "x-actor-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "admin",
-              "title": "X-Actor-Id"
-            }
-          },
-          {
             "name": "access_token",
             "in": "cookie",
             "required": false,
@@ -2475,6 +2507,11 @@
         "summary": "List Identity Permissions",
         "description": "List all permitted secret keys for an identity in a project.",
         "operationId": "list_identity_permissions_api_v1_vault_projects__project_id__permissions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "project_id",
@@ -2493,6 +2530,22 @@
               "type": "string",
               "minLength": 1,
               "title": "Identity Id"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
             }
           }
         ],
@@ -2607,22 +2660,6 @@
                 }
               ],
               "title": "X-Identity-Id"
-            }
-          },
-          {
-            "name": "x-user-role",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-User-Role"
             }
           },
           {
@@ -3372,9 +3409,15 @@
             "default": "USER_DEVICE"
           },
           "owner_id": {
-            "type": "string",
-            "maxLength": 100,
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Owner Id"
           },
           "validity_days": {
@@ -3387,8 +3430,7 @@
         },
         "type": "object",
         "required": [
-          "name",
-          "owner_id"
+          "name"
         ],
         "title": "RegisterClientRequest"
       },
