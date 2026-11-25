@@ -1,11 +1,11 @@
-.PHONY: help dev-api dev-web dev-worker docker-up docker-down migrate create-migration test test-e2e install-hooks lint ruff check api-types
+.PHONY: help dev-api dev-web dev-worker docker-up docker-down migrate create-migration test test-e2e install-hooks lint ruff check api-types publish-sdk
 
 help:
 	@echo "Available commands:"
 	@echo "  make dev-api        - Start local FastAPI server (uvicorn)"
 	@echo "  make dev-web        - Start frontend dev server (Next.js)"
 	@echo "  make dev-worker     - Start background task worker (ARQ)"
-	@echo "  make docker-up      - Start backing services (PostgreSQL, Redis, MinIO)"
+	@echo "  make docker-up      - Start Docker Compose stack"
 	@echo "  make docker-down    - Stop and remove Docker Compose containers"
 	@echo "  make migrate        - Run database migrations (alembic upgrade head)"
 	@echo "  make create-migration DESC=\"msg\" - Create a new migration revision"
@@ -14,6 +14,7 @@ help:
 	@echo "  make ruff           - Format and fix python code with ruff"
 	@echo "  make check          - Run static type checking (mypy)"
 	@echo "  make api-types      - Regenerate web API types from backend DTOs (offline)"
+	@echo "  make publish-sdk    - Build and publish dut-vault-sdk to PyPI (uses PYPI_TOKEN from .env)"
 	@echo "  make install-hooks  - Install git pre-commit hooks"
 	@echo "  make lint           - Run all formatting, linting, and tests"
 
@@ -54,6 +55,14 @@ check:
 
 api-types:
 	cd ./web && pnpm run sync:api
+
+publish-sdk:
+	@set -a && [ -f .env ] && . ./.env && set +a && \
+	if [ -z "$$UV_PUBLISH_TOKEN" ] && [ -z "$$PYPI_TOKEN" ]; then \
+		echo "Error: PYPI_TOKEN or UV_PUBLISH_TOKEN is not set in .env or environment"; exit 1; \
+	fi; \
+	export UV_PUBLISH_TOKEN="$${UV_PUBLISH_TOKEN:-$$PYPI_TOKEN}"; \
+	cd packages/dut-vault-sdk && rm -rf dist && uv build && uv publish
 
 install-hooks:
 	mkdir -p .git/hooks

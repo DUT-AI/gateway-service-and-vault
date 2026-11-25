@@ -1,14 +1,17 @@
 """Internal Private Certificate Authority (x509 PKI) for mTLS Client Identity."""
 
+import base64
 import contextlib
 import hashlib
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import NamedTuple
 
 from cryptography import x509
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.x509.oid import NameOID
 
 DEFAULT_CERTS_DIR = (
@@ -297,3 +300,38 @@ class PrivateCA:
     def hash_virtual_key(virtual_key: str) -> str:
         """Hash a virtual key using SHA-256 for secure storage."""
         return hashlib.sha256(virtual_key.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def verify_client_signature(
+        cert_pem: str,
+        signature_b64: str,
+        timestamp: str,
+        method: str,
+        path: str,
+        max_skew_seconds: int = 300,
+    ) -> bool:
+        """Verify HTTP-layer Proof-of-Possession signature signed by client.key."""
+        try:
+            ts = int(timestamp)
+        except (TypeError, ValueError):
+            return False
+
+        if abs(int(time.time()) - ts) > max_skew_seconds:
+            return False
+
+        try:
+            cert = x509.load_pem_x509_certificate(cert_pem.encode("utf-8"))
+            public_key = cert.public_key()
+            if not isinstance(public_key, rsa.RSAPublicKey):
+                return False
+            signature = base64.b64decode(signature_b64, validate=True)
+            payload = f"{ts}:{method.upper()}:{path}".encode()
+            public_key.verify(
+                signature,
+                payload,
+                padding.PKCS1v15(),
+                hashes.SHA256(),
+            )
+            return True
+        except (InvalidSignature, ValueError, TypeError):
+            return False

@@ -171,6 +171,10 @@ async def verify_binding(
         service_id=req.service_id,
         service_slug=req.service_slug,
         client_raw_cert=req.client_raw_cert,
+        client_signature=req.client_signature,
+        client_timestamp=req.client_timestamp,
+        request_method=req.request_method,
+        request_path=req.request_path,
         client_ip=client_ip,
     )
     return VerifyBindingResponse(

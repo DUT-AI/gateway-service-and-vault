@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import logging
 import os
 import threading
@@ -8,10 +9,33 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 from dut_vault_sdk.store import InMemoryConfigStore
 
 logger = logging.getLogger("dut_vault_sdk")
+
+
+def _load_client_signer(
+    cert_pair: tuple[str, str] | None,
+) -> tuple[str, rsa.RSAPrivateKey] | None:
+    """Load SHA-256 fingerprint and RSA private key from (client.crt, client.key)."""
+    if not cert_pair:
+        return None
+    crt_path, key_path = cert_pair
+    try:
+        cert = x509.load_pem_x509_certificate(Path(crt_path).read_bytes())
+        fingerprint = cert.fingerprint(hashes.SHA256()).hex()
+        private_key = serialization.load_pem_private_key(
+            Path(key_path).read_bytes(), password=None
+        )
+        if not isinstance(private_key, rsa.RSAPrivateKey):
+            return None
+        return fingerprint, private_key
+    except Exception:
+        return None
 
 
 def resolve_mtls_cert(
@@ -59,6 +83,7 @@ class VaultClient:
         self.max_events = max_events
         self.virtual_key = virtual_key or os.environ.get("X_VIRTUAL_KEY")
         self._cert = resolve_mtls_cert(cert_path, key_path)
+        self._signer = _load_client_signer(self._cert)
         self.store = InMemoryConfigStore(inject_environ=inject_environ)
 
         default_headers: dict[str, str] = {}
@@ -76,11 +101,19 @@ class VaultClient:
             client_kwargs: dict[str, Any] = {
                 "timeout": 10.0,
                 "headers": default_headers,
+                "event_hooks": {"request": [self._sign_request_sync]},
             }
             if self._cert is not None:
                 client_kwargs["cert"] = self._cert
             self._sync_http = httpx.Client(**client_kwargs)
-            self._async_http = httpx.AsyncClient(**client_kwargs)
+            async_kwargs: dict[str, Any] = {
+                "timeout": 10.0,
+                "headers": default_headers,
+                "event_hooks": {"request": [self._sign_request_async]},
+            }
+            if self._cert is not None:
+                async_kwargs["cert"] = self._cert
+            self._async_http = httpx.AsyncClient(**async_kwargs)
 
         if stream_http_client is not None:
             self._stream_http = stream_http_client
@@ -88,6 +121,7 @@ class VaultClient:
             stream_kwargs: dict[str, Any] = {
                 "timeout": 60.0,
                 "headers": default_headers,
+                "event_hooks": {"request": [self._sign_request_async]},
             }
             if self._cert is not None:
                 stream_kwargs["cert"] = self._cert
@@ -273,13 +307,38 @@ class VaultClient:
     ) -> None:
         self.store.on_change(key, callback)
 
+    def _sign_request_sync(self, request: httpx.Request) -> None:
+        """Attach Proof-of-Possession signature headers signed by client.key."""
+        if not self._signer:
+            return
+        fingerprint, private_key = self._signer
+        ts = str(int(time.time()))
+        payload = f"{ts}:{request.method.upper()}:{request.url.path}".encode()
+        signature = private_key.sign(payload, padding.PKCS1v15(), hashes.SHA256())
+        request.headers["X-Client-Fingerprint"] = fingerprint
+        request.headers["X-Client-Timestamp"] = ts
+        request.headers["X-Client-Signature"] = base64.b64encode(signature).decode(
+            "ascii"
+        )
+
+    async def _sign_request_async(self, request: httpx.Request) -> None:
+        self._sign_request_sync(request)
+
     def _build_gateway_kwargs(
-        self, service_slug: str | None = None, timeout: float = 30.0
+        self,
+        service_slug: str | None = None,
+        timeout: float = 30.0,
+        is_async: bool = False,
     ) -> dict[str, Any]:
         headers: dict[str, str] = {}
         if self.virtual_key:
             headers["X-Virtual-Key"] = self.virtual_key
-        kwargs: dict[str, Any] = {"timeout": timeout, "headers": headers}
+        hook = self._sign_request_async if is_async else self._sign_request_sync
+        kwargs: dict[str, Any] = {
+            "timeout": timeout,
+            "headers": headers,
+            "event_hooks": {"request": [hook]},
+        }
         if service_slug:
             kwargs["base_url"] = f"{self.base_url}/services/{service_slug}"
         if self._cert is not None:
@@ -289,11 +348,15 @@ class VaultClient:
     def gateway_client(
         self, service_slug: str | None = None, timeout: float = 30.0
     ) -> httpx.Client:
-        """Create a pre-configured sync httpx.Client with mTLS cert and X-Virtual-Key."""
-        return httpx.Client(**self._build_gateway_kwargs(service_slug, timeout))
+        """Create a pre-configured sync httpx.Client with mTLS cert, PoP signing, and X-Virtual-Key."""
+        return httpx.Client(
+            **self._build_gateway_kwargs(service_slug, timeout, is_async=False)
+        )
 
     def async_gateway_client(
         self, service_slug: str | None = None, timeout: float = 30.0
     ) -> httpx.AsyncClient:
-        """Create a pre-configured async httpx.AsyncClient with mTLS cert and X-Virtual-Key."""
-        return httpx.AsyncClient(**self._build_gateway_kwargs(service_slug, timeout))
+        """Create a pre-configured async httpx.AsyncClient with mTLS cert, PoP signing, and X-Virtual-Key."""
+        return httpx.AsyncClient(
+            **self._build_gateway_kwargs(service_slug, timeout, is_async=True)
+        )

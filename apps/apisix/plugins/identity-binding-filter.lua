@@ -35,12 +35,25 @@ function _M.rewrite(conf, ctx)
         return 401, { error = "UNAUTHORIZED", message = "Missing X-Virtual-Key header" }
     end
 
-    -- 2. Extract client certificate SHA-256 fingerprint from mTLS termination
+    -- 2. Extract client certificate SHA-256 fingerprint from mTLS termination,
+    --    or HTTP Proof-of-Possession signature headers (e.g. behind Cloudflare Tunnel)
     local cert_fingerprint = ngx.var.ssl_client_fingerprint
     local client_raw_cert = ngx.var.ssl_client_raw_cert or ngx.var.ssl_client_cert
+    local client_signature = nil
+    local client_timestamp = nil
+
     if (not cert_fingerprint or cert_fingerprint == "") and (not client_raw_cert or client_raw_cert == "") then
-        core.log.warn("Client did not present a valid mTLS certificate")
-        return 403, { error = "MTLS_REQUIRED", message = "Valid client certificate required" }
+        local hdr_fp = core.request.header(ctx, "X-Client-Fingerprint")
+        local hdr_ts = core.request.header(ctx, "X-Client-Timestamp")
+        local hdr_sig = core.request.header(ctx, "X-Client-Signature")
+        if hdr_fp and hdr_fp ~= "" and hdr_ts and hdr_ts ~= "" and hdr_sig and hdr_sig ~= "" then
+            cert_fingerprint = hdr_fp
+            client_timestamp = hdr_ts
+            client_signature = hdr_sig
+        else
+            core.log.warn("Client did not present a valid mTLS certificate or PoP signature")
+            return 403, { error = "MTLS_REQUIRED", message = "Valid client certificate required" }
+        end
     end
 
     -- 3. Extract requested project ID from header
@@ -63,6 +76,10 @@ function _M.rewrite(conf, ctx)
             raw_virtual_key = virtual_key,
             cert_fingerprint = cert_fingerprint or "",
             client_raw_cert = client_raw_cert,
+            client_signature = client_signature,
+            client_timestamp = client_timestamp,
+            request_method = ngx.var.request_method,
+            request_path = ngx.var.uri,
             project_id = project_id,
             service_slug = service_slug,
             client_ip = ngx.var.remote_addr,

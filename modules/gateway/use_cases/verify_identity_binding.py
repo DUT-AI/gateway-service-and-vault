@@ -76,6 +76,10 @@ class VerifyIdentityBindingUseCase:
         service_id: str | None = None,
         service_slug: str | None = None,
         client_raw_cert: str | None = None,
+        client_signature: str | None = None,
+        client_timestamp: str | None = None,
+        request_method: str | None = None,
+        request_path: str | None = None,
         client_ip: str | None = None,
     ) -> bool:
         key_hash = PrivateCA.hash_virtual_key(raw_virtual_key)
@@ -152,6 +156,27 @@ class VerifyIdentityBindingUseCase:
                 raise IdentityMismatchError(
                     "Client certificate does not match the virtual key binding"
                 )
+
+        if client_signature is not None:
+            sig_ok = PrivateCA.verify_client_signature(
+                cert_pem=client.cert_pem,
+                signature_b64=client_signature,
+                timestamp=client_timestamp or "",
+                method=request_method or "GET",
+                path=request_path or "/",
+            )
+            if not sig_ok:
+                await self._record_audit(
+                    decision="DENY",
+                    client_type=client.client_type,
+                    actor_id=client.id,
+                    project_id=project_id,
+                    service_id=service_id,
+                    client_ip=client_ip,
+                    error_code="IDENTITY_MISMATCH",
+                    metadata={"reason": "Invalid or expired client PoP signature"},
+                )
+                raise IdentityMismatchError("Invalid or expired client signature")
 
         # Resolve target service if service_slug is provided
         target_service_id = service_id

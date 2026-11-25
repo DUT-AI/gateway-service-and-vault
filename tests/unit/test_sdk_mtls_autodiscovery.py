@@ -4,6 +4,8 @@ import httpx
 import pytest
 from dut_vault_sdk.client import VaultClient, resolve_mtls_cert
 
+from core.security.ca import PrivateCA
+
 
 def test_resolve_mtls_cert_from_default_dir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -46,3 +48,48 @@ def test_vault_client_gateway_client_injects_headers_and_base_url(
     assert isinstance(async_client, httpx.AsyncClient)
     assert str(async_client.base_url) == "https://gateway.dutai.io.vn/services/llm/"
     assert async_client.headers["X-Virtual-Key"] == "vk_test_123"
+
+
+def test_sdk_pop_signature_verifies_against_private_ca(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ca = PrivateCA(auto_persist=False)
+    issued = ca.issue_client_certificate(common_name="pop-test")
+
+    dut_dir = tmp_path / ".dut-vault"
+    dut_dir.mkdir()
+    (dut_dir / "client.crt").write_text(issued.cert_pem)
+    (dut_dir / "client.key").write_text(issued.key_pem)
+
+    monkeypatch.delenv("SSL_CERT_FILE", raising=False)
+    monkeypatch.delenv("SSL_KEY_FILE", raising=False)
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    monkeypatch.setenv("X_VIRTUAL_KEY", "vk_live_pop")
+
+    vault = VaultClient(base_url="https://gateway.dutai.io.vn")
+    client = vault.gateway_client("dut-ai-llm")
+    try:
+        req = client.build_request("POST", "/chat/completions")
+        vault._sign_request_sync(req)
+
+        fp = req.headers["X-Client-Fingerprint"]
+        ts = req.headers["X-Client-Timestamp"]
+        sig = req.headers["X-Client-Signature"]
+
+        assert fp == issued.fingerprint
+        assert PrivateCA.verify_client_signature(
+            cert_pem=issued.cert_pem,
+            signature_b64=sig,
+            timestamp=ts,
+            method="POST",
+            path="/services/dut-ai-llm/chat/completions",
+        )
+        assert not PrivateCA.verify_client_signature(
+            cert_pem=issued.cert_pem,
+            signature_b64=sig,
+            timestamp=ts,
+            method="GET",
+            path="/services/dut-ai-llm/chat/completions",
+        )
+    finally:
+        client.close()
