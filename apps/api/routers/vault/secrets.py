@@ -4,12 +4,13 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Header, Query, status
 
 from apps.api.routers.gateway.access_helpers import ensure_project_access
-from core.security.deps import get_optional_user_context
+from core.security.deps import get_current_user_context, get_optional_user_context
 from core.security.roles import UserContext
 from modules.gateway.use_cases import CheckProjectMembershipUseCase
 from modules.vault.dtos.vault_dtos import (
     CreateSecretRequest,
     CreateSecretsBatchRequest,
+    DeleteSecretResponse,
     GetSecretsResponse,
     ScopeResponse,
     SecretResponse,
@@ -17,6 +18,7 @@ from modules.vault.dtos.vault_dtos import (
 from modules.vault.use_cases import (
     CreateSecretsBatchUseCase,
     CreateSecretUseCase,
+    DeleteSecretUseCase,
     GetSecretsByScopeUseCase,
     ListScopesUseCase,
 )
@@ -169,3 +171,36 @@ async def list_scopes(
         )
         for s in scopes
     ]
+
+
+@router.delete(
+    "/projects/{project_id}/secrets",
+    response_model=DeleteSecretResponse,
+    summary="Delete a secret from a project scope",
+)
+@inject
+async def delete_secret(
+    project_id: str,
+    use_case: FromDishka[DeleteSecretUseCase],
+    membership_uc: FromDishka[CheckProjectMembershipUseCase],
+    user_ctx: Annotated[UserContext, Depends(get_current_user_context)],
+    scope_name: str = Query(..., min_length=1),
+    key: str = Query(..., min_length=1),
+) -> DeleteSecretResponse:
+    """Delete an encrypted secret from a project scope and broadcast change."""
+    await ensure_project_access(project_id, user_ctx, membership_uc)
+    await use_case.execute(
+        project_id=project_id,
+        scope_name=scope_name,
+        key=key,
+        actor=user_ctx.email or str(user_ctx.user_id),
+        require_permission_for_identity=(
+            str(user_ctx.user_id) if user_ctx.is_other else None
+        ),
+    )
+    return DeleteSecretResponse(
+        message="Secret deleted successfully",
+        project_id=project_id,
+        scope_name=scope_name.strip(),
+        key=key.strip().upper(),
+    )

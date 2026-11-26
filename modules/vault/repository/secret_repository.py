@@ -139,3 +139,22 @@ class SqlSecretRepository(ISecretRepository):
         await self.session.flush()
         await self.session.refresh(model)
         return self._secret_to_entity(model)
+
+    async def delete_secret(self, project_id: str, scope_name: str, key: str) -> bool:
+        stmt = (
+            select(SecretItemModel)
+            .join(SecretScopeModel, SecretItemModel.scope_id == SecretScopeModel.id)
+            .where(
+                SecretItemModel.project_id == project_id,
+                SecretScopeModel.name == scope_name,
+                SecretItemModel.key == key,
+            )
+        )
+        result = await self.session.execute(stmt)
+        model = result.scalar_one_or_none()
+        if not model:
+            return False
+
+        await self.session.delete(model)
+        await self.session.flush()
+        return True

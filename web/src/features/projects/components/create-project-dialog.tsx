@@ -89,7 +89,7 @@ export function CreateProjectDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF3FA] text-[#042B5F]">
                 <Plus className="h-4 w-4" />
               </div>
               Tạo dự án mới
@@ -184,7 +184,7 @@ export function CreateProjectDialog({
             <Button
               type="submit"
               disabled={createMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              className="bg-[#042B5F] hover:bg-[#031F46] text-white font-medium"
             >
               {createMutation.isPending ? (
                 <>

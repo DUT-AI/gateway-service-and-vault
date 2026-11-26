@@ -17,6 +17,7 @@ from modules.vault.services.encryption import VaultEncryptionService
 from modules.vault.use_cases import (
     CreateSecretsBatchUseCase,
     CreateSecretUseCase,
+    DeleteSecretUseCase,
     GetSecretsByScopeUseCase,
     GrantKeyPermissionUseCase,
     ListIdentityPermissionsUseCase,
@@ -52,6 +53,7 @@ class VaultProvider(Provider):
 
     create_secret_uc = provide(CreateSecretUseCase)
     create_secrets_batch_uc = provide(CreateSecretsBatchUseCase)
+    delete_secret_uc = provide(DeleteSecretUseCase)
     get_secrets_uc = provide(GetSecretsByScopeUseCase)
     grant_key_permission_uc = provide(GrantKeyPermissionUseCase)
     revoke_key_permission_uc = provide(RevokeKeyPermissionUseCase)

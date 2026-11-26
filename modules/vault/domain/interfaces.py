@@ -37,6 +37,11 @@ class ISecretRepository(ABC):
         actor: str = "",
     ) -> SecretItemEntity: ...
 
+    @abstractmethod
+    async def delete_secret(
+        self, project_id: str, scope_name: str, key: str
+    ) -> bool: ...
+
 
 class IKeyPermissionRepository(ABC):
     """Repository interface strictly managing key-level permissions for identities."""

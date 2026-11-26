@@ -83,7 +83,7 @@ export default function ProjectDetailPage() {
             <Button
               size="sm"
               asChild
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-[#042B5F] hover:bg-[#031F46] text-white"
             >
               <Link href="/projects">
                 <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />

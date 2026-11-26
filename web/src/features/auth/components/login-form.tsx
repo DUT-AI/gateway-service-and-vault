@@ -96,7 +96,7 @@ export function LoginForm() {
             autoComplete="username"
             disabled={isLoading}
             {...register("email")}
-            className="block w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-3 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-500"
+            className="block w-full rounded-lg border border-slate-300 py-2.5 pl-9 pr-3 text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus:border-[#042B5F] focus:outline-none focus:ring-2 focus:ring-[#042B5F]/15 disabled:bg-slate-50 disabled:text-slate-500"
             placeholder="user@dutai.io.vn"
           />
         </div>
@@ -120,7 +120,7 @@ export function LoginForm() {
             autoComplete="current-password"
             disabled={isLoading}
             {...register("password")}
-            className="block w-full rounded-lg border border-gray-300 py-2.5 pl-9 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-500"
+            className="block w-full rounded-lg border border-slate-300 py-2.5 pl-9 pr-10 text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus:border-[#042B5F] focus:outline-none focus:ring-2 focus:ring-[#042B5F]/15 disabled:bg-slate-50 disabled:text-slate-500"
             placeholder="••••••••"
           />
           <button
@@ -145,7 +145,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/25 transition-all hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#042B5F] px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-all hover:bg-[#031F46] focus:outline-none focus:ring-2 focus:ring-[#042B5F] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? (
             <>
@@ -161,9 +161,9 @@ export function LoginForm() {
         </button>
       </div>
 
-      <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-900">
+      <div className="mt-4 rounded-lg border border-[#042B5F]/15 bg-[#EEF3FA] p-3 text-xs text-[#042B5F]">
         <div className="flex items-start gap-2">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-600" />
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#042B5F]" />
           <p className="leading-relaxed">
             Hệ thống áp dụng <strong>DUT-AI Pure SSO</strong>. Tài khoản được cấp
             và quản lý tập trung từ hệ thống quản trị DUT-AI Workspace. Nếu bạn

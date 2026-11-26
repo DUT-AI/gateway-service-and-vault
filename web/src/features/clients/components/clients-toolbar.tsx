@@ -49,7 +49,7 @@ export function ClientsToolbar({
             onClick={() => onScopeTabChange("ALL")}
             className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
               scopeTab === "ALL"
-                ? "bg-white text-blue-700 shadow-xs"
+                ? "bg-white text-[#042B5F] shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -60,7 +60,7 @@ export function ClientsToolbar({
             onClick={() => onScopeTabChange("MINE")}
             className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
               scopeTab === "MINE"
-                ? "bg-white text-blue-700 shadow-xs"
+                ? "bg-white text-[#042B5F] shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -107,7 +107,7 @@ export function ClientsToolbar({
               onClick={() => onTypeFilterChange("USER_DEVICE")}
               className={`px-2.5 py-1 rounded-md font-medium transition-all flex items-center gap-1 ${
                 typeFilter === "USER_DEVICE"
-                  ? "bg-white text-blue-700 shadow-xs"
+                  ? "bg-white text-[#042B5F] shadow-xs"
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -149,7 +149,7 @@ export function ClientsToolbar({
             onClick={onOpenDockerGuide}
             className="h-9 px-3 text-xs text-slate-700 border-slate-200 hover:bg-slate-50"
           >
-            <Container className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+            <Container className="h-3.5 w-3.5 mr-1.5 text-[#042B5F]" />
             Hướng dẫn Docker Workload
           </Button>
 
@@ -157,7 +157,7 @@ export function ClientsToolbar({
             type="button"
             size="sm"
             onClick={onOpenRegister}
-            className="h-9 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3 shadow-xs"
+            className="h-9 bg-[#042B5F] hover:bg-[#031F46] text-white font-medium text-xs px-3 shadow-xs"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Đăng ký thiết bị mới

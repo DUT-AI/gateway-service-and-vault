@@ -28,7 +28,7 @@ export function ProjectAllowedServicesView({
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <Server className="h-5 w-5 text-blue-600" />
+              <Server className="h-5 w-5 text-[#042B5F]" />
               <CardTitle className="text-base font-semibold text-slate-900">
                 Dịch vụ liên kết & Quota Governance
               </CardTitle>
@@ -42,7 +42,7 @@ export function ProjectAllowedServicesView({
           <Button
             size="sm"
             onClick={() => setIsBindOpen(true)}
-            className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+            className="text-xs bg-[#042B5F] hover:bg-[#031F46] text-white"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             Thêm dịch vụ
@@ -51,8 +51,8 @@ export function ProjectAllowedServicesView({
 
         <CardContent>
           {/* Quick Notice */}
-          <div className="mb-4 rounded-lg bg-blue-50/60 border border-blue-200/70 p-3 flex items-start space-x-3 text-xs text-blue-800">
-            <ShieldCheck className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+          <div className="mb-4 rounded-lg bg-[#EEF3FA] border border-[#042B5F]/20/70 p-3 flex items-start space-x-3 text-xs text-[#042B5F]">
+            <ShieldCheck className="h-4 w-4 text-[#042B5F] mt-0.5 shrink-0" />
             <div className="space-y-0.5">
               <p className="font-semibold">Nguyên tắc Zero-Trust Gateway:</p>
               <p className="text-slate-600">

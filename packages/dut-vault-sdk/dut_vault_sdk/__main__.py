@@ -25,8 +25,8 @@ def main() -> None:
     )
     run_parser.add_argument(
         "--api-url",
-        default=os.environ.get("DUT_VAULT_URL", "http://localhost:8000"),
-        help="Central Control Plane API URL",
+        default=os.environ.get("DUT_VAULT_URL", "https://gateway.dutai.io.vn"),
+        help="Gateway / Control Plane URL",
     )
     run_parser.add_argument(
         "--no-watch",

@@ -62,7 +62,7 @@ class VaultClient:
 
     def __init__(
         self,
-        base_url: str = "http://localhost:8000",
+        base_url: str = "https://gateway.dutai.io.vn",
         project_id: str = "default",
         user_role: str = "user",
         identity_id: str | None = None,

@@ -212,7 +212,7 @@ export function VirtualKeysTable({
                             <div
                               className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0 ${
                                 isDev
-                                  ? "bg-blue-50 text-blue-600"
+                                  ? "bg-[#EEF3FA] text-[#042B5F]"
                                   : "bg-purple-50 text-purple-600"
                               }`}
                             >

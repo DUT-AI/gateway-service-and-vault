@@ -9,6 +9,7 @@ import {
   EyeOff,
   Lock,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ export interface SecretsTableProps {
   isLoading: boolean;
   highlightedKeys?: Set<string>;
   onEditSecret?: (item: FlatSecretItem) => void;
+  onDeleteSecret?: (item: FlatSecretItem) => void;
   onCreateSecret?: () => void;
 }
 
@@ -37,6 +39,7 @@ export function SecretsTable({
   isLoading,
   highlightedKeys,
   onEditSecret,
+  onDeleteSecret,
   onCreateSecret,
 }: SecretsTableProps) {
   const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
@@ -100,7 +103,7 @@ export function SecretsTable({
   if (items.length === 0) {
     return (
       <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 mb-3">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEF3FA] text-[#042B5F] mb-3">
           <Lock className="h-6 w-6" />
         </div>
         <h3 className="text-sm font-semibold text-slate-900">
@@ -114,7 +117,7 @@ export function SecretsTable({
           <Button
             size="sm"
             onClick={onCreateSecret}
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+            className="mt-4 bg-[#042B5F] hover:bg-[#031F46] text-white font-medium"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Thêm biến mới
@@ -154,7 +157,7 @@ export function SecretsTable({
                 key={item.id}
                 className={`transition-all duration-700 ${
                   isHighlighted
-                    ? "bg-blue-50/90 ring-2 ring-blue-500/50"
+                    ? "bg-[#EEF3FA]/90 ring-2 ring-blue-500/50"
                     : "hover:bg-slate-50/60"
                 }`}
               >
@@ -162,7 +165,7 @@ export function SecretsTable({
                   <div className="flex items-center gap-2">
                     <span>{item.key}</span>
                     {isHighlighted && (
-                      <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-800 animate-pulse">
+                      <span className="inline-flex items-center gap-1 rounded bg-[#EEF3FA] px-1.5 py-0.5 text-[10px] font-semibold text-[#042B5F] animate-pulse">
                         Vừa cập nhật
                       </span>
                     )}
@@ -221,17 +224,29 @@ export function SecretsTable({
                     {item.scope_name}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right space-x-1">
                   {onEditSecret && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => onEditSecret(item)}
-                      className="h-7 text-xs text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-2.5"
+                      className="h-7 text-xs text-slate-600 hover:text-[#042B5F] hover:bg-[#EEF3FA] px-2.5"
                     >
                       <Edit2 className="h-3.5 w-3.5 mr-1" />
                       Sửa
+                    </Button>
+                  )}
+                  {onDeleteSecret && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteSecret(item)}
+                      className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Xóa
                     </Button>
                   )}
                 </TableCell>

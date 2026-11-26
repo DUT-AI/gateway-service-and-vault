@@ -62,7 +62,7 @@ export function AllowedServicesTable({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 space-y-3 bg-white rounded-xl border border-slate-200">
-        <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+        <Loader2 className="h-6 w-6 text-[#042B5F] animate-spin" />
         <p className="text-xs text-slate-500">
           Đang tải danh sách dịch vụ liên kết...
         </p>
@@ -73,8 +73,8 @@ export function AllowedServicesTable({
   if (services.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center bg-white rounded-xl border border-dashed border-slate-300">
-        <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-          <Server className="h-6 w-6 text-blue-600" />
+        <div className="h-12 w-12 rounded-full bg-[#EEF3FA] flex items-center justify-center mb-4">
+          <Server className="h-6 w-6 text-[#042B5F]" />
         </div>
         <h3 className="text-sm font-semibold text-slate-900">
           Chưa có dịch vụ upstream nào được liên kết
@@ -86,7 +86,7 @@ export function AllowedServicesTable({
         <Button
           size="sm"
           onClick={onOpenBindDialog}
-          className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+          className="text-xs bg-[#042B5F] hover:bg-[#031F46] text-white"
         >
           <Plus className="h-3.5 w-3.5 mr-1.5" />
           Thêm dịch vụ đầu tiên
@@ -131,7 +131,7 @@ export function AllowedServicesTable({
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="text-xs font-semibold text-slate-900 flex items-center">
-                      <Server className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+                      <Server className="h-3.5 w-3.5 mr-1.5 text-[#042B5F]" />
                       {svc.service_name}
                     </span>
                     <span className="font-mono text-[10px] text-slate-500 mt-0.5">
@@ -244,7 +244,7 @@ export function AllowedServicesTable({
                     variant="ghost"
                     size="sm"
                     onClick={() => setUsageService(svc)}
-                    className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                    className="h-7 px-2 text-xs text-[#042B5F] hover:bg-[#EEF3FA] hover:text-[#031F46]"
                     title="Xem Gateway URL và code mẫu"
                   >
                     <Terminal className="h-3.5 w-3.5 mr-1" />
@@ -254,7 +254,7 @@ export function AllowedServicesTable({
                     variant="ghost"
                     size="sm"
                     onClick={() => setEditingService(svc)}
-                    className="h-7 px-2 text-xs text-slate-600 hover:text-blue-700"
+                    className="h-7 px-2 text-xs text-slate-600 hover:text-[#031F46]"
                     title="Chỉnh sửa Quota"
                   >
                     <Edit2 className="h-3.5 w-3.5 mr-1" />
@@ -292,6 +292,7 @@ export function AllowedServicesTable({
 
       <ServiceUsageDialog
         key={`usage-${usageService?.service_id ?? "closed"}`}
+        projectId={projectId}
         service={usageService}
         onClose={() => setUsageService(null)}
       />

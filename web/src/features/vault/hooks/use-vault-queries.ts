@@ -92,3 +92,20 @@ export function useSaveSecretsBatchMutation(projectId: string) {
     },
   });
 }
+
+export function useDeleteSecretMutation(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ scopeName, key }: { scopeName: string; key: string }) =>
+      vaultService.deleteSecret(projectId, scopeName, key),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...VAULT_KEYS.all, "scopes", projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...VAULT_KEYS.all, "secrets", projectId],
+      });
+    },
+  });
+}

@@ -136,7 +136,7 @@ export function KeyPermissionMatrixModal({
 
             {selectedUser && (
               <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-600 border border-slate-200">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#EEF3FA] text-[10px] font-bold text-[#042B5F]">
                   {selectedUser.name[0]?.toUpperCase() || "U"}
                 </div>
                 <span className="font-medium text-slate-800">

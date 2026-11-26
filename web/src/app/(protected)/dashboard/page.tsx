@@ -48,14 +48,14 @@ export default function DashboardPage() {
           <Button
             size="sm"
             onClick={() => setCreateDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs"
+            className="font-medium shadow-xs"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             Tạo dự án mới
           </Button>
-          <Button size="sm" variant="outline" asChild className="border-slate-200">
+          <Button size="sm" variant="outline" asChild>
             <Link href="/projects">
-              <FolderKanban className="h-4 w-4 mr-1.5 text-blue-600" />
+              <FolderKanban className="h-4 w-4 mr-1.5 text-[#042B5F]" />
               Tất cả dự án
             </Link>
           </Button>
@@ -64,9 +64,9 @@ export default function DashboardPage() {
 
       {/* User Stats Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="shadow-xs rounded-xl border border-slate-200 bg-white p-5">
+        <div className="shadow-2xs rounded-xl border border-slate-200/80 bg-white p-5">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
+            <div className="rounded-lg bg-[#EEF3FA] p-2.5 text-[#042B5F]">
               <User className="h-5 w-5" />
             </div>
             <div>
@@ -78,9 +78,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="shadow-xs rounded-xl border border-slate-200 bg-white p-5">
+        <div className="shadow-2xs rounded-xl border border-slate-200/80 bg-white p-5">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-emerald-50 p-2 text-emerald-600">
+            <div className="rounded-lg bg-emerald-50 p-2.5 text-emerald-700">
               <Mail className="h-5 w-5" />
             </div>
             <div>
@@ -92,9 +92,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="shadow-xs rounded-xl border border-slate-200 bg-white p-5">
+        <div className="shadow-2xs rounded-xl border border-slate-200/80 bg-white p-5">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-purple-50 p-2 text-purple-600">
+            <div className="rounded-lg bg-[#042B5F] p-2.5 text-white">
               <Shield className="h-5 w-5" />
             </div>
             <div>
@@ -108,10 +108,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Projects Workspace Hub Card */}
-      <div className="shadow-xs rounded-xl border border-slate-200 bg-white p-6 space-y-4">
+      <div className="shadow-2xs rounded-xl border border-slate-200/80 bg-white p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF3FA] text-[#042B5F]">
               <FolderKanban className="h-4 w-4" />
             </div>
             <div>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
           </div>
           <Link
             href="/projects"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-[#042B5F] hover:text-[#031F46]"
           >
             Xem tất cả
             <ArrowRight className="h-3.5 w-3.5" />
@@ -147,7 +147,7 @@ export default function DashboardPage() {
               size="sm"
               variant="outline"
               onClick={() => setCreateDialogOpen(true)}
-              className="mt-3 text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
+              className="mt-3 text-xs"
             >
               <Plus className="h-3.5 w-3.5 mr-1" />
               Khởi tạo dự án đầu tiên
@@ -159,10 +159,10 @@ export default function DashboardPage() {
               <Link
                 key={proj.id}
                 href={`/projects/${proj.id}`}
-                className="group block rounded-xl border border-slate-200 p-4 transition-all hover:border-blue-200 hover:bg-blue-50/20 hover:shadow-xs"
+                className="group block rounded-xl border border-slate-200 p-4 transition-all hover:border-[#042B5F]/35 hover:bg-[#EEF3FA]/50 hover:shadow-xs"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 truncate">
+                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-[#042B5F] truncate">
                     {proj.name}
                   </h3>
                   <Badge variant="secondary" className="font-mono text-[10px]">

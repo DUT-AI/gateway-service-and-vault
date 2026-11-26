@@ -34,7 +34,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEF3FA] text-[#042B5F]">
               <FolderKanban className="h-5 w-5" />
             </div>
             <div>

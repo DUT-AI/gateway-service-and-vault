@@ -15,6 +15,7 @@ import {
 import type { ProjectAllowedService } from "../types";
 
 export interface ServiceUsageDialogProps {
+  projectId: string;
   service: ProjectAllowedService | null;
   onClose: () => void;
 }
@@ -24,6 +25,7 @@ type UsageTab = "curl" | "python" | "openai";
 const GATEWAY_BASE_URL = "https://gateway.dutai.io.vn";
 
 export function ServiceUsageDialog({
+  projectId,
   service,
   onClose,
 }: ServiceUsageDialogProps) {
@@ -43,16 +45,20 @@ export function ServiceUsageDialog({
       subtitle: "Gọi trực tiếp qua Gateway bằng chứng chỉ mTLS + X-Virtual-Key:",
       code: `curl --cert ~/.dut-vault/client.crt --key ~/.dut-vault/client.key \\
   -H "X-Virtual-Key: <VIRTUAL_KEY>" \\
+  -H "X-Project-Id: ${projectId}" \\
   -H "Content-Type: application/json" \\
   ${gatewayEndpoint}/`,
     },
     python: {
       label: "Python (SDK)",
       subtitle:
-        "Tự động nạp chứng chỉ tại ~/.dut-vault/ và X_VIRTUAL_KEY qua VaultClient:",
+        "Tự động nạp ~/.dut-vault/ và base_url mặc định (hoặc đặt env X_VIRTUAL_KEY thay cho virtual_key):",
       code: `from dut_vault_sdk import VaultClient
 
-vault = VaultClient(base_url="${GATEWAY_BASE_URL}")
+vault = VaultClient(
+    project_id="${projectId}",
+    virtual_key="<VIRTUAL_KEY>",  # hoặc đặt biến môi trường X_VIRTUAL_KEY
+)
 
 with vault.gateway_client("${service.service_slug}") as client:
     res = client.get("/")
@@ -65,7 +71,10 @@ with vault.gateway_client("${service.service_slug}") as client:
       code: `from openai import OpenAI
 from dut_vault_sdk import VaultClient
 
-vault = VaultClient(base_url="${GATEWAY_BASE_URL}")
+vault = VaultClient(
+    project_id="${projectId}",
+    virtual_key="<VIRTUAL_KEY>",  # hoặc đặt biến môi trường X_VIRTUAL_KEY
+)
 
 client = OpenAI(
     base_url="${gatewayEndpoint}",
@@ -93,7 +102,7 @@ client = OpenAI(
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EEF3FA] text-[#042B5F]">
               <Terminal className="h-5 w-5" />
             </div>
             <div>
@@ -111,7 +120,7 @@ client = OpenAI(
         <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-2 text-xs">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-              <Globe className="h-3.5 w-3.5 text-blue-600" />
+              <Globe className="h-3.5 w-3.5 text-[#042B5F]" />
               Gateway Base URL:
             </span>
             <Button
@@ -135,7 +144,7 @@ client = OpenAI(
             </Button>
           </div>
 
-          <div className="font-mono text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-blue-700 break-all select-all">
+          <div className="font-mono text-xs bg-white border border-slate-200 rounded-lg px-3 py-2 text-[#042B5F] break-all select-all">
             {gatewayEndpoint}
           </div>
 
@@ -166,7 +175,7 @@ client = OpenAI(
                   onClick={() => setActiveTab(tab)}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
                     activeTab === tab
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#042B5F] text-white"
                       : "text-slate-600 hover:bg-slate-100"
                   }`}
                 >

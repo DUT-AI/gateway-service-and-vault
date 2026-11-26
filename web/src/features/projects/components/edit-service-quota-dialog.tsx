@@ -66,7 +66,7 @@ export function EditServiceQuotaDialog({
     <Dialog open={Boolean(service)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <div className="flex items-center space-x-2 text-blue-600">
+          <div className="flex items-center space-x-2 text-[#042B5F]">
             <Edit2 className="h-4 w-4" />
             <DialogTitle className="text-sm font-semibold text-slate-900">
               Điều chỉnh Quota: {service?.service_name}
@@ -95,7 +95,7 @@ export function EditServiceQuotaDialog({
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 flex items-center space-x-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
+              <ShieldCheck className="h-3.5 w-3.5 text-[#042B5F]" />
               <span>Hạn mức ngày (Requests/ngày)</span>
             </Label>
             <Input
@@ -122,7 +122,7 @@ export function EditServiceQuotaDialog({
               type="submit"
               size="sm"
               disabled={updateQuotaMutation.isPending}
-              className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+              className="text-xs bg-[#042B5F] hover:bg-[#031F46] text-white"
             >
               {updateQuotaMutation.isPending ? (
                 <>

@@ -54,7 +54,7 @@ export function RegisterForm() {
         <input
           type="text"
           {...register("name")}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#042B5F] focus:outline-none focus:ring-[#042B5F]"
           placeholder="Nguyễn Văn A"
         />
         {errors.name && (
@@ -67,7 +67,7 @@ export function RegisterForm() {
         <input
           type="email"
           {...register("email")}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#042B5F] focus:outline-none focus:ring-[#042B5F]"
           placeholder="user@example.com"
         />
         {errors.email && (
@@ -82,7 +82,7 @@ export function RegisterForm() {
         <input
           type="password"
           {...register("password")}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-[#042B5F] focus:outline-none focus:ring-[#042B5F]"
           placeholder="••••••••"
         />
         {errors.password && (
@@ -93,7 +93,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={isSubmitting || registerMutation.isPending}
-        className="flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        className="flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-[#042B5F] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#031F46] focus:outline-none focus:ring-2 focus:ring-[#042B5F] focus:ring-offset-2 disabled:opacity-50"
       >
         {isSubmitting || registerMutation.isPending
           ? "Đang đăng ký..."
@@ -104,7 +104,7 @@ export function RegisterForm() {
         Đã có tài khoản?{" "}
         <Link
           href="/login"
-          className="font-medium text-blue-600 hover:text-blue-500"
+          className="font-medium text-[#042B5F] hover:text-[#042B5F]"
         >
           Đăng nhập
         </Link>

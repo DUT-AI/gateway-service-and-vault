@@ -93,7 +93,7 @@ export function BindServiceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <div className="flex items-center space-x-2 text-blue-600">
+          <div className="flex items-center space-x-2 text-[#042B5F]">
             <Server className="h-5 w-5" />
             <DialogTitle className="text-base font-semibold text-slate-900">
               Cấp quyền Dịch vụ Upstream cho Dự án
@@ -174,7 +174,7 @@ export function BindServiceDialog({
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-700 flex items-center space-x-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
+                <ShieldCheck className="h-3.5 w-3.5 text-[#042B5F]" />
                 <span>Hạn mức ngày</span>
               </Label>
               <Input
@@ -210,7 +210,7 @@ export function BindServiceDialog({
                 !selectedServiceId ||
                 availableServices.length === 0
               }
-              className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+              className="text-xs bg-[#042B5F] hover:bg-[#031F46] text-white"
             >
               {bindMutation.isPending ? (
                 <>

@@ -84,15 +84,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const sidebarContent = (
     <>
-      <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-5">
-        <div className="shadow-xs flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white">
-          <Sparkles className="h-5 w-5" />
+      <div className="flex h-16 items-center gap-3 border-b border-slate-200/80 px-5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#042B5F] text-white shadow-xs">
+          <ShieldCheck className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <span className="block truncate text-sm font-bold text-slate-900">
-            DUT AI Platform
+          <span className="block truncate text-sm font-bold tracking-tight text-[#042B5F]">
+            DUT-AI Platform
           </span>
-          <p className="text-[11px] text-slate-500">Gateway & Vault</p>
+          <p className="text-[11px] font-medium text-slate-500">
+            Gateway &amp; Vault
+          </p>
         </div>
         <button
           type="button"
@@ -119,15 +121,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex min-h-[44px] items-center justify-between rounded-lg border px-3 text-xs font-semibold transition-colors duration-150 ${isActive
-                  ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-950"
-                }`}
+              className={`flex min-h-[42px] items-center justify-between rounded-lg px-3 text-xs font-semibold transition-all duration-150 ${
+                isActive
+                  ? "bg-[#042B5F] text-white shadow-xs"
+                  : "text-slate-600 hover:bg-[#EEF3FA] hover:text-[#042B5F]"
+              }`}
             >
               <span className="flex items-center gap-2.5">
                 <Icon
-                  className={`h-4 w-4 ${isActive ? "text-blue-600" : "text-slate-400"
-                    }`}
+                  className={`h-4 w-4 ${
+                    isActive ? "text-white" : "text-slate-400"
+                  }`}
                 />
                 {item.label}
               </span>
@@ -136,15 +140,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         })}
       </nav>
 
-      <div className="border-t border-slate-200 p-3">
-        <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white p-2">
+      <div className="border-t border-slate-200/80 p-3">
+        <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-[#F6F8FC] p-2">
           {user?.avatar_url ? (
             <img
               src={user.avatar_url}
-              className="h-8 w-8 rounded-full object-cover"
+              alt={user?.name || "Avatar"}
+              className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200"
             />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#042B5F] text-xs font-bold text-white">
               {(user?.name || user?.email || "U")[0].toUpperCase()}
             </div>
           )}
@@ -171,9 +176,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950 antialiased">
+    <div className="min-h-screen bg-[#F6F8FC] text-slate-900 antialiased">
       {/* Desktop Persistent Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-200 bg-white md:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-200/80 bg-white md:flex">
         {sidebarContent}
       </aside>
 

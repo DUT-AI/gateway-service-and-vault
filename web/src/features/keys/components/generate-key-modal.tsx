@@ -136,7 +136,7 @@ export function GenerateKeyModal({
                   </Label>
                   <Link
                     href="/clients"
-                    className="inline-flex items-center text-[11px] text-blue-600 hover:text-blue-700 font-medium"
+                    className="inline-flex items-center text-[11px] text-[#042B5F] hover:text-[#031F46] font-medium"
                     target="_blank"
                   >
                     Quản lý thiết bị

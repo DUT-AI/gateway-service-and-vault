@@ -27,42 +27,42 @@ export function ProjectWorkspaceTabs({ project }: ProjectWorkspaceTabsProps) {
 
   return (
     <Tabs defaultValue="vault" className="space-y-6">
-      <TabsList className="bg-slate-100 p-1 rounded-xl border border-slate-200">
+      <TabsList className="bg-white p-1 rounded-xl border border-slate-200/80 shadow-2xs">
         <TabsTrigger
           value="vault"
-          className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+          className="rounded-lg text-xs font-semibold text-slate-600 data-active:bg-[#042B5F] data-active:text-white data-active:shadow-xs px-4 py-2"
         >
-          <Lock className="h-4 w-4 mr-2 text-slate-500" />
+          <Lock className="h-4 w-4 mr-2" />
           Biến môi trường (Vault)
         </TabsTrigger>
         <TabsTrigger
           value="keys"
-          className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+          className="rounded-lg text-xs font-semibold text-slate-600 data-active:bg-[#042B5F] data-active:text-white data-active:shadow-xs px-4 py-2"
         >
-          <Key className="h-4 w-4 mr-2 text-slate-500" />
+          <Key className="h-4 w-4 mr-2" />
           Virtual Keys
         </TabsTrigger>
         <TabsTrigger
           value="services"
-          className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+          className="rounded-lg text-xs font-semibold text-slate-600 data-active:bg-[#042B5F] data-active:text-white data-active:shadow-xs px-4 py-2"
         >
-          <Server className="h-4 w-4 mr-2 text-slate-500" />
+          <Server className="h-4 w-4 mr-2" />
           Dịch vụ liên kết
         </TabsTrigger>
         {isAdmin && (
           <TabsTrigger
             value="members"
-            className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+            className="rounded-lg text-xs font-semibold text-slate-600 data-active:bg-[#042B5F] data-active:text-white data-active:shadow-xs px-4 py-2"
           >
-            <Users className="h-4 w-4 mr-2 text-slate-500" />
+            <Users className="h-4 w-4 mr-2" />
             Quản lý thành viên
           </TabsTrigger>
         )}
         <TabsTrigger
           value="settings"
-          className="rounded-lg text-xs font-semibold data-active:bg-white data-active:text-blue-700 data-active:shadow-xs px-4 py-2"
+          className="rounded-lg text-xs font-semibold text-slate-600 data-active:bg-[#042B5F] data-active:text-white data-active:shadow-xs px-4 py-2"
         >
-          <Settings className="h-4 w-4 mr-2 text-slate-500" />
+          <Settings className="h-4 w-4 mr-2" />
           Cài đặt dự án
         </TabsTrigger>
       </TabsList>

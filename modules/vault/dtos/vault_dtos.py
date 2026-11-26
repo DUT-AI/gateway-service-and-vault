@@ -78,6 +78,13 @@ class IdentityPermissionsResponse(BaseModel):
     permitted_keys: list[str]
 
 
+class DeleteSecretResponse(BaseModel):
+    message: str
+    project_id: str
+    scope_name: str
+    key: str
+
+
 class ScopeResponse(BaseModel):
     id: str
     project_id: str

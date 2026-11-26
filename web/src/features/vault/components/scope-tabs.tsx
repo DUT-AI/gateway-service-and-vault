@@ -27,7 +27,7 @@ export function ScopeTabs({
         onClick={() => onSelectScope("ALL")}
         className={`inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
           selectedScope === "ALL"
-            ? "border border-blue-200 bg-blue-50 text-blue-700 shadow-2xs"
+            ? "border border-[#042B5F]/20 bg-[#EEF3FA] text-[#042B5F] shadow-2xs"
             : "border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900"
         }`}
       >
@@ -36,7 +36,7 @@ export function ScopeTabs({
           variant="secondary"
           className={`h-4.5 px-1.5 text-[10px] ${
             selectedScope === "ALL"
-              ? "bg-blue-100 text-blue-800"
+              ? "bg-[#EEF3FA] text-[#042B5F]"
               : "bg-slate-200 text-slate-700"
           }`}
         >
@@ -55,13 +55,13 @@ export function ScopeTabs({
             onClick={() => onSelectScope(scope.name)}
             className={`inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all ${
               isSelected
-                ? "border border-blue-200 bg-blue-50 text-blue-700 shadow-2xs"
+                ? "border border-[#042B5F]/20 bg-[#EEF3FA] text-[#042B5F] shadow-2xs"
                 : "border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             }`}
           >
             <FolderLock
               className={`h-3.5 w-3.5 ${
-                isSelected ? "text-blue-600" : "text-slate-400"
+                isSelected ? "text-[#042B5F]" : "text-slate-400"
               }`}
             />
             <span>{scope.name}</span>
@@ -69,7 +69,7 @@ export function ScopeTabs({
               variant="secondary"
               className={`h-4.5 px-1.5 text-[10px] ${
                 isSelected
-                  ? "bg-blue-100 text-blue-800"
+                  ? "bg-[#EEF3FA] text-[#042B5F]"
                   : "bg-slate-200 text-slate-700"
               }`}
             >

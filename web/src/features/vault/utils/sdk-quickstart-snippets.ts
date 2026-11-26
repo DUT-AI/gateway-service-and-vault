@@ -17,20 +17,19 @@ export function buildSdkQuickstartSnippets(
 
   return {
     pipInstall: "pip install dut-vault-sdk  # hoặc: uv add dut-vault-sdk",
-    cli: `# Tự động dùng chứng chỉ tại ~/.dut-vault/ và biến X_VIRTUAL_KEY
+    cli: `# Tự động dùng chứng chỉ tại ~/.dut-vault/, base_url mặc định https://gateway.dutai.io.vn
 X_VIRTUAL_KEY=<VIRTUAL_KEY> dut-vault run \\
   --project ${projectId}${scopeFlag} \\
-  --api-url https://gateway.dutai.io.vn \\
   -- python main.py`,
     asyncPython: `from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI
 from dut_vault_sdk import VaultClient
 
-# Tự động nạp ~/.dut-vault/client.crt, client.key và X_VIRTUAL_KEY từ env
+# Tự động nạp ~/.dut-vault/client.crt, client.key và base_url mặc định
 vault = VaultClient(
-    base_url="https://gateway.dutai.io.vn",
     project_id="${projectId}",  # ${projectName}
+    virtual_key="<VIRTUAL_KEY>",  # hoặc đặt biến môi trường X_VIRTUAL_KEY
     scope=${scopeArg},
     inject_environ=True,
 )
@@ -50,10 +49,10 @@ app = FastAPI(lifespan=lifespan)
     syncPython: `import os
 from dut_vault_sdk import VaultClient
 
-# Tự động nạp ~/.dut-vault/client.crt, client.key và X_VIRTUAL_KEY từ env
+# Tự động nạp ~/.dut-vault/client.crt, client.key và base_url mặc định
 vault = VaultClient(
-    base_url="https://gateway.dutai.io.vn",
     project_id="${projectId}",  # ${projectName}
+    virtual_key="<VIRTUAL_KEY>",  # hoặc đặt biến môi trường X_VIRTUAL_KEY
     scope=${scopeArg},
     inject_environ=True,
 )

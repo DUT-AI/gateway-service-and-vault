@@ -72,7 +72,7 @@ export function SecretEditForm({
     <form onSubmit={handleSubmit(onSubmitEdit)} className="space-y-4">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-bold text-slate-900">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF3FA] text-[#042B5F]">
             <Lock className="h-4 w-4" />
           </div>
           Chỉnh sửa biến môi trường
@@ -122,7 +122,7 @@ export function SecretEditForm({
             <button
               type="button"
               onClick={() => setShowValue(!showValue)}
-              className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-700"
+              className="inline-flex items-center gap-1 text-[11px] text-[#042B5F] hover:text-[#031F46]"
             >
               {showValue ? (
                 <>
@@ -142,7 +142,7 @@ export function SecretEditForm({
             rows={3}
             placeholder="Nhập giá trị bí mật cần mã hóa..."
             {...register("value")}
-            className={`w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-900 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+            className={`w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-900 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#042B5F] ${
               errors.value ? "border-rose-300" : ""
             } ${!showValue ? "text-security-disc font-mono" : ""}`}
           />
@@ -166,7 +166,7 @@ export function SecretEditForm({
         <Button
           type="submit"
           disabled={saveMutation.isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+          className="bg-[#042B5F] hover:bg-[#031F46] text-white font-medium"
         >
           {saveMutation.isPending ? (
             <>

@@ -99,7 +99,7 @@ export function SdkQuickstartDialog({
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EEF3FA] text-[#042B5F]">
               <Terminal className="h-5 w-5" />
             </div>
             <div>
@@ -117,9 +117,9 @@ export function SdkQuickstartDialog({
 
         {/* Core Principles Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-xs">
-            <div className="flex items-center gap-1.5 font-semibold text-blue-900">
-              <Cpu className="h-4 w-4 text-blue-600" />
+          <div className="rounded-xl border border-[#042B5F]/20 bg-[#EEF3FA] p-3 text-xs">
+            <div className="flex items-center gap-1.5 font-semibold text-[#042B5F]">
+              <Cpu className="h-4 w-4 text-[#042B5F]" />
               <span>Nguyên tắc Zero .env</span>
             </div>
             <p className="mt-1 text-slate-600 text-[11px] leading-relaxed">
@@ -189,7 +189,7 @@ export function SdkQuickstartDialog({
                   onClick={() => setActiveTab(key)}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors inline-flex items-center gap-1 ${
                     activeTab === key
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#042B5F] text-white"
                       : "text-slate-600 hover:bg-slate-100"
                   }`}
                 >

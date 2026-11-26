@@ -24,7 +24,7 @@ export default function ProtectedLayout({
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
-          <div className="border-3 h-8 w-8 animate-spin rounded-full border-blue-600 border-t-transparent" />
+          <div className="border-3 h-8 w-8 animate-spin rounded-full border-[#042B5F] border-t-transparent" />
           <p className="text-xs font-medium text-slate-500">
             Đang xác thực tài khoản DUT AI SSO...
           </p>
@@ -53,7 +53,7 @@ export default function ProtectedLayout({
           <div className="flex justify-center gap-3 pt-2">
             <button
               onClick={() => refetchUser()}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#042B5F] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#031F46]"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               Thử lại

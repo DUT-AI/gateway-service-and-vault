@@ -56,6 +56,16 @@ export const vaultService = {
     return data;
   },
 
+  async deleteSecret(
+    projectId: string,
+    scopeName: string,
+    key: string
+  ): Promise<void> {
+    await api.delete(`/vault/projects/${projectId}/secrets`, {
+      params: { scope_name: scopeName, key },
+    });
+  },
+
   async listPermissions(
     projectId: string,
     identityId: string

@@ -40,7 +40,7 @@ export function AuditLogsTable({
     return (
       <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col items-center gap-2">
-          <div className="h-7 w-7 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+          <div className="h-7 w-7 animate-spin rounded-full border-2 border-[#042B5F] border-t-transparent" />
           <p className="text-xs text-slate-500">Đang tải nhật ký kiểm toán...</p>
         </div>
       </div>
@@ -108,7 +108,7 @@ export function AuditLogsTable({
                             App Server
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 ring-1 ring-blue-600/20 ring-inset dark:bg-blue-950/40 dark:text-blue-300">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-[#EEF3FA] px-2 py-0.5 text-[11px] font-medium text-[#042B5F] ring-1 ring-blue-600/20 ring-inset dark:bg-blue-950/40 dark:text-blue-300">
                             <Laptop className="h-3 w-3" />
                             User Device
                           </span>

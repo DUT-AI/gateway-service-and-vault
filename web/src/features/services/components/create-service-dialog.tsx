@@ -114,7 +114,7 @@ export function CreateServiceDialog({
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEF3FA] text-[#042B5F]">
               <Globe className="h-5 w-5" />
             </div>
             <div>
@@ -174,7 +174,7 @@ export function CreateServiceDialog({
                   onChange: () => setSlugManuallyEdited(true),
                 })}
               />
-              <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-blue-500 pointer-events-none" />
+              <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#042B5F] pointer-events-none" />
             </div>
             {errors.slug && (
               <p className="text-[11px] text-rose-600 font-medium">
@@ -264,7 +264,7 @@ export function CreateServiceDialog({
                   htmlFor="service-cred"
                   className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"
                 >
-                  <Lock className="h-3.5 w-3.5 text-blue-600" />
+                  <Lock className="h-3.5 w-3.5 text-[#042B5F]" />
                   Khóa bí mật đối tác (Credential Token){" "}
                   <span className="text-rose-500">*</span>
                 </Label>
@@ -321,7 +321,7 @@ export function CreateServiceDialog({
               type="submit"
               size="sm"
               disabled={createMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
+              className="bg-[#042B5F] hover:bg-[#031F46] text-white text-xs font-medium"
             >
               {createMutation.isPending ? (
                 <>

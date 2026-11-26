@@ -562,7 +562,11 @@ export interface paths {
          * @description Create or update an encrypted configuration secret and broadcast change.
          */
         post: operations["create_secret_api_v1_vault_projects__project_id__secrets_post"];
-        delete?: never;
+        /**
+         * Delete a secret from a project scope
+         * @description Delete an encrypted secret from a project scope and broadcast change.
+         */
+        delete: operations["delete_secret_api_v1_vault_projects__project_id__secrets_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -758,6 +762,17 @@ export interface components {
             scope_name: string;
             /** Items */
             items: components["schemas"]["SecretKeyValueItem"][];
+        };
+        /** DeleteSecretResponse */
+        DeleteSecretResponse: {
+            /** Message */
+            message: string;
+            /** Project Id */
+            project_id: string;
+            /** Scope Name */
+            scope_name: string;
+            /** Key */
+            key: string;
         };
         /** GenerateVirtualKeyRequest */
         GenerateVirtualKeyRequest: {
@@ -1108,8 +1123,11 @@ export interface components {
              * @default BEARER_TOKEN
              */
             auth_type?: string;
-            /** Credential */
-            credential: string;
+            /**
+             * Credential
+             * @default
+             */
+            credential?: string;
             /**
              * Timeout Seconds
              * @default 30
@@ -1249,6 +1267,14 @@ export interface components {
             cert_fingerprint: string;
             /** Client Raw Cert */
             client_raw_cert?: string | null;
+            /** Client Signature */
+            client_signature?: string | null;
+            /** Client Timestamp */
+            client_timestamp?: string | null;
+            /** Request Method */
+            request_method?: string | null;
+            /** Request Path */
+            request_path?: string | null;
             /** Project Id */
             project_id: string;
             /** Service Id */
@@ -2371,6 +2397,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SecretResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_secret_api_v1_vault_projects__project_id__secrets_delete: {
+        parameters: {
+            query: {
+                scope_name: string;
+                key: string;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteSecretResponse"];
                 };
             };
             /** @description Validation Error */

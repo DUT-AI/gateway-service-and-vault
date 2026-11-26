@@ -75,7 +75,7 @@ export function ProjectList({
   if (!projects || projects.length === 0) {
     return (
       <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 mb-4">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF3FA] text-[#042B5F] mb-4">
           <FolderPlus className="h-7 w-7" />
         </div>
         <h3 className="text-base font-semibold text-slate-900">
@@ -89,7 +89,7 @@ export function ProjectList({
           <div className="mt-6">
             <Button
               onClick={onCreateProject}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs"
+              className="bg-[#042B5F] hover:bg-[#031F46] text-white font-medium shadow-xs"
             >
               <FolderPlus className="h-4 w-4 mr-1.5" />
               Tạo dự án mới

@@ -26,17 +26,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl"
+      className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#042B5F] rounded-xl"
     >
-      <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-200 border-slate-200 bg-white flex flex-col justify-between">
+      <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[#042B5F]/35 border-slate-200 bg-white flex flex-col justify-between">
         <div>
           <CardHeader className="space-y-2 pb-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF3FA] text-[#042B5F] transition-colors group-hover:bg-[#031F46] group-hover:text-white">
                   <FolderKanban className="h-4 w-4" />
                 </div>
-                <CardTitle className="text-base font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                <CardTitle className="text-base font-semibold text-slate-900 group-hover:text-[#042B5F] transition-colors">
                   {project.name}
                 </CardTitle>
               </div>
@@ -63,7 +63,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <Calendar className="h-3.5 w-3.5 text-slate-400" />
             {formattedDate}
           </span>
-          <span className="flex items-center gap-1 font-medium text-blue-600 group-hover:translate-x-0.5 transition-transform text-xs">
+          <span className="flex items-center gap-1 font-medium text-[#042B5F] group-hover:translate-x-0.5 transition-transform text-xs">
             Workspace
             <ArrowRight className="h-3.5 w-3.5" />
           </span>

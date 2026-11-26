@@ -38,7 +38,7 @@ export function Breadcrumbs({ items, className = "" }: BreadcrumbsProps) {
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
-                  className="font-medium text-slate-600 hover:text-blue-600 transition-colors truncate max-w-[200px]"
+                  className="font-medium text-slate-600 hover:text-[#042B5F] transition-colors truncate max-w-[200px]"
                 >
                   {item.label}
                 </Link>

@@ -206,7 +206,7 @@ export function CertDownloadDialog({
               {step1Done ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
               ) : (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[11px] font-bold text-blue-700">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#EEF3FA] text-[11px] font-bold text-[#042B5F]">
                   1
                 </span>
               )}
@@ -233,7 +233,7 @@ export function CertDownloadDialog({
                 downloadedCrt ? "border-emerald-300 bg-emerald-50/60" : "bg-white"
               }`}
             >
-              <FileText className="h-4 w-4 mr-2 text-blue-600" />
+              <FileText className="h-4 w-4 mr-2 text-[#042B5F]" />
               <div className="text-left flex-1">
                 <div>Tải client.crt</div>
                 <div className="text-[10px] text-slate-500">
@@ -266,7 +266,7 @@ export function CertDownloadDialog({
             type="button"
             variant="default"
             onClick={handleDownloadBoth}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs h-9"
+            className="w-full bg-[#042B5F] hover:bg-[#031F46] text-white font-medium text-xs h-9"
           >
             <Download className="h-4 w-4 mr-2" />
             Tải cả hai tệp (client.crt & client.key)

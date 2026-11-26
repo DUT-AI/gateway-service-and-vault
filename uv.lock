@@ -644,15 +644,15 @@ dev = [
 
 [[package]]
 name = "dut-vault-sdk"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "httpx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d6/f5/a677cff1966d8655cb581f0aacebcababb91068a54ef40681a7d8b05f811/dut_vault_sdk-0.1.1.tar.gz", hash = "sha256:6ed57fee736c205e2d6ef950a8eec77a5a60eb5cb12cb684bd9e88a90db209e9", size = 6696, upload-time = "2026-11-25T17:28:39.776Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/d7/f1016421927f7326f86c9f389deb91e867a10e77c6b404882f9a066e0c34/dut_vault_sdk-0.1.2.tar.gz", hash = "sha256:d52a4fb6792d5b69f6c8229cc1a50ab9cf0fb5a5574263b05a5e1b40b8e35001", size = 6761, upload-time = "2026-11-25T17:40:40.961Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/26/dd2a839b2d1a26a122a55d336b8bf2a76a3b73c49f49ee5247a33fac1445/dut_vault_sdk-0.1.1-py3-none-any.whl", hash = "sha256:7c5dfd0b3fd09ff0e333be28bd757c4cd60585a7b75e0eff2004800649aafa70", size = 8153, upload-time = "2026-11-25T17:28:38.413Z" },
+    { url = "https://files.pythonhosted.org/packages/21/1a/ea5e7c0e28be0826ddbd97f0b3cc897211e24472c38e4f0b1947a6e6f247/dut_vault_sdk-0.1.2-py3-none-any.whl", hash = "sha256:deb5605736597bf8e41d6c7dc4f3cf148f0a76b9ea8eca9e3d4d81df62e7c994", size = 8221, upload-time = "2026-11-25T17:40:41.916Z" },
 ]
 
 [[package]]

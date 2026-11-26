@@ -69,7 +69,7 @@ export function ServicesTable() {
         return (
           <Badge
             variant="outline"
-            className="text-[10px] font-semibold bg-blue-50 text-blue-700 border-blue-200"
+            className="text-[10px] font-semibold bg-[#EEF3FA] text-[#042B5F] border-[#042B5F]/20"
           >
             Bearer Token
           </Badge>
@@ -148,7 +148,7 @@ export function ServicesTable() {
               onClick={() => setAuthFilter("BEARER_TOKEN")}
               className={`px-2.5 py-1 rounded-md font-medium transition-all ${
                 authFilter === "BEARER_TOKEN"
-                  ? "bg-white text-blue-700 shadow-xs"
+                  ? "bg-white text-[#042B5F] shadow-xs"
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -185,7 +185,7 @@ export function ServicesTable() {
             type="button"
             size="sm"
             onClick={() => setCreateDialogOpen(true)}
-            className="h-9 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs px-3 shadow-xs"
+            className="h-9 bg-[#042B5F] hover:bg-[#031F46] text-white font-medium text-xs px-3 shadow-xs"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Khai báo dịch vụ mới
@@ -264,7 +264,7 @@ export function ServicesTable() {
                   <tr>
                     <td colSpan={5} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-center space-y-3">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-2xl bg-[#EEF3FA] text-[#042B5F] flex items-center justify-center">
                           <Globe className="h-6 w-6" />
                         </div>
                         <div>
@@ -297,7 +297,7 @@ export function ServicesTable() {
                             type="button"
                             size="sm"
                             onClick={() => setCreateDialogOpen(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
+                            className="bg-[#042B5F] hover:bg-[#031F46] text-white text-xs font-medium"
                           >
                             <Plus className="h-3.5 w-3.5 mr-1" />
                             Khai báo dịch vụ đầu tiên
@@ -316,7 +316,7 @@ export function ServicesTable() {
                       {/* Name & Slug */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                          <div className="h-8 w-8 rounded-lg bg-[#EEF3FA] text-[#042B5F] flex items-center justify-center shrink-0">
                             <Globe className="h-4 w-4" />
                           </div>
                           <div className="truncate max-w-[200px] sm:max-w-xs">

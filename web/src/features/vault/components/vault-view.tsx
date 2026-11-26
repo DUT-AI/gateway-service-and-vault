@@ -20,6 +20,7 @@ import { useVaultSse } from "../hooks/use-vault-sse";
 import { ScopeTabs } from "./scope-tabs";
 import { SecretsTable } from "./secrets-table";
 import { SecretDialog } from "./secret-dialog";
+import { DeleteSecretDialog } from "./delete-secret-dialog";
 import { KeyPermissionMatrixModal } from "./key-permission-matrix-modal";
 import { LiveSyncStatusBadge } from "./live-sync-status-badge";
 import { LiveAuditFeed } from "./live-audit-feed";
@@ -37,6 +38,9 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
   const [editingSecret, setEditingSecret] = useState<FlatSecretItem | null>(
+    null
+  );
+  const [deletingSecret, setDeletingSecret] = useState<FlatSecretItem | null>(
     null
   );
   const [permissionsModalOpen, setPermissionsModalOpen] =
@@ -114,7 +118,7 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                <Lock className="h-4 w-4 text-blue-600" />
+                <Lock className="h-4 w-4 text-[#042B5F]" />
                 Quản lý biến môi trường bảo mật (Dynamic Vault)
               </CardTitle>
               <p className="text-xs text-slate-500 mt-1">
@@ -159,7 +163,7 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
                 onClick={() => setSdkQuickstartOpen(true)}
                 className="border-slate-200 text-slate-700 hover:bg-slate-50"
               >
-                <Terminal className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+                <Terminal className="h-3.5 w-3.5 mr-1.5 text-[#042B5F]" />
                 Hướng dẫn dùng Env / SDK
               </Button>
 
@@ -181,7 +185,7 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
                   setEditingSecret(null);
                   setCreateDialogOpen(true);
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                className="bg-[#042B5F] hover:bg-[#031F46] text-white font-medium"
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Thêm biến mới
@@ -192,18 +196,18 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
 
         <CardContent className="space-y-4 pt-4">
           {/* Quick Inline Guidance Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-blue-100 bg-blue-50/50 px-3.5 py-2.5 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-[#042B5F]/15 bg-[#EEF3FA] px-3.5 py-2.5 text-xs">
             <div className="flex items-center gap-2 text-slate-700">
-              <BookOpen className="h-4 w-4 text-blue-600 shrink-0" />
+              <BookOpen className="h-4 w-4 text-[#042B5F] shrink-0" />
               <span>
                 Nạp các biến này trực tiếp vào RAM (
-                <code className="font-mono bg-white px-1 rounded border border-blue-100">
+                <code className="font-mono bg-white px-1 rounded border border-[#042B5F]/15">
                   os.environ
                 </code>
                 ) bằng <strong className="text-slate-900">dut-vault run</strong>{" "}
                 hoặc <strong className="text-slate-900">VaultClient</strong> mà
                 không cần tạo file{" "}
-                <code className="font-mono bg-white px-1 rounded border border-blue-100">
+                <code className="font-mono bg-white px-1 rounded border border-[#042B5F]/15">
                   .env
                 </code>
                 .
@@ -214,7 +218,7 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
               variant="outline"
               size="sm"
               onClick={() => setSdkQuickstartOpen(true)}
-              className="h-7 px-2.5 text-[11px] bg-white border-blue-200 text-blue-700 hover:bg-blue-100 shrink-0"
+              className="h-7 px-2.5 text-[11px] bg-white border-[#042B5F]/20 text-[#042B5F] hover:bg-[#E1EAF6] shrink-0"
             >
               Xem code mẫu & CLI
             </Button>
@@ -256,6 +260,7 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
             isLoading={secretsLoading || scopesLoading}
             highlightedKeys={sseState.highlightedKeys}
             onEditSecret={handleEdit}
+            onDeleteSecret={setDeletingSecret}
             onCreateSecret={() => {
               setEditingSecret(null);
               setCreateDialogOpen(true);
@@ -276,6 +281,13 @@ export function VaultView({ projectId, projectName }: VaultViewProps) {
         }}
         availableScopes={availableScopes}
         initialData={editingSecret}
+      />
+
+      {/* Delete Secret Confirmation Dialog */}
+      <DeleteSecretDialog
+        projectId={projectId}
+        secret={deletingSecret}
+        onClose={() => setDeletingSecret(null)}
       />
 
       {/* Granular Key Permissions Matrix Modal */}

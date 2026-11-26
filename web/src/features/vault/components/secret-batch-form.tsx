@@ -200,7 +200,7 @@ export function SecretBatchForm({
     <form onSubmit={handleSubmitBatch} className="space-y-4">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-bold text-slate-900">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF3FA] text-[#042B5F]">
             <Lock className="h-4 w-4" />
           </div>
           Thêm biến môi trường
@@ -255,7 +255,7 @@ export function SecretBatchForm({
               onClick={() => fileInputRef.current?.click()}
               className="text-xs border-slate-200 text-slate-700 hover:bg-slate-50"
             >
-              <FileUp className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+              <FileUp className="h-3.5 w-3.5 mr-1.5 text-[#042B5F]" />
               Nạp file .env
             </Button>
             <Button
@@ -272,7 +272,7 @@ export function SecretBatchForm({
         </div>
 
         {showPasteBox && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-3 space-y-2">
+          <div className="rounded-xl border border-[#042B5F]/20 bg-[#EEF3FA]/70 p-3 space-y-2">
             <Label className="text-xs font-semibold text-slate-700">
               Dán nội dung file .env vào đây (KEY=VALUE mỗi dòng)
             </Label>
@@ -281,7 +281,7 @@ export function SecretBatchForm({
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
               placeholder={`DATABASE_URL=postgresql://user:pass@localhost:5432/db\nJWT_SECRET=super_secret_key`}
-              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#042B5F]"
             />
             <div className="flex justify-end gap-2">
               <Button
@@ -297,7 +297,7 @@ export function SecretBatchForm({
                 size="sm"
                 onClick={handleExtractPaste}
                 disabled={!pasteText.trim()}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-[#042B5F] hover:bg-[#031F46] text-white"
               >
                 Trích xuất biến
               </Button>
@@ -321,7 +321,7 @@ export function SecretBatchForm({
             <button
               type="button"
               onClick={() => setShowValue((v) => !v)}
-              className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-700"
+              className="inline-flex items-center gap-1 text-[11px] text-[#042B5F] hover:text-[#031F46]"
             >
               {showValue ? (
                 <>
@@ -402,7 +402,7 @@ export function SecretBatchForm({
         <Button
           type="submit"
           disabled={saveBatchMutation.isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+          className="bg-[#042B5F] hover:bg-[#031F46] text-white font-medium"
         >
           {saveBatchMutation.isPending ? (
             <>

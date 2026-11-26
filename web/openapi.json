@@ -2194,6 +2194,88 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Vault"
+        ],
+        "summary": "Delete a secret from a project scope",
+        "description": "Delete an encrypted secret from a project scope and broadcast change.",
+        "operationId": "delete_secret_api_v1_vault_projects__project_id__secrets_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "scope_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Scope Name"
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Key"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteSecretResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/vault/projects/{project_id}/secrets/batch": {
@@ -2952,6 +3034,34 @@
           "items"
         ],
         "title": "CreateSecretsBatchRequest"
+      },
+      "DeleteSecretResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "scope_name": {
+            "type": "string",
+            "title": "Scope Name"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "project_id",
+          "scope_name",
+          "key"
+        ],
+        "title": "DeleteSecretResponse"
       },
       "GenerateVirtualKeyRequest": {
         "properties": {
@@ -3770,8 +3880,8 @@
           },
           "credential": {
             "type": "string",
-            "minLength": 1,
-            "title": "Credential"
+            "title": "Credential",
+            "default": ""
           },
           "timeout_seconds": {
             "type": "integer",
@@ -3785,8 +3895,7 @@
         "required": [
           "name",
           "slug",
-          "base_url",
-          "credential"
+          "base_url"
         ],
         "title": "UpstreamServiceCreateRequest"
       },
@@ -4132,6 +4241,50 @@
               }
             ],
             "title": "Client Raw Cert"
+          },
+          "client_signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Signature"
+          },
+          "client_timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Timestamp"
+          },
+          "request_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Method"
+          },
+          "request_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Path"
           },
           "project_id": {
             "type": "string",

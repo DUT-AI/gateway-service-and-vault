@@ -60,14 +60,14 @@ export function CertNextStepsCard({
   };
 
   return (
-    <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-3.5 space-y-3">
+    <div className="rounded-xl border border-[#042B5F]/15 bg-[#EEF3FA] p-3.5 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#042B5F] text-[11px] font-bold text-white">
               3
             </span>
-            <span className="text-xs font-semibold text-blue-950">
+            <span className="text-xs font-semibold text-[#042B5F]">
               {isOtherRole
                 ? "Nhận Virtual Key từ Project Developer"
                 : "Cấp Virtual Key cho thiết bị trong Dự án"}
@@ -101,7 +101,7 @@ export function CertNextStepsCard({
             variant="outline"
             size="sm"
             onClick={handleCopyHandoff}
-            className="h-8 text-xs bg-white border-blue-200 text-blue-700 hover:bg-blue-100"
+            className="h-8 text-xs bg-white border-[#042B5F]/20 text-[#042B5F] hover:bg-[#E1EAF6]"
           >
             {copiedHandoff ? (
               <>
@@ -122,7 +122,7 @@ export function CertNextStepsCard({
           variant={isOtherRole ? "ghost" : "outline"}
           size="sm"
           asChild
-          className="h-8 text-xs border-blue-200 bg-white text-blue-700 hover:bg-blue-100"
+          className="h-8 text-xs border-[#042B5F]/20 bg-white text-[#042B5F] hover:bg-[#E1EAF6]"
         >
           <Link href="/projects" onClick={onNavigateToProjects}>
             <KeyRound className="h-3.5 w-3.5 mr-1.5" />
@@ -141,7 +141,7 @@ export function CertNextStepsCard({
               onClick={onOpenDockerGuide}
               className="h-8 text-xs bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
             >
-              <Container className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+              <Container className="h-3.5 w-3.5 mr-1.5 text-[#042B5F]" />
               Hướng dẫn Docker Workload
             </Button>
           )}
@@ -157,7 +157,7 @@ export function CertNextStepsCard({
           <button
             type="button"
             onClick={handleCopyVerify}
-            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium"
+            className="inline-flex items-center gap-1 text-[#042B5F] hover:text-[#031F46] font-medium"
           >
             {copiedVerify ? (
               <>

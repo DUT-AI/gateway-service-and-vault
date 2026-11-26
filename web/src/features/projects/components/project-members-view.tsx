@@ -134,7 +134,7 @@ export function ProjectMembersView({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-600" />
+              <Users className="h-4 w-4 text-[#042B5F]" />
               Quản lý thành viên dự án
             </CardTitle>
             <p className="text-xs text-slate-500 mt-1">
@@ -211,7 +211,7 @@ export function ProjectMembersView({
                             onClick={() => toggleUserSelection(u.id)}
                             className={`flex w-full items-center justify-between px-3.5 py-2.5 text-left transition-colors ${
                               isSelected
-                                ? "bg-blue-50/70 hover:bg-blue-50"
+                                ? "bg-[#EEF3FA] hover:bg-[#EEF3FA]"
                                 : "hover:bg-slate-50"
                             }`}
                           >
@@ -230,7 +230,7 @@ export function ProjectMembersView({
                                   className="h-7 w-7 shrink-0 rounded-full object-cover border border-slate-200"
                                 />
                               ) : (
-                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[11px] font-bold text-blue-700">
+                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#EEF3FA] text-[11px] font-bold text-[#042B5F]">
                                   {(u.name || u.email || "U")[0].toUpperCase()}
                                 </div>
                               )}
@@ -244,7 +244,7 @@ export function ProjectMembersView({
                               </div>
                             </div>
                             {isSelected && (
-                              <Check className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                              <Check className="h-3.5 w-3.5 text-[#042B5F] shrink-0" />
                             )}
                           </button>
                         );
@@ -259,7 +259,7 @@ export function ProjectMembersView({
               size="sm"
               onClick={handleAddSelected}
               disabled={selectedUserIds.length === 0 || isSubmittingBatch}
-              className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 h-9 px-4"
+              className="bg-[#042B5F] hover:bg-[#031F46] text-white shrink-0 h-9 px-4"
             >
               {isSubmittingBatch ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
@@ -284,13 +284,13 @@ export function ProjectMembersView({
                   <Badge
                     key={uid}
                     variant="secondary"
-                    className="bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-medium pl-2.5 pr-1 py-0.5 flex items-center gap-1"
+                    className="bg-[#EEF3FA] text-[#042B5F] border border-[#042B5F]/20 text-[11px] font-medium pl-2.5 pr-1 py-0.5 flex items-center gap-1"
                   >
                     <span>{profile?.name || `User #${uid}`}</span>
                     <button
                       type="button"
                       onClick={() => toggleUserSelection(uid)}
-                      className="rounded-full p-0.5 hover:bg-blue-100 text-blue-600"
+                      className="rounded-full p-0.5 hover:bg-[#E1EAF6] text-[#042B5F]"
                       title="Bỏ chọn"
                     >
                       <X className="h-3 w-3" />
@@ -338,7 +338,7 @@ export function ProjectMembersView({
                           className="h-8 w-8 shrink-0 rounded-full object-cover border border-slate-200"
                         />
                       ) : (
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#EEF3FA] text-xs font-bold text-[#042B5F]">
                           {(profile?.name || profile?.email || "U")[0].toUpperCase()}
                         </div>
                       )}

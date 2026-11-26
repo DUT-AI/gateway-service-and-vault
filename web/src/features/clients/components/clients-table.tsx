@@ -189,7 +189,7 @@ export function ClientsTable() {
                   <tr>
                     <td colSpan={7} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-center space-y-3">
-                        <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-2xl bg-[#EEF3FA] text-[#042B5F] flex items-center justify-center">
                           <HardDrive className="h-6 w-6" />
                         </div>
                         <div>
@@ -222,7 +222,7 @@ export function ClientsTable() {
                             type="button"
                             size="sm"
                             onClick={() => setRegisterOpen(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
+                            className="bg-[#042B5F] hover:bg-[#031F46] text-white text-xs font-medium"
                           >
                             <Plus className="h-3.5 w-3.5 mr-1" />
                             Đăng ký thiết bị đầu tiên

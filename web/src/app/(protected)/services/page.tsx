@@ -18,7 +18,7 @@ export default function ServicesPage() {
             <h1 className="text-xl font-bold tracking-tight text-slate-900">
               Quản lý dịch vụ Upstream
             </h1>
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 border border-blue-200">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#EEF3FA] px-2 py-0.5 text-[11px] font-semibold text-[#042B5F] border border-[#042B5F]/20">
               <Shield className="h-3 w-3" />
               Reverse Proxy & Credential Injection
             </span>

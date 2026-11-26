@@ -51,7 +51,7 @@ export default function ProjectsPage() {
             <Button
               size="sm"
               onClick={() => setCreateDialogOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-xs"
+              className="bg-[#042B5F] hover:bg-[#031F46] text-white font-medium shadow-xs"
             >
               <Plus className="h-4 w-4 mr-1.5" />
               Tạo dự án mới

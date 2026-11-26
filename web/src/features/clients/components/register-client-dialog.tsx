@@ -95,7 +95,7 @@ export function RegisterClientDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEF3FA] text-[#042B5F]">
               <ShieldPlus className="h-5 w-5" />
             </div>
             <div>
@@ -140,7 +140,7 @@ export function RegisterClientDialog({
               <label
                 className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
                   selectedType === "USER_DEVICE"
-                    ? "border-blue-600 bg-blue-50/50 text-blue-900 font-semibold"
+                    ? "border-[#042B5F] bg-[#EEF3FA] text-[#042B5F] font-semibold"
                     : "border-slate-200 hover:bg-slate-50 text-slate-700"
                 }`}
               >
@@ -150,7 +150,7 @@ export function RegisterClientDialog({
                   className="sr-only"
                   {...register("client_type")}
                 />
-                <Laptop className="h-4 w-4 text-blue-600 shrink-0" />
+                <Laptop className="h-4 w-4 text-[#042B5F] shrink-0" />
                 <div>
                   <div>Developer PC</div>
                   <div className="text-[10px] font-normal text-slate-500">
@@ -230,7 +230,7 @@ export function RegisterClientDialog({
               type="submit"
               size="sm"
               disabled={registerMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
+              className="bg-[#042B5F] hover:bg-[#031F46] text-white text-xs font-medium"
             >
               {registerMutation.isPending ? (
                 <>

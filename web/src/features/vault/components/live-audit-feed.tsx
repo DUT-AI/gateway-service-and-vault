@@ -63,12 +63,12 @@ export function LiveAuditFeed({
         onClick={() => setOpen(true)}
         className="border-slate-200 text-slate-700 hover:bg-slate-50"
       >
-        <Activity className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+        <Activity className="h-3.5 w-3.5 mr-1.5 text-[#042B5F]" />
         <span>Nhật ký Live</span>
         {events.length > 0 && (
           <Badge
             variant="secondary"
-            className="ml-1.5 h-4.5 px-1.5 bg-blue-100 text-blue-800 text-[10px]"
+            className="ml-1.5 h-4.5 px-1.5 bg-[#EEF3FA] text-[#042B5F] text-[10px]"
           >
             {events.length}
           </Badge>
@@ -80,7 +80,7 @@ export function LiveAuditFeed({
           <DialogHeader>
             <div className="flex items-center justify-between pr-4">
               <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EEF3FA] text-[#042B5F]">
                   <Activity className="h-4 w-4" />
                 </div>
                 Nhật ký sự kiện Live Stream
@@ -169,7 +169,7 @@ export function LiveAuditFeed({
                       <Badge
                         key={key}
                         variant="secondary"
-                        className="font-mono text-[11px] bg-blue-50 text-blue-700 border border-blue-200"
+                        className="font-mono text-[11px] bg-[#EEF3FA] text-[#042B5F] border border-[#042B5F]/20"
                       >
                         {key}
                       </Badge>

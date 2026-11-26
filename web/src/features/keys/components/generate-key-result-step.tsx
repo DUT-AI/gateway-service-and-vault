@@ -124,7 +124,7 @@ export function GenerateKeyResultStep({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-              <Terminal className="h-3.5 w-3.5 text-blue-600" />
+              <Terminal className="h-3.5 w-3.5 text-[#042B5F]" />
               Lệnh thực thi mẫu với CLI SDK:
             </span>
             <Button
@@ -132,7 +132,7 @@ export function GenerateKeyResultStep({
               variant="ghost"
               size="sm"
               onClick={handleCopyCommand}
-              className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="h-6 px-2 text-xs text-[#042B5F] hover:text-[#031F46] hover:bg-[#EEF3FA]"
             >
               {copiedCommand ? (
                 <>
@@ -141,7 +141,7 @@ export function GenerateKeyResultStep({
                 </>
               ) : (
                 <>
-                  <Copy className="h-3 w-3 mr-1 text-blue-500" />
+                  <Copy className="h-3 w-3 mr-1 text-[#042B5F]" />
                   Sao chép lệnh
                 </>
               )}

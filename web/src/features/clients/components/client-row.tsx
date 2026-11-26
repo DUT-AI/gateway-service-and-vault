@@ -61,7 +61,7 @@ export function ClientRow({
           <div
             className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
               isDeveloper
-                ? "bg-blue-50 text-blue-600"
+                ? "bg-[#EEF3FA] text-[#042B5F]"
                 : "bg-purple-50 text-purple-600"
             }`}
           >
@@ -115,7 +115,7 @@ export function ClientRow({
           variant="outline"
           className={`text-[10px] font-semibold border ${
             isDeveloper
-              ? "bg-blue-50 text-blue-700 border-blue-200"
+              ? "bg-[#EEF3FA] text-[#042B5F] border-[#042B5F]/20"
               : "bg-purple-50 text-purple-700 border-purple-200"
           }`}
         >

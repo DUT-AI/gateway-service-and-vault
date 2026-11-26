@@ -53,7 +53,7 @@ chmod 600 ./certs/client.key`,
     <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[11px] font-bold text-blue-700">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#EEF3FA] text-[11px] font-bold text-[#042B5F]">
             2
           </span>
           <span className="text-xs font-semibold text-slate-800">
